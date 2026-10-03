@@ -49,7 +49,7 @@
             </div>
             <div class="mt-3 flex flex-wrap gap-2">
                 <button class="kka-btn-primary !py-2 text-sm" @click="toggleKamera()" x-text="cameraOn ? 'Matikan Kamera' : 'Aktifkan Kamera'"></button>
-                <button class="kka-btn-secondary !py-2 text-sm" @click="uji()">Uji</button>
+                <button class="kka-btn-secondary !py-2 text-sm" @click="uji()" x-text="sibuk ? 'Menganalisis...' : 'Uji'"></button>
             </div>
             <p class="mt-2 text-[11px] text-slate-400">Butuh internet sekali untuk memuat model + izin kamera. Versi latihan sendiri (KNN) ada di Modul 2 setelah daftar.</p>
         </x-card>
@@ -115,9 +115,16 @@ function kkaLandingCam() {
         status: 'Memuat model...', cameraOn: false, hasil: [], net: null, stream: null, sibuk: false,
         async init() {
             try {
+                if (window.tf) {
+                    try { await tf.setBackend('webgl'); } catch (_) { await tf.setBackend('cpu'); }
+                    await tf.ready();
+                }
                 this.net = await mobilenet.load();
                 this.status = 'Model siap — aktifkan kamera';
-            } catch (e) { this.status = 'Gagal memuat model (butuh internet sekali)'; }
+            } catch (e) {
+                console.error(e);
+                this.status = 'Gagal memuat model (butuh internet). Muat ulang halaman ya!';
+            }
         },
         async toggleKamera() {
             if (this.cameraOn) {
@@ -135,15 +142,28 @@ function kkaLandingCam() {
             } catch (e) { this.status = 'Kamera ditolak — izinkan akses kamera lalu coba lagi'; }
         },
         async uji() {
-            if (!this.net) { this.hasil = ['Model belum termuat, tunggu sebentar ya!']; return; }
+            if (!this.net) { this.hasil = ['Model belum termuat, tunggu tulisan “Model siap” lalu coba lagi!']; return; }
             if (!this.cameraOn) { this.hasil = ['Aktifkan kamera dulu ya!']; return; }
             if (this.sibuk) return;
+            const v = this.$refs.video;
+            let tunggu = 0;
+            while ((v.readyState < 2 || v.videoWidth === 0) && tunggu < 20) {
+                await new Promise(r => setTimeout(r, 200));
+                tunggu++;
+            }
+            if (v.videoWidth === 0) {
+                this.hasil = ['Kamera belum menampilkan gambar — tunggu video muncul lalu klik Uji lagi!'];
+                return;
+            }
             this.sibuk = true; this.status = 'Menganalisis gambar...';
             try {
-                const preds = await this.net.classify(this.$refs.video, 3);
+                const preds = await this.net.classify(v, 3);
                 this.hasil = preds.map(p => idLabel(p.className) + ' — ' + Math.round(p.probability * 100) + '%');
                 this.status = 'Kamera menyala — arahkan ke benda lalu klik Uji';
-            } catch (e) { this.hasil = ['Gagal menganalisis. Coba klik Uji lagi!']; }
+            } catch (e) {
+                console.error(e);
+                this.hasil = ['Gagal menganalisis (' + String((e && e.message) || e).slice(0, 100) + '). Coba klik Uji lagi!'];
+            }
             this.sibuk = false;
         }
     }
