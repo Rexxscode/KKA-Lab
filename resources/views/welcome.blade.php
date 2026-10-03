@@ -8,19 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background:#FAFAFA;font-family:'Plus Jakarta Sans',sans-serif" x-data="{
-    demo: 'Halo! Aku AI. Tunjukkan gambar ke kamera, aku belajar mengenalinya — semua di browser-mu!',
-    ujiIdx: 0,
-    uji() {
-        const hasil = [
-            'Model menebak: 92% kemungkinan ini gambar Kucing. (Simulasi — inferensi asli ada di Modul 2)',
-            'Model menebak: 87% kemungkinan ini gambar Botol. (Simulasi — inferensi asli ada di Modul 2)',
-            'Model menebak: 95% kemungkinan ini gambar Telapak Tangan. (Simulasi — inferensi asli ada di Modul 2)',
-        ];
-        this.demo = hasil[this.ujiIdx % hasil.length];
-        this.ujiIdx++;
-    }
-}">
+<body style="background:#FAFAFA;font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="init()">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <nav class="flex items-center justify-between py-5">
         <div class="flex items-center gap-2">
@@ -49,14 +37,25 @@
                 <div class="kka-card !p-4"><p class="text-2xl font-extrabold text-slate-900">PDF</p><p class="text-xs text-slate-500">Sertifikat otomatis</p></div>
             </div>
         </div>
-        <x-card title="Simulasi AI Mini" subtitle="Demo simulasi bergilir — inferensi kamera asli ada di Modul 2 (KNN lokal).">
-            <div class="rounded-2xl bg-slate-900 text-emerald-300 p-5 font-mono text-sm min-h-28" x-text="demo"></div>
-            <div class="mt-4 flex flex-wrap gap-2">
-                <button class="kka-btn-secondary !py-2 text-sm" @click="demo='Hebat! Model AI-mu berhasil dilatih! Coba tambah contoh gambar lain ya.'">Latih Model</button>
-                <button class="kka-btn-secondary !py-2 text-sm" @click="uji()">Uji Model</button>
-                <button class="kka-btn-secondary !py-2 text-sm" @click="demo='Privasi aman: tidak ada gambar yang keluar dari perangkatmu.'">Cek Privasi</button>
+        <x-card title="Coba AI Langsung — Kamera Asli" subtitle="Latih 3 kelas lewat webcam, lalu Uji / Pantau live. 100% di browser, gambar tidak dikirim ke server.">
+            <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
+                <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
+                <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Klik “Aktifkan Kamera” dulu, lalu latih tiap kelas dengan contoh gambar.</p></template>
+                <span class="absolute top-3 left-3 kka-badge" x-text="status"></span>
             </div>
-            <p class="mt-2 text-[11px] text-slate-400">Catatan: tombol Uji di sini hanya simulasi teks bergilir (Kucing → Botol → Tangan), bukan hasil kamera.</p>
+            <div class="mt-3 rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-sm min-h-16" x-text="prediction || 'Halo! Aku AI. Tunjukkan gambar ke kamera, aku belajar mengenalinya.'"></div>
+            <div class="mt-3 flex flex-wrap gap-2">
+                <button class="kka-btn-primary !py-2 text-sm" @click="startCamera()">Aktifkan Kamera</button>
+                <button class="kka-btn-secondary !py-2 text-sm" @click="addExample(0)">+ Kelas A 🐱 (<span x-text="counts[0]"></span>)</button>
+                <button class="kka-btn-secondary !py-2 text-sm" @click="addExample(1)">+ Kelas B ♻️ (<span x-text="counts[1]"></span>)</button>
+                <button class="kka-btn-secondary !py-2 text-sm" @click="addExample(2)">+ Kelas C ✋ (<span x-text="counts[2]"></span>)</button>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-2">
+                <button class="kka-btn-primary !py-2 text-sm" @click="predict()">Uji Sekali</button>
+                <button class="kka-btn-secondary !py-2 text-sm" @click="toggleWatch()" x-text="watching ? 'Stop Pantau' : 'Pantau Live'"></button>
+                <button class="kka-btn-secondary !py-2 text-sm" @click="reset()">Reset</button>
+            </div>
+            <p class="mt-2 text-[11px] text-slate-400">Butuh internet sekali untuk memuat model + izin kamera. Versi lengkap (simpan XP & badge) ada di Modul 2 setelah daftar.</p>
         </x-card>
     </section>
 
@@ -94,5 +93,63 @@
 
     <footer class="py-8 text-center text-xs text-slate-400">KKA Lab • Dibangun dengan Laravel Blade + Alpine.js + Tailwind + TensorFlow.js (client-side) • Untuk pembelajaran AI di sekolah</footer>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.6/dist/knn-classifier.min.js"></script>
+<script>
+function kkaLandingCam() {
+    return {
+        status: 'Memuat model...', cameraOn: false, counts: [0, 0, 0],
+        prediction: '', net: null, classifier: null, watching: false, watchTimer: null,
+        async init() {
+            try {
+                this.net = await mobilenet.load();
+                this.classifier = knnClassifier.create();
+                this.status = 'Model siap — aktifkan kamera';
+            } catch (e) { this.status = 'Gagal memuat model (butuh internet sekali)'; }
+        },
+        async startCamera() {
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                this.$refs.video.srcObject = s;
+                await this.$refs.video.play();
+                this.cameraOn = true; this.status = 'Kamera aktif — latih tiap kelas!';
+            } catch (e) { this.status = 'Kamera ditolak — izinkan akses kamera lalu coba lagi'; }
+        },
+        async addExample(cls) {
+            if (!this.net) return;
+            if (!this.cameraOn) { this.prediction = 'Aktifkan kamera dulu ya!'; return; }
+            const img = tf.browser.fromPixels(this.$refs.video);
+            const act = this.net.infer(img, true);
+            this.classifier.addExample(act, cls);
+            this.counts[cls]++; img.dispose(); act.dispose();
+            this.prediction = 'Hebat! Kelas ' + ['A 🐱', 'B ♻️', 'C ✋'][cls] + ' sekarang punya ' + this.counts[cls] + ' contoh. Tambah lagi biar makin pintar!';
+        },
+        async predict() {
+            if (!this.net || !this.classifier || this.classifier.getNumClasses() === 0) {
+                this.prediction = 'Latih dulu minimal 2 kelas ya (klik + Kelas A/B/C beberapa kali).';
+                return;
+            }
+            if (!this.cameraOn) { this.prediction = 'Aktifkan kamera dulu ya!'; return; }
+            const img = tf.browser.fromPixels(this.$refs.video);
+            const act = this.net.infer(img, true);
+            const res = await this.classifier.predictClass(act);
+            const label = ['Kelas A 🐱', 'Kelas B ♻️', 'Kelas C ✋'][res.label] ?? ('Kelas ' + res.label);
+            this.prediction = 'Model menebak: ' + label + ' (' + Math.round((res.confidences[res.label] || 0) * 100) + '%). Semua dihitung di browser-mu!';
+            img.dispose(); act.dispose();
+        },
+        toggleWatch() {
+            if (this.watching) {
+                this.watching = false; clearInterval(this.watchTimer); this.status = 'Kamera aktif — latih tiap kelas!';
+            } else { this.watching = true; this.status = 'Memantau live...'; this.watchTimer = setInterval(() => this.predict(), 800); }
+        },
+        reset() {
+            if (this.classifier) this.classifier = knnClassifier.create();
+            this.counts = [0, 0, 0]; this.prediction = 'Model di-reset. Yuk latih ulang!';
+            if (this.watching) this.toggleWatch();
+        }
+    }
+}
+</script>
 </body>
 </html>
