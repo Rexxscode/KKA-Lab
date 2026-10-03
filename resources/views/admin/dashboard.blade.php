@@ -1,0 +1,110 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="font-extrabold text-xl text-slate-900">Dashboard Admin</h2>
+                <p class="text-sm text-slate-500">Kelola akun guru, pantau kelas & progres. Pendaftaran publik hanya untuk siswa.</p>
+            </div>
+            <span class="kka-badge">Admin • akses penuh</span>
+        </div>
+    </x-slot>
+
+    <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <x-card title="Admin" subtitle="akun"><p class="text-3xl font-extrabold text-slate-900">{{ $stats['admin'] }}</p></x-card>
+            <x-card title="Guru" subtitle="akun"><p class="text-3xl font-extrabold text-orange-500">{{ $stats['guru'] }}</p></x-card>
+            <x-card title="Siswa" subtitle="akun"><p class="text-3xl font-extrabold text-emerald-500">{{ $stats['siswa'] }}</p></x-card>
+            <x-card title="Kelas" subtitle="dibuat guru"><p class="text-3xl font-extrabold text-slate-900">{{ $stats['kelas'] }}</p></x-card>
+            <x-card title="Modul" subtitle="KKA"><p class="text-3xl font-extrabold text-slate-900">{{ $stats['modul'] }}</p></x-card>
+        </div>
+
+        <x-card title="Buat Akun Guru / Admin" subtitle="Guru tidak bisa daftar sendiri — akunnya dibuat di sini. Password minimal 8 karakter.">
+            <form method="POST" action="{{ route('admin.users.store') }}" class="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                @csrf
+                <input name="name" required maxlength="100" placeholder="Nama guru" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <input name="email" type="email" required placeholder="Email guru" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <select name="role" required class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500">
+                    <option value="guru">Guru</option>
+                    <option value="admin">Admin</option>
+                    <option value="siswa">Siswa (khusus)</option>
+                </select>
+                <input name="password" type="password" required placeholder="Password" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <input name="password_confirmation" type="password" required placeholder="Ulangi password" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <div class="sm:col-span-2 lg:col-span-5"><x-button type="submit">Buat Akun</x-button></div>
+            </form>
+        </x-card>
+
+        <x-card title="Semua Pengguna" subtitle="Cari, reset password, atau hapus akun.">
+            <form method="GET" action="{{ route('admin.dashboard') }}" class="flex flex-col sm:flex-row gap-2 mb-4">
+                <input name="q" value="{{ request('q') }}" placeholder="Cari nama / email..." class="flex-1 rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <select name="role" class="rounded-xl border-slate-200">
+                    <option value="">Semua peran</option>
+                    @foreach(['admin', 'guru', 'siswa'] as $r)
+                        <option value="{{ $r }}" @selected(request('role') === $r)>{{ ucfirst($r) }}</option>
+                    @endforeach
+                </select>
+                <x-button type="submit">Cari</x-button>
+            </form>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[720px]">
+                    <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-200">
+                        <th class="py-2 pr-3">Nama</th><th class="py-2 pr-3">Peran</th><th class="py-2 pr-3">Info</th><th class="py-2 text-right">Aksi</th>
+                    </tr></thead>
+                    <tbody>
+                        @foreach($users as $u)
+                            <tr class="border-b border-slate-100">
+                                <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $u->name }}</p><p class="text-xs text-slate-400">{{ $u->email }}</p></td>
+                                <td class="py-3 pr-3"><span class="kka-badge">{{ ucfirst($u->role) }}</span></td>
+                                <td class="py-3 pr-3 text-xs text-slate-500">
+                                    @if($u->isGuru()) {{ $u->taughtClassrooms()->count() }} kelas • {{ $u->taughtClassrooms()->withCount('students')->get()->sum('students_count') }} siswa
+                                    @elseif($u->isSiswa()) {{ $u->totalXp() }} XP • {{ $u->progress()->where('is_completed', true)->count() }}/{{ $modules->count() }} lulus
+                                    @else — @endif
+                                </td>
+                                <td class="py-3">
+                                    <div class="flex justify-end gap-2">
+                                        <details class="relative">
+                                            <summary class="kka-btn-secondary !py-1.5 !px-3 text-xs cursor-pointer list-none">Reset PW</summary>
+                                            <form method="POST" action="{{ route('admin.users.reset', $u) }}" class="absolute right-0 mt-2 p-3 bg-white border border-slate-200 rounded-2xl shadow-lg flex gap-1 z-10">
+                                                @csrf @method('PATCH')
+                                                <input name="password" type="password" required placeholder="Baru" class="w-28 rounded-xl border-slate-200 text-xs" />
+                                                <input name="password_confirmation" type="password" required placeholder="Ulangi" class="w-28 rounded-xl border-slate-200 text-xs" />
+                                                <button class="kka-btn-primary !py-1.5 !px-3 text-xs">OK</button>
+                                            </form>
+                                        </details>
+                                        @if($u->id !== auth()->id())
+                                            <form method="POST" action="{{ route('admin.users.destroy', $u) }}" onsubmit="return confirm('Hapus {{ $u->email }}?')">
+                                                @csrf @method('DELETE')
+                                                <button class="kka-btn-secondary !py-1.5 !px-3 text-xs !text-red-600">Hapus</button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4">{{ $users->links() }}</div>
+        </x-card>
+
+        <div class="grid lg:grid-cols-2 gap-4">
+            <x-card title="Kelas Terbaru" subtitle="Dibuat oleh guru.">
+                @forelse($classrooms as $c)
+                    <div class="flex items-center justify-between text-sm border border-slate-200 rounded-xl px-4 py-2 mb-2">
+                        <div><p class="font-bold">{{ $c->name }}</p><p class="text-xs text-slate-400">{{ $c->teacher->name ?? '-' }} • {{ $c->code }} • {{ $c->students_count }} siswa</p></div>
+                    </div>
+                @empty
+                    <p class="text-sm text-slate-400">Belum ada kelas.</p>
+                @endforelse
+            </x-card>
+            <x-card title="Modul KKA" subtitle="Kelola soal lewat akun guru / bank soal.">
+                @foreach($modules as $m)
+                    <div class="flex items-center justify-between text-sm border border-slate-200 rounded-xl px-4 py-2 mb-2">
+                        <p class="font-bold">{{ $m->title }}</p><span class="kka-badge">+{{ $m->xp_reward }} XP</span>
+                    </div>
+                @endforeach
+                <a href="{{ route('guru.quiz.index') }}" class="kka-btn-secondary !py-2 text-xs">Buka Bank Soal</a>
+            </x-card>
+        </div>
+    </div>
+</x-app-layout>

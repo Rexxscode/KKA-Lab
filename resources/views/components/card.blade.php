@@ -1,0 +1,11 @@
+@props(['title' => null, 'subtitle' => null])
+
+<div {{ $attributes->merge(['class' => 'kka-card p-6']) }}>
+    @if($title)
+        <h3 class="font-bold text-slate-900 text-lg">{{ $title }}</h3>
+    @endif
+    @if($subtitle)
+        <p class="text-sm text-slate-500 mt-1">{{ $subtitle }}</p>
+    @endif
+    <div class="mt-4">{{ $slot }}</div>
+</div>
