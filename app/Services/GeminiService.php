@@ -43,15 +43,19 @@ class GeminiService
         $contents[] = ['role' => 'user', 'parts' => [['text' => mb_substr($message, 0, 2000)]]];
 
         try {
-            $res = Http::timeout(30)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent",
-                [
-                    'headers' => ['x-goog-api-key' => $key, 'Content-Type' => 'application/json'],
-                    'system_instruction' => ['parts' => [['text' => $system]]],
-                    'contents' => $contents,
-                    'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 500],
-                ]
-            );
+            // asJson() wajib: tanpanya Laravel mengirim form-encoded
+            // sehingga API Gemini menolak dengan 400.
+            $res = Http::timeout(30)
+                ->withHeaders(['x-goog-api-key' => $key])
+                ->asJson()
+                ->post(
+                    "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent",
+                    [
+                        'system_instruction' => ['parts' => [['text' => $system]]],
+                        'contents' => $contents,
+                        'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 500],
+                    ]
+                );
 
             if (! $res->successful()) {
                 return 'Maaf, AI sedang sibuk (kode ' . $res->status() . '). Coba lagi sebentar ya!';
