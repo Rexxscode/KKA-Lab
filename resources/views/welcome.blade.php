@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background:#FAFAFA;font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="init()">
+<body style="background:#FAFAFA;font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="boot()">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <nav class="flex items-center justify-between py-5">
         <div class="flex items-center gap-2">
@@ -30,7 +30,6 @@
                 <x-button href="{{ route('register') }}">Masuk sebagai Siswa</x-button>
                 <x-button variant="secondary" href="{{ route('login') }}">Portal Guru</x-button>
             </div>
-            <p class="mt-2 text-xs text-slate-400">Akun guru dibuatkan oleh admin — siswa bisa daftar gratis.</p>
             <div class="mt-6 grid grid-cols-3 gap-3 text-center">
                 <div class="kka-card !p-4"><p class="text-2xl font-extrabold text-orange-500">4</p><p class="text-xs text-slate-500">Modul interaktif</p></div>
                 <div class="kka-card !p-4"><p class="text-2xl font-extrabold text-emerald-500">600</p><p class="text-xs text-slate-500">Total XP</p></div>
@@ -79,7 +78,7 @@
         <x-card title="Untuk Siswa" subtitle="Gabung kelas dengan 6 digit kode, kerjakan modul, kumpulkan badge.">
             <x-button href="{{ route('register') }}" class="w-full">Daftar sebagai Siswa</x-button>
         </x-card>
-        <x-card title="Untuk Guru" subtitle="Akun dibuatkan admin. Buat kelas, generate kode unik, pantau progres & ekspor CSV nilai.">
+        <x-card title="Untuk Guru" subtitle="Buat kelas, generate kode unik, pantau progres & ekspor CSV nilai.">
             <x-button href="{{ route('login') }}" class="w-full">Masuk Portal Guru</x-button>
         </x-card>
         <x-card title="Sertifikat" subtitle="Otomatis terbit jika 4 modul lulus (skor ≥ 80). Siap cetak PDF via browser.">
@@ -89,7 +88,7 @@
 
     <footer class="py-8 text-center text-xs text-slate-400">KKA Lab • Dibangun dengan Laravel Blade + Alpine.js + Tailwind + TensorFlow.js (client-side) • Untuk pembelajaran AI di sekolah</footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
 <script>
 function kkaLandingCam() {
@@ -111,27 +110,60 @@ function kkaLandingCam() {
         for (const [en, id] of ID) { if (n.includes(en)) return id + ' (' + name.split(',')[0].trim() + ')'; }
         return name.split(',')[0].trim();
     }
+    // Model + canvas disimpan di variabel closure biasa (BUKAN reactive
+    // data): objek yang lewat proxy reaktif Alpine merusak identity
+    // tensor (WeakMap engine tfjs) sehingga inferensi selalu gagal.
+    let rawNet = null;
+    let rawSnap = null;
     return {
-        status: 'Memuat model...', cameraOn: false, hasil: [], net: null, stream: null, sibuk: false,
-        async init() {
+        status: 'Memuat model...', cameraOn: false, hasil: [], stream: null, sibuk: false,
+        // "boot" (bukan "init"): Alpine otomatis memanggil method bernama
+        // init(), jadi penamaan init + x-init menyebabkan double-init.
+        async boot() {
+            // Singleton: inisialisasi Alpine yang kedua memakai ulang
+            // promise model yang sama, tidak me-load ulang.
+            if (!window.__kkaReady) {
+                window.__kkaReady = (async () => {
+                    if (window.tf) { await tf.ready(); }
+                    const net = await mobilenet.load();
+                    // Tes mandiri: pastikan seluruh jalur graph benar-benar jalan
+                    const g = new Int32Array(224 * 224 * 3).fill(128);
+                    const t0 = tf.tensor3d(g, [224, 224, 3], 'int32');
+                    try { await net.classify(t0, 1); } finally { t0.dispose(); }
+                    return net;
+                })();
+            }
             try {
-                if (window.tf) {
-                    try { await tf.setBackend('webgl'); } catch (_) { await tf.setBackend('cpu'); }
-                    await tf.ready();
-                }
-                this.net = await mobilenet.load();
+                rawNet = await window.__kkaReady;
+                rawSnap = document.createElement('canvas');
                 this.status = 'Model siap — aktifkan kamera';
             } catch (e) {
                 console.error(e);
-                this.status = 'Gagal memuat model (butuh internet). Muat ulang halaman ya!';
+                window.__kkaReady = null;
+                this.status = 'Model belum siap (' + String((e && e.message) || e).slice(0, 80) + '). Muat ulang halaman ya!';
             }
+        },
+        // Klasifikasi dengan retry: kegagalan transien engine sembuh
+        // dengan percobaan ulang memakai tensor baru.
+        async classifyRetry(makeTensor, topK) {
+            let lastErr = null;
+            for (let a = 0; a < 3; a++) {
+                const t = makeTensor();
+                try {
+                    const preds = await rawNet.classify(t, topK);
+                    t.dispose();
+                    return preds;
+                } catch (e) { lastErr = e; try { t.dispose(); } catch (_) {} }
+                await new Promise(r => setTimeout(r, 400));
+            }
+            throw lastErr;
         },
         async toggleKamera() {
             if (this.cameraOn) {
                 if (this.stream) this.stream.getTracks().forEach(t => t.stop());
                 this.$refs.video.srcObject = null;
                 this.cameraOn = false; this.hasil = [];
-                this.status = this.net ? 'Model siap — aktifkan kamera' : 'Memuat model...';
+                this.status = rawNet ? 'Model siap — aktifkan kamera' : 'Memuat model...';
                 return;
             }
             try {
@@ -142,7 +174,7 @@ function kkaLandingCam() {
             } catch (e) { this.status = 'Kamera ditolak — izinkan akses kamera lalu coba lagi'; }
         },
         async uji() {
-            if (!this.net) { this.hasil = ['Model belum termuat, tunggu tulisan “Model siap” lalu coba lagi!']; return; }
+            if (!rawNet) { this.hasil = ['Model belum termuat, tunggu tulisan “Model siap” lalu coba lagi!']; return; }
             if (!this.cameraOn) { this.hasil = ['Aktifkan kamera dulu ya!']; return; }
             if (this.sibuk) return;
             const v = this.$refs.video;
@@ -157,7 +189,20 @@ function kkaLandingCam() {
             }
             this.sibuk = true; this.status = 'Menganalisis gambar...';
             try {
-                const preds = await this.net.classify(v, 3);
+                // Potret frame ke tensor CPU 224x224 (ukuran asli model).
+                // Tensor kamera full-res (640x480+) terbukti merusak
+                // bookkeeping texture WebGL di tfjs (ghost tensor), jadi
+                // kecilkan dulu di canvas sebelum dibaca pikselnya.
+                const vw = v.videoWidth, vh = v.videoHeight, S = 224;
+                rawSnap.width = S; rawSnap.height = S;
+                const ctx = rawSnap.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(v, 0, 0, vw, vh, 0, 0, S, S);
+                const d = ctx.getImageData(0, 0, S, S).data;
+                const n = S * S, vals = new Int32Array(n * 3);
+                for (let i = 0; i < n; i++) {
+                    vals[i * 3] = d[i * 4]; vals[i * 3 + 1] = d[i * 4 + 1]; vals[i * 3 + 2] = d[i * 4 + 2];
+                }
+                const preds = await this.classifyRetry(() => tf.tensor3d(vals, [S, S, 3], 'int32'), 3);
                 this.hasil = preds.map(p => idLabel(p.className) + ' — ' + Math.round(p.probability * 100) + '%');
                 this.status = 'Kamera menyala — arahkan ke benda lalu klik Uji';
             } catch (e) {
@@ -171,3 +216,5 @@ function kkaLandingCam() {
 </script>
 </body>
 </html>
+
+

@@ -25,7 +25,7 @@
 
         @if($module->slug === 'latih-ai-mu')
             <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="KNN + MobileNet lokal. Gambar TIDAK dikirim ke server Laravel.">
-                <div x-data="kkaKnN()" x-init="init()" class="space-y-4">
+                <div x-data="kkaKnN()" x-init="boot()" class="space-y-4">
                     <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
                         <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
                         <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Kamera belum aktif. Klik “Aktifkan Kamera” atau pakai Mode Tanpa Kamera di bawah.</p></template>
@@ -105,21 +105,47 @@
 
     @if($module->slug === 'latih-ai-mu')
     @push('head')
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.6/dist/knn-classifier.min.js"></script>
     @endpush
     @push('scripts')
     <script>
     function kkaKnN() {
+        // Model & classifier di closure biasa (BUKAN reactive data):
+        // objek tfjs yang lewat proxy Alpine merusak identity tensor.
+        let rawNet = null;
+        let rawClassifier = null;
+        const snap = document.createElement('canvas');
+        function frameTensor(videoEl) {
+            const S = 224;
+            const vw = videoEl.videoWidth || 640, vh = videoEl.videoHeight || 480;
+            snap.width = S; snap.height = S;
+            const ctx = snap.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(videoEl, 0, 0, vw, vh, 0, 0, S, S);
+            const d = ctx.getImageData(0, 0, S, S).data;
+            const n = S * S, vals = new Int32Array(n * 3);
+            for (let i = 0; i < n; i++) {
+                vals[i * 3] = d[i * 4]; vals[i * 3 + 1] = d[i * 4 + 1]; vals[i * 3 + 2] = d[i * 4 + 2];
+            }
+            return tf.tensor3d(vals, [S, S, 3], 'int32');
+        }
         return {
             status: 'Belum dimuat', cameraOn: false, counts: [0,0,0],
-            prediction: '', net: null, classifier: null,
-            async init() {
+            prediction: '',
+            async boot() {
+                if (!window.__kkaModulNet) {
+                    window.__kkaModulNet = (async () => {
+                        if (window.tf) { await tf.ready(); }
+                        this.status = 'Memuat MobileNet...';
+                        const net = await mobilenet.load();
+                        const classifier = knnClassifier.create();
+                        return { net, classifier };
+                    })();
+                }
                 try {
-                    this.status = 'Memuat MobileNet...';
-                    this.net = await mobilenet.load();
-                    this.classifier = knnClassifier.create();
+                    const m = await window.__kkaModulNet;
+                    rawNet = m.net; rawClassifier = m.classifier;
                     this.status = 'Siap dilatih (KNN lokal)';
                 } catch(e) { this.status = 'Gagal load TF.js (butuh internet sekali)'; }
             },
@@ -132,26 +158,26 @@
                 } catch(e) { this.status = 'Kamera ditolak — pakai Mode Tanpa Kamera'; }
             },
             async addExample(cls) {
-                if (!this.net) return;
+                if (!rawNet) return;
                 let img;
-                if (this.cameraOn) { img = tf.browser.fromPixels(this.$refs.video); }
+                if (this.cameraOn) { img = frameTensor(this.$refs.video); }
                 else { img = tf.randomNormal([224,224,3]); }
-                const act = this.net.infer(img, true);
-                this.classifier.addExample(act, cls);
+                const act = rawNet.infer(img, true);
+                rawClassifier.addExample(act, cls);
                 this.counts[cls]++; img.dispose(); act.dispose();
                 this.prediction = 'Hebat! Model AI-mu berhasil dilatih! Kelas ' + ['A','B','C'][cls] + ' sekarang punya ' + this.counts[cls] + ' contoh.';
             },
             simulate(cls) { for (let i=0;i<5;i++) this.addExample(cls); },
             async predict() {
-                if (!this.net || this.classifier.getNumClasses() === 0) { this.prediction = 'Latih dulu minimal 2 kelas, masing-masing beberapa contoh ya!'; return; }
-                let img = this.cameraOn ? tf.browser.fromPixels(this.$refs.video) : tf.randomNormal([224,224,3]);
-                const act = this.net.infer(img, true);
-                const res = await this.classifier.predictClass(act);
+                if (!rawNet || rawClassifier.getNumClasses() === 0) { this.prediction = 'Latih dulu minimal 2 kelas, masing-masing beberapa contoh ya!'; return; }
+                let img = this.cameraOn ? frameTensor(this.$refs.video) : tf.randomNormal([224,224,3]);
+                const act = rawNet.infer(img, true);
+                const res = await rawClassifier.predictClass(act);
                 const label = ['Kelas A 🐱','Kelas B 🗑️','Kelas C ✋'][res.label] || ('Kelas ' + res.label);
                 this.prediction = 'Model menebak: ' + label + ' (' + Math.round((res.confidences[res.label]||0)*100) + '%). Semua di browser-mu!';
                 img.dispose(); act.dispose();
             },
-            reset() { this.classifier = knnClassifier.create(); this.counts=[0,0,0]; this.prediction='Model di-reset. Yuk latih ulang!'; }
+            reset() { rawClassifier = knnClassifier.create(); this.counts=[0,0,0]; this.prediction='Model di-reset. Yuk latih ulang!'; }
         }
     }
     </script>
