@@ -7,7 +7,7 @@
 
     @php $sudahCoba = session()->has('quiz_result') || old('answers'); @endphp
     <div class="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" x-data="kkaBelajar({{ $module->quizzes->count() }})" x-init="terkonfirmasi = {{ $sudahCoba ? 'true' : 'false' }}; sampaiAkhir = {{ $sudahCoba ? 'true' : 'false' }};">
-        <x-card title="Tahap 1 — Bahan Ajar (wajib dibaca dulu)" subtitle="Scroll sampai akhir bacaan untuk membuka kunci kuis.">
+        <x-card title="Tahap 1 — Bahan Ajar (wajib dibaca dulu)" subtitle="Scroll sampai akhir bacaan untuk membuka kunci kuis." x-show="!terkonfirmasi">
             <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 max-h-[46vh] overflow-y-auto" @scroll="cekScroll($el)">
                 @include('siswa.modul.materi-' . $module->slug)
             </div>
@@ -17,7 +17,7 @@
             </div>
         </x-card>
         @if($module->slug === 'apa-itu-ai')
-            <x-card title="Apa itu AI?" subtitle="AI = komputer yang belajar dari data. Machine Learning = cara belajarnya.">
+            <x-card title="Apa itu AI?" subtitle="AI = komputer yang belajar dari data. Machine Learning = cara belajarnya." x-show="!terkonfirmasi">
                 <div class="grid sm:grid-cols-3 gap-3" x-data="{ tab: 'ml' }">
                     <div class="sm:col-span-1 flex sm:flex-col gap-2">
                         <button @click="tab='ml'" :class="tab==='ml' ? 'bg-orange-500 text-white' : 'bg-white text-slate-600'" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold">Machine Learning</button>
@@ -34,7 +34,7 @@
         @endif
 
         @if($module->slug === 'latih-ai-mu')
-            <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="1) Tulis nama 2 benda → 2) Kumpulkan contoh → 3) Latih Model → 4) Uji/Pantau real-time. Tanpa API luar, gambar TIDAK dikirim ke server.">
+            <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="1) Tulis nama 2 benda → 2) Kumpulkan contoh → 3) Latih Model → 4) Uji/Pantau real-time. Tanpa API luar, gambar TIDAK dikirim ke server." x-show="!terkonfirmasi">
                 <div x-data="kkaKnN()" x-init="boot()" class="space-y-4">
                     <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
                         <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
@@ -83,7 +83,7 @@
         @endif
 
         @if($module->slug === 'bias-data')
-            <x-card title="Simulasi Bias Data" subtitle="Geser slider: lihat bagaimana dataset timpang merusak keadilan model.">
+            <x-card title="Simulasi Bias Data" subtitle="Geser slider: lihat bagaimana dataset timpang merusak keadilan model." x-show="!terkonfirmasi">
                 <div x-data="{ a: 90, b: 10 }" class="space-y-4">
                     <label class="block text-sm font-semibold">Data Kelompok A: <span x-text="a"></span>% <input type="range" min="5" max="95" x-model="a" @input="b = 100 - a" class="w-full accent-orange-500"></label>
                     <label class="block text-sm font-semibold">Data Kelompok B: <span x-text="b"></span>% (otomatis)</label>
@@ -97,7 +97,7 @@
         @endif
 
         @if($module->slug === 'etika-hoaks-ai')
-            <x-card title="Etika & Hoaks AI" subtitle="Studi kasus: kenali deepfake sebelum share.">
+            <x-card title="Etika & Hoaks AI" subtitle="Studi kasus: kenali deepfake sebelum share." x-show="!terkonfirmasi">
                 <div class="grid sm:grid-cols-2 gap-3 text-sm">
                     <div class="rounded-2xl border border-slate-200 p-4"><p class="font-bold">Kasus 1: Foto viral</p><p class="text-slate-600 mt-1">Cek tangan/jari, teks aneh, bayangan tidak konsisten. Verifikasi silang ke 2 sumber resmi.</p></div>
                     <div class="rounded-2xl border border-slate-200 p-4"><p class="font-bold">Kasus 2: Suara youngsters</p><p class="text-slate-600 mt-1">AI voice clone bisa meniru guru/orang tua. Konfirmasi via kanal kedua sebelum transfer/percaya.</p></div>
@@ -115,6 +115,10 @@
             </div>
             <template x-if="terkonfirmasi">
             <div>
+            <div class="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
+                <span>📖 Materi & praktik disembunyikan selama kuis — murni pemahamanmu.</span>
+                <button type="button" @click="bacaLagi()" class="font-bold text-orange-600 hover:text-orange-700 underline">Lihat bacaan lagi (jawaban kuis dihapus)</button>
+            </div>
             @if(session('quiz_result'))
                 @php
                     $qr = session('quiz_result');
@@ -125,7 +129,7 @@
                     {{ $qr['passed'] ? "🎉 Lulus! Skor {$qr['score']} ({$benar}/{$total} benar). Jawabanmu di bawah dipertahankan sebagai pembahasan." : "Skor {$qr['score']} ({$benar}/{$total} benar) — belum lulus. Pelajari yang bertanda merah, lalu kumpulkan lagi!" }}
                 </div>
             @endif
-            <form method="POST" action="{{ route('siswa.modul.quiz', $module->slug) }}" class="space-y-4" @submit="if (!kumpulValid()) $event.preventDefault()">
+            <form id="form-kuis" method="POST" action="{{ route('siswa.modul.quiz', $module->slug) }}" class="space-y-4" @submit="if (!kumpulValid()) $event.preventDefault()">
                 @csrf
                 <input type="hidden" name="reading_confirmed" value="1">
                 <div class="flex items-center justify-between text-sm">
@@ -495,9 +499,20 @@ function kkaBelajar(total) {
                 }
             }
             return true;
+        },
+        // Kembali ke bacaan: materi dibuka lagi, jawaban kuis dihapus
+        // agar tetap murni (tidak bisa contek + jawab bersamaan).
+        bacaLagi() {
+            const f = document.getElementById('form-kuis');
+            if (f) f.reset();
+            this.soalIdx = 0;
+            this.pesan = '';
+            this.terkonfirmasi = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 }
 </script>
 @endpush
 </x-app-layout>
+
