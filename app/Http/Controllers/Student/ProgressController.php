@@ -16,6 +16,8 @@ class ProgressController extends Controller
         $answers = $request->validate([
             'answers' => 'required|array',
             'answers.*' => 'nullable|integer|min:0|max:10',
+            // Kuis hanya sah jika siswa sudah konfirmasi selesai membaca materi.
+            'reading_confirmed' => 'required|accepted',
         ])['answers'];
 
         $quizzes = $module->quizzes;

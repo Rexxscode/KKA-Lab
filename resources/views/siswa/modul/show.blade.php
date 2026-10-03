@@ -5,7 +5,17 @@
         <p class="text-sm text-slate-500">{{ $module->description }} • +{{ $module->xp_reward }} XP • Lulus jika kuis ≥80</p>
     </x-slot>
 
-    <div class="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    @php $sudahCoba = session()->has('quiz_result') || old('answers'); @endphp
+    <div class="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" x-data="kkaBelajar({{ $module->quizzes->count() }})" x-init="terkonfirmasi = {{ $sudahCoba ? 'true' : 'false' }}; sampaiAkhir = {{ $sudahCoba ? 'true' : 'false' }};">
+        <x-card title="Tahap 1 — Bahan Ajar (wajib dibaca dulu)" subtitle="Scroll sampai akhir bacaan untuk membuka kunci kuis.">
+            <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 max-h-[46vh] overflow-y-auto" @scroll="cekScroll($el)">
+                @include('siswa.modul.materi-' . $module->slug)
+            </div>
+            <p class="mt-2 text-xs font-semibold" :class="sampaiAkhir ? 'text-emerald-600' : 'text-slate-400'" x-text="sampaiAkhir ? '✓ Kamu sudah sampai akhir bacaan.' : 'Scroll kotak bacaan sampai bawah ya...'"></p>
+            <div class="mt-3">
+                <button type="button" @click="konfirmasi()" :disabled="!sampaiAkhir" :class="sampaiAkhir ? 'kka-btn-primary' : 'kka-btn-primary opacity-40'" class="text-sm">Saya Sudah Selesai Membaca & Siap Mengerjakan Kuis</button>
+            </div>
+        </x-card>
         @if($module->slug === 'apa-itu-ai')
             <x-card title="Apa itu AI?" subtitle="AI = komputer yang belajar dari data. Machine Learning = cara belajarnya.">
                 <div class="grid sm:grid-cols-3 gap-3" x-data="{ tab: 'ml' }">
@@ -97,7 +107,14 @@
             </x-card>
         @endif
 
-        <x-card title="Kuis Modul (minimal 80 untuk lulus)" :subtitle="$progress && $progress->is_completed ? 'Status: LULUS • Skor '.$progress->quiz_score.' • +'.$progress->xp_earned.' XP' : 'Status: '.($progress ? 'skor '.$progress->quiz_score.' — belum lulus, coba lagi!' : 'belum dikerjakan')">
+        <x-card title="Tahap 2 — Kuis 15 Soal (minimal 80 untuk lulus)" :subtitle="$progress && $progress->is_completed ? 'Status: LULUS • Skor '.$progress->quiz_score.' • +'.$progress->xp_earned.' XP' : 'Status: '.($progress ? 'skor '.$progress->quiz_score.' — belum lulus, coba lagi!' : 'belum dikerjakan')" id="kartu-kuis">
+            <div x-show="!terkonfirmasi" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                <p class="text-3xl">🔒</p>
+                <p class="mt-2 text-sm font-bold text-slate-700">Kuis masih terkunci</p>
+                <p class="mt-1 text-xs text-slate-500">Selesaikan Tahap 1 (baca materi sampai akhir + tekan tombol konfirmasi) untuk membuka 15 soal.</p>
+            </div>
+            <template x-if="terkonfirmasi">
+            <div>
             @if(session('quiz_result'))
                 @php
                     $qr = session('quiz_result');
@@ -108,14 +125,27 @@
                     {{ $qr['passed'] ? "🎉 Lulus! Skor {$qr['score']} ({$benar}/{$total} benar). Jawabanmu di bawah dipertahankan sebagai pembahasan." : "Skor {$qr['score']} ({$benar}/{$total} benar) — belum lulus. Pelajari yang bertanda merah, lalu kumpulkan lagi!" }}
                 </div>
             @endif
-            <form method="POST" action="{{ route('siswa.modul.quiz', $module->slug) }}" class="space-y-4">
+            <form method="POST" action="{{ route('siswa.modul.quiz', $module->slug) }}" class="space-y-4" @submit="if (!kumpulValid()) $event.preventDefault()">
                 @csrf
+                <input type="hidden" name="reading_confirmed" value="1">
+                <div class="flex items-center justify-between text-sm">
+                    <p class="font-bold text-slate-800">Soal <span x-text="soalIdx + 1"></span> dari {{ $module->quizzes->count() }}</p>
+                    <p class="text-xs text-slate-500"><span x-text="terjawabSemua()"></span>/{{ $module->quizzes->count() }} terjawab</p>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">                    <div class="h-full bg-gradient-to-r from-orange-500 to-emerald-500 transition-all" :style="'width: ' + Math.round(terjawabSemua() / {{ $module->quizzes->count() }} * 100) + '%'"></div>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    @foreach($module->quizzes as $i => $q)
+                        <button type="button" @click="keSoal({{ $i }})" class="w-8 h-8 rounded-lg text-xs font-bold border transition"
+                            :class="soalIdx === {{ $i }} ? 'bg-orange-500 text-white border-orange-500' : (dijawab({{ $i }}) ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-white text-slate-500 border-slate-200')">{{ $i + 1 }}</button>
+                    @endforeach
+                </div>
                 @foreach($module->quizzes as $i => $q)
                     @php
                         $pilihan = old("answers.{$i}");
                         $ulas = session('quiz_result.detail.' . $i);
                     @endphp
-                    <div class="rounded-2xl border p-4 {{ $ulas ? ($ulas['ok'] ? 'border-emerald-300 bg-emerald-50/50' : 'border-orange-300 bg-orange-50/50') : 'border-slate-200' }}">
+                    <div x-show="soalIdx === {{ $i }}" class="rounded-2xl border p-4 {{ $ulas ? ($ulas['ok'] ? 'border-emerald-300 bg-emerald-50/50' : 'border-orange-300 bg-orange-50/50') : 'border-slate-200' }}">
                         <p class="font-semibold text-slate-800 text-sm">
                             {{ $i + 1 }}. {{ $q->question }}
                             @if($ulas)
@@ -129,17 +159,31 @@
                                     $isPilihSalah = $ulas && !$ulas['ok'] && (string) $pilihan === (string) $oi;
                                 @endphp
                                 <label class="flex items-center gap-2 text-sm cursor-pointer rounded-xl px-2 py-1 {{ $isBenar ? 'text-emerald-700 font-semibold' : ($isPilihSalah ? 'text-orange-700 font-semibold' : 'text-slate-700 hover:text-orange-600') }}">
-                                    <input type="radio" name="answers[{{ $i }}]" value="{{ $oi }}" class="accent-orange-500" required @checked((string) $pilihan === (string) $oi)>
+                                    <input type="radio" name="answers[{{ $i }}]" value="{{ $oi }}" class="accent-orange-500" @checked((string) $pilihan === (string) $oi)>
                                     {{ $opt }}
                                     @if($isBenar)<span>✓</span>@endif
                                     @if($isPilihSalah)<span>(pilihanmu) ✗</span>@endif
                                 </label>
                             @endforeach
                         </div>
+                        @if($ulas && $q->explanation)
+                            <p class="mt-2 text-xs rounded-xl bg-white/70 border border-slate-200 p-2 text-slate-600">💡 <b>Pembahasan:</b> {{ $q->explanation }}</p>
+                        @endif
                     </div>
                 @endforeach
-                <x-button type="submit">Kumpulkan Kuis</x-button>
+                <p x-show="pesan" x-text="pesan" class="text-xs font-bold text-orange-600"></p>
+                <div class="flex items-center justify-between gap-2">
+                    <button type="button" @click="keSoal(soalIdx - 1)" :disabled="soalIdx === 0" :class="soalIdx === 0 ? 'kka-btn-secondary opacity-40' : 'kka-btn-secondary'" class="!py-2 text-sm">← Sebelumnya</button>
+                    <template x-if="soalIdx < {{ $module->quizzes->count() - 1 }}">
+                        <x-button type="button" @click="keSoal(soalIdx + 1)">Lanjut →</x-button>
+                    </template>
+                    <template x-if="soalIdx === {{ $module->quizzes->count() - 1 }}">
+                        <x-button type="submit">Kumpulkan Kuis</x-button>
+                    </template>
+                </div>
             </form>
+            </div>
+            </template>
         </x-card>
     </div>
 
@@ -414,4 +458,46 @@
     </script>
     @endpush
     @endif
+@push('scripts')
+<script>
+function kkaBelajar(total) {
+    return {
+        total: total, soalIdx: 0, sampaiAkhir: false, terkonfirmasi: false, pesan: '',
+        cekScroll(el) {
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) this.sampaiAkhir = true;
+        },
+        konfirmasi() {
+            if (!this.sampaiAkhir) return;
+            this.terkonfirmasi = true;
+            this.$nextTick(() => {
+                const k = document.getElementById('kartu-kuis');
+                if (k) k.scrollIntoView({ behavior: 'smooth' });
+            });
+        },
+        dijawab(i) {
+            return !!document.querySelector('input[name="answers[' + i + ']"]:checked');
+        },
+        terjawabSemua() {
+            let n = 0;
+            for (let i = 0; i < this.total; i++) if (this.dijawab(i)) n++;
+            return n;
+        },
+        keSoal(i) {
+            this.soalIdx = Math.max(0, Math.min(this.total - 1, i));
+            this.pesan = '';
+        },
+        kumpulValid() {
+            for (let i = 0; i < this.total; i++) {
+                if (!this.dijawab(i)) {
+                    this.soalIdx = i;
+                    this.pesan = 'Masih ada soal belum dijawab (cek soal ' + (i + 1) + ').';
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+}
+</script>
+@endpush
 </x-app-layout>
