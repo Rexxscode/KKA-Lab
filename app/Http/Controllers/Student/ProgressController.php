@@ -44,13 +44,13 @@ class ProgressController extends Controller
 
         if ($passed && $module->badge) {
             $request->user()->badges()->syncWithoutDetaching([$module->badge->id]);
-            return back()->withInput()->with('quiz_result', ['score' => $score, 'passed' => true, 'detail' => $detail])->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus {$module->title} dengan skor {$score}. +{$xp} XP & badge didapat!"]);
+            return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus {$module->title} dengan skor {$score}. +{$xp} XP & badge didapat!"]);
         }
 
         if ($passed) {
             Badge::firstOrCreate(['module_id' => $module->id], ['name' => 'Badge ' . $module->title]);
             $request->user()->badges()->syncWithoutDetaching([Badge::where('module_id', $module->id)->first()->id]);
-            return back()->withInput()->with('quiz_result', ['score' => $score, 'passed' => true, 'detail' => $detail])->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus dengan skor {$score}. +{$xp} XP!"]);
+            return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus dengan skor {$score}. +{$xp} XP!"]);
         }
 
         return back()->withInput()->with('quiz_result', ['score' => $score, 'passed' => false, 'detail' => $detail])->with('toast', ['type' => 'error', 'message' => "Skor {$score}, belum lulus (minimal 80). Lihat pembahasan di bawah, lalu coba lagi!"]);
