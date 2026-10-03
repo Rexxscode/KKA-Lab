@@ -51,8 +51,16 @@ class ProgressController extends Controller
         return back()->with('toast', ['type' => 'error', 'message' => "Skor {$score}, belum lulus (minimal 80). Yuk coba lagi!"]);
     }
 
+    /**
+     * Dipanggil OTOMATIS oleh JS setiap Uji kamera meyakinkan (bukan tombol manual).
+     * Anti-farm: XP +20 hanya diberikan SEKALI saat hitungan mencapai 2.
+     */
     public function completeHandsOn(Request $request, string $slug)
     {
+        $data = $request->validate([
+            'confidence' => 'nullable|integer|min:0|max:100',
+        ]);
+
         $module = Module::where('slug', $slug)->firstOrFail();
 
         $progress = StudentProgress::firstOrCreate(
@@ -60,10 +68,29 @@ class ProgressController extends Controller
             ['quiz_score' => 0, 'xp_earned' => 0, 'is_completed' => false]
         );
 
-        if (! $progress->is_completed && $progress->quiz_score < StudentProgress::PASS_SCORE) {
-            $progress->update(['xp_earned' => $progress->xp_earned + 25]);
+        // Hanya Uji meyakinkan (keyakinan >= 50) yang dihitung.
+        if (($data['confidence'] ?? 0) >= 50) {
+            $progress->increment('hands_on_count');
+            $progress->refresh();
         }
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Hebat! Model AI-mu berhasil dilatih! +25 XP hands-on.']);
+        $message = 'Uji ke-' . $progress->hands_on_count . ' tercatat. Butuh 2 Uji meyakinkan untuk +20 XP!';
+
+        if ($progress->hands_on_count >= 2 && ! $progress->hands_on_xp_awarded) {
+            $progress->update([
+                'xp_earned' => $progress->xp_earned + 20,
+                'hands_on_xp_awarded' => true,
+            ]);
+            $message = 'Hebat! 2 Uji meyakinkan tercapai — +20 XP otomatis masuk!';
+        } elseif ($progress->hands_on_xp_awarded) {
+            $message = 'XP hands-on modul ini sudah diklaim penuh (+20 XP). Lanjut ke kuis untuk XP tambahan!';
+        }
+
+        return response()->json([
+            'count' => $progress->hands_on_count,
+            'awarded' => (bool) $progress->hands_on_xp_awarded,
+            'xp_earned' => $progress->xp_earned,
+            'message' => $message,
+        ]);
     }
 }

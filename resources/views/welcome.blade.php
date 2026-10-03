@@ -189,21 +189,27 @@ function kkaLandingCam() {
             }
             this.sibuk = true; this.status = 'Menganalisis gambar...';
             try {
-                // Potret frame ke tensor CPU 224x224 (ukuran asli model).
-                // Tensor kamera full-res (640x480+) terbukti merusak
-                // bookkeeping texture WebGL di tfjs (ghost tensor), jadi
-                // kecilkan dulu di canvas sebelum dibaca pikselnya.
+                // Potong tengah jadi bujur sangkar (hindari distorsi gepeng
+                // yang menurunkan akurasi), kecilkan ke 224x224, baca piksel
+                // manual menjadi tensor CPU.
                 const vw = v.videoWidth, vh = v.videoHeight, S = 224;
+                const side = Math.min(vw, vh), sx = (vw - side) / 2, sy = (vh - side) / 2;
                 rawSnap.width = S; rawSnap.height = S;
                 const ctx = rawSnap.getContext('2d', { willReadFrequently: true });
-                ctx.drawImage(v, 0, 0, vw, vh, 0, 0, S, S);
+                ctx.drawImage(v, sx, sy, side, side, 0, 0, S, S);
                 const d = ctx.getImageData(0, 0, S, S).data;
                 const n = S * S, vals = new Int32Array(n * 3);
                 for (let i = 0; i < n; i++) {
                     vals[i * 3] = d[i * 4]; vals[i * 3 + 1] = d[i * 4 + 1]; vals[i * 3 + 2] = d[i * 4 + 2];
                 }
-                const preds = await this.classifyRetry(() => tf.tensor3d(vals, [S, S, 3], 'int32'), 3);
-                this.hasil = preds.map(p => idLabel(p.className) + ' — ' + Math.round(p.probability * 100) + '%');
+                const preds = await this.classifyRetry(() => tf.tensor3d(vals, [S, S, 3], 'int32'), 1);
+                const top = preds[0];
+                const pct = Math.round((top.probability || 0) * 100);
+                if (pct >= 50) {
+                    this.hasil = ['Hasil: ' + idLabel(top.className) + ' — ' + pct + '% yakin.'];
+                } else {
+                    this.hasil = ['Kurang yakin (terbaik: ' + idLabel(top.className) + ' — ' + pct + '%). Dekatkan benda ke kamera, perbaiki cahaya, lalu Uji lagi!'];
+                }
                 this.status = 'Kamera menyala — arahkan ke benda lalu klik Uji';
             } catch (e) {
                 console.error(e);

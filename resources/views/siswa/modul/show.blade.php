@@ -24,35 +24,23 @@
         @endif
 
         @if($module->slug === 'latih-ai-mu')
-            <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="KNN + MobileNet lokal. Gambar TIDAK dikirim ke server Laravel.">
+            <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="Aktifkan kamera, arahkan ke benda, klik Uji. Gambar TIDAK dikirim ke server Laravel.">
                 <div x-data="kkaKnN()" x-init="boot()" class="space-y-4">
                     <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
                         <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
-                        <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Kamera belum aktif. Klik “Aktifkan Kamera” atau pakai Mode Tanpa Kamera di bawah.</p></template>
+                        <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Klik “Aktifkan Kamera” lalu arahkan kamera ke benda di sekitarmu.</p></template>
                         <span class="absolute top-3 left-3 kka-badge" x-text="status"></span>
                     </div>
+                    <div class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-sm min-h-16" x-text="prediction || 'Halo! Aku AI. Aktifkan kamera lalu klik Uji — aku sebutkan benda yang kulihat.'"></div>
                     <div class="flex flex-wrap gap-2">
-                        <button @click="startCamera()" class="kka-btn-primary !py-2 text-sm">Aktifkan Kamera</button>
-                        <button @click="addExample(0)" class="kka-btn-secondary !py-2 text-sm">+ Contoh Kelas A 🐱 (<span x-text="counts[0]"></span>)</button>
-                        <button @click="addExample(1)" class="kka-btn-secondary !py-2 text-sm">+ Contoh Kelas B 🗑️ (<span x-text="counts[1]"></span>)</button>
-                        <button @click="addExample(2)" class="kka-btn-secondary !py-2 text-sm">+ Contoh Kelas C ✋ (<span x-text="counts[2]"></span>)</button>
-                        <button @click="predict()" class="kka-btn-primary !py-2 text-sm">Uji Sekarang</button>
-                        <button @click="reset()" class="kka-btn-secondary !py-2 text-sm">Reset</button>
+                        <button @click="toggleKamera()" class="kka-btn-primary !py-2 text-sm" x-text="cameraOn ? 'Matikan Kamera' : 'Aktifkan Kamera'"></button>
+                        <button @click="uji()" class="kka-btn-secondary !py-2 text-sm" x-text="sibuk ? 'Menganalisis...' : 'Uji'"></button>
                     </div>
-                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800" x-show="prediction" x-text="prediction"></div>
-                    <div class="rounded-2xl border border-slate-200 p-4">
-                        <p class="text-sm font-bold text-slate-800">Mode tanpa kamera (dataset contoh)</p>
-                        <p class="text-xs text-slate-500">Klik untuk simulasi jika tidak ada webcam / izin ditolak.</p>
-                        <div class="mt-2 flex flex-wrap gap-2">
-                            <button @click="simulate(0)" class="kka-btn-secondary !py-1.5 text-xs">Simulasi A ×5</button>
-                            <button @click="simulate(1)" class="kka-btn-secondary !py-1.5 text-xs">Simulasi B ×5</button>
-                            <button @click="simulate(2)" class="kka-btn-secondary !py-1.5 text-xs">Simulasi C ×5</button>
-                        </div>
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="kka-badge">Uji meyakinkan: <span x-text="ujiCount"></span>/2</span>
+                        <span class="text-xs text-slate-500" x-text="xpNote"></span>
                     </div>
-                    <form method="POST" action="{{ route('siswa.modul.handson', $module->slug) }}">
-                        @csrf
-                        <x-button type="submit">Saya sudah melatih model → Klaim +25 XP</x-button>
-                    </form>
+                    <p class="text-[11px] text-slate-400">2x Uji meyakinkan (keyakinan ≥50%) otomatis +20 XP, sekali saja. Dekatkan benda ke kamera dan perbaiki cahaya agar hasil akurat.</p>
                 </div>
             </x-card>
         @endif
@@ -107,22 +95,42 @@
     @push('head')
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.6/dist/knn-classifier.min.js"></script>
     @endpush
     @push('scripts')
     <script>
     function kkaKnN() {
-        // Model & classifier di closure biasa (BUKAN reactive data):
+        // Model disimpan di closure biasa (BUKAN reactive data):
         // objek tfjs yang lewat proxy Alpine merusak identity tensor.
+        // Label Indonesia untuk 30+ benda umum (sisanya tampil Inggris).
+        const ID = [
+            ['computer mouse', 'Tetikus Komputer'], ['mouse', 'Tikus'], ['keyboard', 'Kibor'], ['laptop', 'Laptop'],
+            ['monitor', 'Monitor'], ['screen', 'Layar'], ['cellular telephone', 'HP'], ['cell phone', 'HP'], ['iphone', 'HP'],
+            ['book', 'Buku'], ['notebook', 'Buku Catatan'], ['pencil', 'Pensil'], ['pen', 'Pulpen'], ['chair', 'Kursi'],
+            ['table', 'Meja'], ['desk', 'Meja'], ['bottle', 'Botol'], ['water bottle', 'Botol Air'], ['cup', 'Cangkir'],
+            ['mug', 'Mug'], ['cat', 'Kucing'], ['dog', 'Anjing'], ['bird', 'Burung'], ['fish', 'Ikan'],
+            ['person', 'Orang'], ['face', 'Wajah'], ['hand', 'Tangan'], ['eye', 'Mata'], ['glasses', 'Kacamata'], ['hat', 'Topi'],
+            ['shirt', 'Kaus'], ['shoe', 'Sepatu'], ['bag', 'Tas'], ['backpack', 'Ransel'], ['umbrella', 'Payung'],
+            ['clock', 'Jam'], ['watch', 'Jam Tangan'], ['banana', 'Pisang'], ['apple', 'Apel'], ['orange', 'Jeruk'],
+            ['car', 'Mobil'], ['bicycle', 'Sepeda'], ['motor', 'Motor'], ['bus', 'Bus'], ['truck', 'Truk'],
+            ['tree', 'Pohon'], ['flower', 'Bunga'], ['ball', 'Bola'], ['guitar', 'Gitar'], ['television', 'TV'],
+            ['remote', 'Remot'], ['sofa', 'Sofa'], ['bed', 'Kasur'], ['lamp', 'Lampu'], ['door', 'Pintu'], ['window', 'Jendela'],
+        ];
+        function idLabel(name) {
+            const n = name.toLowerCase();
+            for (const [en, id] of ID) { if (n.includes(en)) return id + ' (' + name.split(',')[0].trim() + ')'; }
+            return name.split(',')[0].trim();
+        }
         let rawNet = null;
-        let rawClassifier = null;
         const snap = document.createElement('canvas');
+        // Potong tengah jadi bujur sangkar (hindari distorsi gepeng yang
+        // menurunkan akurasi), lalu kecilkan ke 224x224.
         function frameTensor(videoEl) {
             const S = 224;
             const vw = videoEl.videoWidth || 640, vh = videoEl.videoHeight || 480;
+            const side = Math.min(vw, vh), sx = (vw - side) / 2, sy = (vh - side) / 2;
             snap.width = S; snap.height = S;
             const ctx = snap.getContext('2d', { willReadFrequently: true });
-            ctx.drawImage(videoEl, 0, 0, vw, vh, 0, 0, S, S);
+            ctx.drawImage(videoEl, sx, sy, side, side, 0, 0, S, S);
             const d = ctx.getImageData(0, 0, S, S).data;
             const n = S * S, vals = new Int32Array(n * 3);
             for (let i = 0; i < n; i++) {
@@ -131,53 +139,88 @@
             return tf.tensor3d(vals, [S, S, 3], 'int32');
         }
         return {
-            status: 'Belum dimuat', cameraOn: false, counts: [0,0,0],
-            prediction: '',
+            status: 'Belum dimuat', cameraOn: false, sibuk: false,
+            prediction: '', ujiCount: {{ $progress->hands_on_count ?? 0 }}, xpNote: '',
             async boot() {
                 if (!window.__kkaModulNet) {
                     window.__kkaModulNet = (async () => {
                         if (window.tf) { await tf.ready(); }
-                        this.status = 'Memuat MobileNet...';
                         const net = await mobilenet.load();
-                        const classifier = knnClassifier.create();
-                        return { net, classifier };
+                        const g = new Int32Array(224 * 224 * 3).fill(128);
+                        const t0 = tf.tensor3d(g, [224, 224, 3], 'int32');
+                        try { await net.classify(t0, 1); } finally { t0.dispose(); }
+                        return net;
                     })();
                 }
                 try {
-                    const m = await window.__kkaModulNet;
-                    rawNet = m.net; rawClassifier = m.classifier;
-                    this.status = 'Siap dilatih (KNN lokal)';
-                } catch(e) { this.status = 'Gagal load TF.js (butuh internet sekali)'; }
+                    rawNet = await window.__kkaModulNet;
+                    this.status = 'Model siap — aktifkan kamera';
+                } catch(e) { this.status = 'Gagal load model (butuh internet sekali)'; }
             },
-            async startCamera() {
+            async toggleKamera() {
+                if (this.cameraOn) {
+                    if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+                    this.$refs.video.srcObject = null;
+                    this.cameraOn = false; this.prediction = '';
+                    this.status = rawNet ? 'Model siap — aktifkan kamera' : 'Memuat model...';
+                    return;
+                }
                 try {
-                    const s = await navigator.mediaDevices.getUserMedia({ video: true });
-                    this.$refs.video.srcObject = s;
+                    this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    this.$refs.video.srcObject = this.stream;
                     await this.$refs.video.play();
-                    this.cameraOn = true; this.status = 'Kamera aktif';
-                } catch(e) { this.status = 'Kamera ditolak — pakai Mode Tanpa Kamera'; }
+                    this.cameraOn = true; this.status = 'Kamera menyala — arahkan ke benda lalu klik Uji';
+                } catch(e) { this.status = 'Kamera ditolak — izinkan akses kamera lalu coba lagi'; }
             },
-            async addExample(cls) {
-                if (!rawNet) return;
-                let img;
-                if (this.cameraOn) { img = frameTensor(this.$refs.video); }
-                else { img = tf.randomNormal([224,224,3]); }
-                const act = rawNet.infer(img, true);
-                rawClassifier.addExample(act, cls);
-                this.counts[cls]++; img.dispose(); act.dispose();
-                this.prediction = 'Hebat! Model AI-mu berhasil dilatih! Kelas ' + ['A','B','C'][cls] + ' sekarang punya ' + this.counts[cls] + ' contoh.';
+            async uji() {
+                if (!rawNet) { this.prediction = 'Model belum termuat, tunggu tulisan “Model siap” lalu coba lagi!'; return; }
+                if (!this.cameraOn) { this.prediction = 'Aktifkan kamera dulu ya!'; return; }
+                if (this.sibuk) return;
+                const v = this.$refs.video;
+                let tunggu = 0;
+                while ((v.readyState < 2 || v.videoWidth === 0) && tunggu < 20) {
+                    await new Promise(r => setTimeout(r, 200));
+                    tunggu++;
+                }
+                if (v.videoWidth === 0) { this.prediction = 'Kamera belum menampilkan gambar — tunggu lalu klik Uji lagi!'; return; }
+                this.sibuk = true; this.status = 'Menganalisis gambar...';
+                try {
+                    const t = frameTensor(v);
+                    let preds;
+                    try { preds = await rawNet.classify(t, 1); }
+                    finally { t.dispose(); }
+                    const top = preds[0];
+                    const pct = Math.round((top.probability || 0) * 100);
+                    if (pct >= 50) {
+                        this.prediction = 'Hasil: ' + idLabel(top.className) + ' — ' + pct + '% yakin.';
+                        await this.laporUji(pct);
+                    } else {
+                        this.prediction = 'Kurang yakin (terbaik: ' + idLabel(top.className) + ' — ' + pct + '%). Dekatkan benda ke kamera, perbaiki cahaya, lalu Uji lagi!';
+                    }
+                    this.status = 'Kamera menyala — arahkan ke benda lalu klik Uji';
+                } catch (e) {
+                    console.error(e);
+                    this.prediction = 'Gagal menganalisis. Coba klik Uji lagi!';
+                }
+                this.sibuk = false;
             },
-            simulate(cls) { for (let i=0;i<5;i++) this.addExample(cls); },
-            async predict() {
-                if (!rawNet || rawClassifier.getNumClasses() === 0) { this.prediction = 'Latih dulu minimal 2 kelas, masing-masing beberapa contoh ya!'; return; }
-                let img = this.cameraOn ? frameTensor(this.$refs.video) : tf.randomNormal([224,224,3]);
-                const act = rawNet.infer(img, true);
-                const res = await rawClassifier.predictClass(act);
-                const label = ['Kelas A 🐱','Kelas B 🗑️','Kelas C ✋'][res.label] || ('Kelas ' + res.label);
-                this.prediction = 'Model menebak: ' + label + ' (' + Math.round((res.confidences[res.label]||0)*100) + '%). Semua di browser-mu!';
-                img.dispose(); act.dispose();
+            // Lapor Uji meyakinkan ke server: dihitung + XP otomatis (anti-farm di backend).
+            async laporUji(pct) {
+                try {
+                    const res = await fetch(@js(route('siswa.modul.handson', $module->slug)), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ confidence: pct }),
+                    });
+                    const data = await res.json();
+                    this.ujiCount = data.count ?? this.ujiCount;
+                    this.xpNote = data.message ?? '';
+                } catch (e) { /* XP menyusul saat Uji berikutnya */ }
             },
-            reset() { rawClassifier = knnClassifier.create(); this.counts=[0,0,0]; this.prediction='Model di-reset. Yuk latih ulang!'; }
         }
     }
     </script>

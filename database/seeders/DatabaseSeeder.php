@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             ['title' => 'Modul 1: Apa itu AI?', 'slug' => 'apa-itu-ai', 'order' => 1, 'xp_reward' => 100,
              'description' => 'Konsep dasar AI, machine learning, dan contoh penerapan di kehidupan sehari-hari.'],
             ['title' => 'Modul 2: Latih AI-mu', 'slug' => 'latih-ai-mu', 'order' => 2, 'xp_reward' => 200,
-             'description' => 'Hands-on melatih model klasifikasi gambar langsung di browser dengan webcam (KNN + MobileNet, privasi terjaga).'],
+             'description' => 'Praktik mengenali benda lewat kamera langsung di browser (AI siap pakai, privasi terjaga).'],
             ['title' => 'Modul 3: Bias Data', 'slug' => 'bias-data', 'order' => 3, 'xp_reward' => 150,
              'description' => 'Simulasi interaktif dataset tidak seimbang dan dampaknya pada keadilan model.'],
             ['title' => 'Modul 4: Etika & Hoaks AI', 'slug' => 'etika-hoaks-ai', 'order' => 4, 'xp_reward' => 150,
