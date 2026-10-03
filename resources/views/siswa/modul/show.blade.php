@@ -24,7 +24,7 @@
         @endif
 
         @if($module->slug === 'latih-ai-mu')
-            <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="1) Kumpulkan contoh Kelas A & B → 2) Latih Model → 3) Uji/Pantau real-time. Tanpa API luar, gambar TIDAK dikirim ke server.">
+            <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="1) Tulis nama 2 benda → 2) Kumpulkan contoh → 3) Latih Model → 4) Uji/Pantau real-time. Tanpa API luar, gambar TIDAK dikirim ke server.">
                 <div x-data="kkaKnN()" x-init="boot()" class="space-y-4">
                     <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
                         <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
@@ -32,10 +32,22 @@
                         <span class="absolute top-3 left-3 kka-badge" x-text="status"></span>
                     </div>
                     <div class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-sm min-h-16" x-text="prediction || 'Halo! Aku AI yang akan kamu latih sendiri. Mulai dari Aktifkan Kamera ya!'"></div>
+                    <div class="rounded-2xl border border-slate-200 p-4">
+                        <p class="text-sm font-bold text-slate-800">Langkah 1 — Pilih 2 benda berbeda di sekitarmu</p>
+                        <p class="text-xs text-slate-500">Contoh: benda pertama “Botol”, benda kedua “Buku”. Nanti tunjukkan masing-masing ke kamera.</p>
+                        <div class="mt-2 grid sm:grid-cols-2 gap-2">
+                            <label class="text-xs font-semibold text-slate-600">Benda 1
+                                <input x-model="namaA" maxlength="20" placeholder="cth: Botol" class="mt-1 w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                            </label>
+                            <label class="text-xs font-semibold text-slate-600">Benda 2
+                                <input x-model="namaB" maxlength="20" placeholder="cth: Buku" class="mt-1 w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                            </label>
+                        </div>
+                    </div>
                     <div class="flex flex-wrap gap-2">
                         <button @click="toggleKamera()" class="kka-btn-primary !py-2 text-sm" x-text="cameraOn ? 'Matikan Kamera' : 'Aktifkan Kamera'"></button>
-                        <button @click="ambilContoh(0)" class="kka-btn-secondary !py-2 text-sm">+ Contoh A (<span x-text="counts[0]"></span>)</button>
-                        <button @click="ambilContoh(1)" class="kka-btn-secondary !py-2 text-sm">+ Contoh B (<span x-text="counts[1]"></span>)</button>
+                        <button @click="ambilContoh(0)" class="kka-btn-secondary !py-2 text-sm">+ Contoh <span x-text="namaKelas(0)"></span> (<span x-text="counts[0]"></span>)</button>
+                        <button @click="ambilContoh(1)" class="kka-btn-secondary !py-2 text-sm">+ Contoh <span x-text="namaKelas(1)"></span> (<span x-text="counts[1]"></span>)</button>
                         <button @click="latihModel()" class="kka-btn-primary !py-2 text-sm">Latih Model</button>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -200,8 +212,14 @@
         return {
             status: 'Belum dimuat', cameraOn: false, sibuk: false,
             counts: [0, 0], terlatih: false, live: false, timer: null,
+            namaA: 'Botol', namaB: 'Buku',
             prediction: '', ujiCount: {{ $progress->hands_on_count ?? 0 }}, xpNote: '',
             penjelasan: '', jelasSibuk: false,
+            // Nama kelas sesuai input siswa (fallback Benda 1/2).
+            namaKelas(i) {
+                const n = (i === 0 ? this.namaA : this.namaB).trim();
+                return n || ('Benda ' + (i + 1));
+            },
             async boot() {
                 if (!window.__kkaModulNet) {
                     window.__kkaModulNet = (async () => {
@@ -223,7 +241,7 @@
                 try {
                     const m = await window.__kkaModulNet;
                     rawNet = m.net; rawKnn = m.knn;
-                    this.status = 'Model siap — kumpulkan contoh Kelas A & B';
+                    this.status = 'Model siap — tulis nama benda lalu kumpulkan contoh';
                 } catch(e) { this.status = 'Gagal load model (butuh internet sekali)'; }
             },
             async toggleKamera() {
@@ -239,23 +257,23 @@
                     this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     this.$refs.video.srcObject = this.stream;
                     await this.$refs.video.play();
-                    this.cameraOn = true; this.status = 'Kamera menyala — ambil contoh Kelas A & B';
+                    this.cameraOn = true; this.status = 'Kamera menyala — tunjukkan bendanya lalu ambil contoh';
                 } catch(e) { this.status = 'Kamera ditolak — pakai tombol Dataset Contoh di bawah'; }
             },
-            // 1. KUMPULKAN SAMPEL dari webcam (Kelas A / Kelas B)
+            // 1. KUMPULKAN SAMPEL dari webcam (dua benda pilihanmu)
             async ambilContoh(cls) {
                 if (!rawNet || !this.cameraOn) { this.prediction = 'Aktifkan kamera dulu ya!'; return; }
                 const img = frameTensor(this.$refs.video);
                 tambahContoh(img, cls);
                 this.counts[cls]++;
-                this.prediction = 'Contoh Kelas ' + ['A','B'][cls] + ' tersimpan (' + this.counts[cls] + '). Tambah lagi biar model makin pintar!';
+                this.prediction = 'Contoh "' + this.namaKelas(cls) + '" tersimpan (' + this.counts[cls] + '). Tambah lagi biar model makin pintar!';
             },
             // Fallback tanpa kamera: 10 pola sintetis per kelas (SIMULASI).
             muatContoh() {
                 if (!rawNet) { this.prediction = 'Tunggu model siap dulu ya!'; return; }
                 for (let i = 0; i < 10; i++) { tambahContoh(polaTensor(0, i), 0); tambahContoh(polaTensor(1, i), 1); }
                 this.counts[0] += 10; this.counts[1] += 10;
-                this.prediction = 'Dataset contoh (simulasi pola) dimuat: A=' + this.counts[0] + ', B=' + this.counts[1] + '. Klik Latih Model!';
+                this.prediction = 'Dataset contoh (simulasi pola) dimuat untuk "' + this.namaKelas(0) + '" dan "' + this.namaKelas(1) + '". Klik Latih Model!';
             },
             // 2. LOCAL TRAINING: validasi + cek konsistensi (~2-3 detik).
             // KNN itu instance-based: "latihan" = memastikan tiap kelas
@@ -263,8 +281,8 @@
             async latihModel() {
                 if (!rawNet) { this.prediction = 'Tunggu model siap dulu ya!'; return; }
                 const kurang = [];
-                if (this.counts[0] < MIN_SAMPEL) kurang.push('Kelas A kurang ' + (MIN_SAMPEL - this.counts[0]) + ' contoh');
-                if (this.counts[1] < MIN_SAMPEL) kurang.push('Kelas B kurang ' + (MIN_SAMPEL - this.counts[1]) + ' contoh');
+                if (this.counts[0] < MIN_SAMPEL) kurang.push('"' + this.namaKelas(0) + '" kurang ' + (MIN_SAMPEL - this.counts[0]) + ' contoh');
+                if (this.counts[1] < MIN_SAMPEL) kurang.push('"' + this.namaKelas(1) + '" kurang ' + (MIN_SAMPEL - this.counts[1]) + ' contoh');
                 if (kurang.length) { this.prediction = 'Belum bisa dilatih: ' + kurang.join(', ') + '.'; return; }
                 this.status = 'Melatih model (cek konsistensi)...';
                 await new Promise(r => setTimeout(r, 300));
@@ -275,7 +293,7 @@
                     const pct = Math.round((res.confidences[res.label] || 0) * 100);
                     t.dispose(); act.dispose();
                     this.terlatih = true;
-                    this.prediction = 'Hebat! Model AI-mu berhasil dilatih! Cek konsistensi: ' + ['Kelas A','Kelas B'][res.label] + ' (' + pct + '%). Sekarang Uji / Pantau Live!';
+                    this.prediction = 'Hebat! Model AI-mu berhasil dilatih! Cek konsistensi: "' + this.namaKelas(res.label) + '" (' + pct + '%). Sekarang Uji / Pantau Live!';
                     this.status = 'Model terlatih — silakan Uji!';
                 } catch (e) {
                     console.error(e);
@@ -296,7 +314,7 @@
             },
             async uji() {
                 if (!rawNet) { this.prediction = 'Model belum termuat, tunggu tulisan “Model siap”!'; return; }
-                if (!this.terlatih) { this.prediction = 'Latih model dulu (minimal 5 contoh per kelas)!'; return; }
+                if (!this.terlatih) { this.prediction = 'Latih model dulu (minimal 5 contoh per benda)!'; return; }
                 if (!this.cameraOn) { this.prediction = 'Aktifkan kamera dulu ya!'; return; }
                 if (this.sibuk) return;
                 const v = this.$refs.video;
@@ -309,13 +327,13 @@
                 this.sibuk = true;
                 try {
                     const res = await this.intiUji();
-                    const nama = ['Kelas A', 'Kelas B'][res.label] || ('Kelas ' + res.label);
+                    const nama = '"' + this.namaKelas(res.label) + '"';
                     const pct = Math.round((res.confidences[res.label] || 0) * 100);
                     if (pct >= 50) {
                         this.prediction = 'Hasil: ' + nama + ' — ' + pct + '% yakin.';
                         await this.laporUji(pct);
                     } else {
-                        this.prediction = 'Kurang yakin (terbaik: ' + nama + ' — ' + pct + '%). Tambah contoh tiap kelas lalu Latih ulang!';
+                        this.prediction = 'Kurang yakin (terbaik: ' + nama + ' — ' + pct + '%). Tambah contoh tiap benda lalu Latih ulang!';
                     }
                 } catch (e) {
                     console.error(e);
@@ -336,7 +354,7 @@
                     this.sibuk = true;
                     try {
                         const res = await this.intiUji();
-                        const nama = ['Kelas A', 'Kelas B'][res.label] || ('Kelas ' + res.label);
+                        const nama = '"' + this.namaKelas(res.label) + '"';
                         const pct = Math.round((res.confidences[res.label] || 0) * 100);
                         this.prediction = 'Live: ' + nama + ' — ' + pct + '%';
                         if (pct >= 50) await this.laporUji(pct);
@@ -349,7 +367,7 @@
                 if (this.timer) { clearInterval(this.timer); this.timer = null; this.live = false; }
                 this.counts = [0, 0]; this.terlatih = false;
                 this.prediction = 'Model di-reset. Kumpulkan contoh lalu Latih ulang!';
-                this.status = 'Model siap — kumpulkan contoh Kelas A & B';
+                this.status = 'Model siap — tulis nama benda lalu kumpulkan contoh';
             },
             // Lapor Uji meyakinkan ke server: dihitung + XP otomatis (anti-farm di backend).
             async laporUji(pct) {
@@ -383,7 +401,7 @@
                         },
                         body: JSON.stringify({
                             module: 'latih-ai-mu',
-                            message: 'Aku baru selesai praktikum Modul 2: kukumpulkan ' + this.counts[0] + ' contoh Kelas A dan ' + this.counts[1] + ' contoh Kelas B, lalu model KNN-ku menebak "' + this.prediction + '". Jelaskan singkat kenapa hasilku bisa akurat atau salah, dan beri 1 tips memperbaikinya.',
+                            message: 'Aku baru selesai praktikum Modul 2: kukumpulkan ' + this.counts[0] + ' contoh "' + this.namaKelas(0) + '" dan ' + this.counts[1] + ' contoh "' + this.namaKelas(1) + '", lalu model KNN-ku menebak "' + this.prediction + '". Jelaskan singkat kenapa hasilku bisa akurat atau salah, dan beri 1 tips memperbaikinya.',
                         }),
                     });
                     const data = await res.json();
