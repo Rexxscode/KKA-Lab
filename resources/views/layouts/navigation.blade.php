@@ -13,7 +13,7 @@
                             <x-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')">Kelas</x-nav-link>
                             <x-nav-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')">Bank Soal</x-nav-link>
                         @elseif(auth()->user()->isSiswa())
-                            <x-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')">Dashboard</x-nav-link>
+                            <x-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')">Dasbor</x-nav-link>
                             <x-nav-link :href="route('siswa.sertifikat')" :active="request()->routeIs('siswa.sertifikat')">Sertifikat</x-nav-link>
                         @else
                             <x-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.*')">Kelas</x-nav-link>
@@ -66,7 +66,7 @@
                     <x-responsive-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')">Kelas</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')">Bank Soal</x-responsive-nav-link>
                 @elseif(auth()->user()->isSiswa())
-                    <x-responsive-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')">Dashboard</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')">Dasbor</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('siswa.sertifikat')" :active="request()->routeIs('siswa.sertifikat')">Sertifikat</x-responsive-nav-link>
                 @else
                     <x-responsive-nav-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')">Kelas</x-responsive-nav-link>

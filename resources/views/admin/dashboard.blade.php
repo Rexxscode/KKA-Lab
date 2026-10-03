@@ -18,7 +18,7 @@
             <x-card title="Modul" subtitle="KKA"><p class="text-3xl font-extrabold text-slate-900">{{ $stats['modul'] }}</p></x-card>
         </div>
 
-        <x-card title="Buat Akun Guru / Admin" subtitle="Guru tidak bisa daftar sendiri — akunnya dibuat di sini. Password minimal 8 karakter.">
+        <x-card title="Buat Akun Guru / Admin" subtitle="Guru tidak bisa daftar sendiri — akunnya dibuat di sini. Kata sandi minimal 8 karakter.">
             <form method="POST" action="{{ route('admin.users.store') }}" class="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
                 @csrf
                 <input name="name" required maxlength="100" placeholder="Nama guru" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
@@ -28,8 +28,8 @@
                     <option value="admin">Admin</option>
                     <option value="siswa">Siswa (khusus)</option>
                 </select>
-                <input name="password" type="password" required placeholder="Password" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-                <input name="password_confirmation" type="password" required placeholder="Ulangi password" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <input name="password" type="password" required placeholder="Kata sandi" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <input name="password_confirmation" type="password" required placeholder="Ulangi kata sandi" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
                 <div class="sm:col-span-2 lg:col-span-5"><x-button type="submit">Buat Akun</x-button></div>
             </form>
         </x-card>
