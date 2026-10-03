@@ -86,16 +86,41 @@
         @endif
 
         <x-card title="Kuis Modul (minimal 80 untuk lulus)" :subtitle="$progress && $progress->is_completed ? 'Status: LULUS • Skor '.$progress->quiz_score.' • +'.$progress->xp_earned.' XP' : 'Status: '.($progress ? 'skor '.$progress->quiz_score.' — belum lulus, coba lagi!' : 'belum dikerjakan')">
+            @if(session('quiz_result'))
+                @php
+                    $qr = session('quiz_result');
+                    $benar = collect($qr['detail'])->where('ok', true)->count();
+                    $total = count($qr['detail']);
+                @endphp
+                <div class="mb-4 rounded-2xl border p-4 text-sm font-semibold {{ $qr['passed'] ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-orange-200 bg-orange-50 text-orange-800' }}">
+                    {{ $qr['passed'] ? "🎉 Lulus! Skor {$qr['score']} ({$benar}/{$total} benar). Jawabanmu di bawah dipertahankan sebagai pembahasan." : "Skor {$qr['score']} ({$benar}/{$total} benar) — belum lulus. Pelajari yang bertanda merah, lalu kumpulkan lagi!" }}
+                </div>
+            @endif
             <form method="POST" action="{{ route('siswa.modul.quiz', $module->slug) }}" class="space-y-4">
                 @csrf
                 @foreach($module->quizzes as $i => $q)
-                    <div class="rounded-2xl border border-slate-200 p-4">
-                        <p class="font-semibold text-slate-800 text-sm">{{ $i + 1 }}. {{ $q->question }}</p>
+                    @php
+                        $pilihan = old("answers.{$i}");
+                        $ulas = session('quiz_result.detail.' . $i);
+                    @endphp
+                    <div class="rounded-2xl border p-4 {{ $ulas ? ($ulas['ok'] ? 'border-emerald-300 bg-emerald-50/50' : 'border-orange-300 bg-orange-50/50') : 'border-slate-200' }}">
+                        <p class="font-semibold text-slate-800 text-sm">
+                            {{ $i + 1 }}. {{ $q->question }}
+                            @if($ulas)
+                                <span class="ml-1 font-bold {{ $ulas['ok'] ? 'text-emerald-600' : 'text-orange-600' }}">{{ $ulas['ok'] ? '✓ Benar' : '✗ Kurang tepat' }}</span>
+                            @endif
+                        </p>
                         <div class="mt-2 space-y-1.5">
                             @foreach($q->options as $oi => $opt)
-                                <label class="flex items-center gap-2 text-sm text-slate-700 hover:text-orange-600 cursor-pointer">
-                                    <input type="radio" name="answers[{{ $i }}]" value="{{ $oi }}" class="accent-orange-500" required>
+                                @php
+                                    $isBenar = $ulas && $oi == $ulas['correct'];
+                                    $isPilihSalah = $ulas && !$ulas['ok'] && (string) $pilihan === (string) $oi;
+                                @endphp
+                                <label class="flex items-center gap-2 text-sm cursor-pointer rounded-xl px-2 py-1 {{ $isBenar ? 'text-emerald-700 font-semibold' : ($isPilihSalah ? 'text-orange-700 font-semibold' : 'text-slate-700 hover:text-orange-600') }}">
+                                    <input type="radio" name="answers[{{ $i }}]" value="{{ $oi }}" class="accent-orange-500" required @checked((string) $pilihan === (string) $oi)>
                                     {{ $opt }}
+                                    @if($isBenar)<span>✓</span>@endif
+                                    @if($isPilihSalah)<span>(pilihanmu) ✗</span>@endif
                                 </label>
                             @endforeach
                         </div>
