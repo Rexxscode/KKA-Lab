@@ -2,8 +2,8 @@
 
 <div x-data="kkaAiAssistant()" class="no-print">
     <button @click="open = !open"
-        class="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg transition active:scale-95">
-        <span class="text-lg">🤖</span><span x-text="open ? 'Tutup' : 'Tanya AI'"></span>
+        class="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 px-3.5 sm:px-4 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg transition active:scale-95">
+        <span class="text-lg">🤖</span><span class="hidden sm:inline" x-text="open ? 'Tutup' : 'Tanya AI'"></span>
     </button>
 
     <div x-show="open" x-transition class="fixed bottom-20 right-5 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] kka-card !p-0 overflow-hidden" style="display: none">

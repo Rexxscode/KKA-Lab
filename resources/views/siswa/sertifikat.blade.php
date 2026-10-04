@@ -39,7 +39,7 @@
                             @elseif($p)
                                 <span class="font-bold text-orange-500">⏳ Dikerjakan (skor {{ $p->quiz_score }})</span>
                             @else
-                                <span class="font-bold text-slate-400">Belum mulai</span>
+                                <span class="font-bold text-slate-400 whitespace-nowrap">Belum mulai</span>
                             @endif
                         </div>
                     @endforeach
