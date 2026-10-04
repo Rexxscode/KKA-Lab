@@ -87,9 +87,9 @@
                     @endif
                 </div>
                 <div class="grid grid-cols-2 gap-2 mt-3">
-                    <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary !py-2 text-sm text-center">📖 Bahan</a>
+                    <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary !py-2 text-sm text-center">Bahan</a>
                     @if($d['terkunci'])
-                        <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40">🔒 Kuis</span>
+                        <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40">Kuis</span>
                     @else
                         <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary !py-2 text-sm text-center">📝 Kuis</a>
                     @endif
