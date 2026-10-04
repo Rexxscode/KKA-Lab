@@ -278,9 +278,9 @@ php artisan test
 
 | Nama | Peran | GitHub |
 |------|-------|--------|
-| **Sofian Bahtiar** | Frontend Developer | [@Sayayyan](https://github.com/Sayayyan) |
-| **Muhamad Adzka Lainufar** | Full Stack Developer | [@Rexxscode](https://github.com/Rexxscode) |
-| **Fauzan Aji Wibisono** | Backend Developer | [@morganaji17-gif](https://github.com/morganaji17-gif) |
+| **Sofian Bahtiar** | Frontend & Backend Developer | [@Sayayyan](https://github.com/Sayayyan) |
+| **Muhamad Adzka Lainufar** | ... | [@Rexxscode](https://github.com/Rexxscode) |
+| **Fauzan Aji Wibisono** | ... | [@morganaji17-gif](https://github.com/morganaji17-gif) |
 
 ---
 
