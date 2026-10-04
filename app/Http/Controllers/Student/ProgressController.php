@@ -55,6 +55,12 @@ class ProgressController extends Controller
             return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus dengan skor {$score}. +{$xp} XP!"]);
         }
 
+        // Gagal: cabut badge modul bila pernah didapat (mis. lulus lalu mengulang dan gagal),
+        // agar badge selalu mencerminkan status lulus saat ini.
+        if ($module->badge) {
+            $request->user()->badges()->detach($module->badge->id);
+        }
+
         return back()->withInput()->with('quiz_result', ['score' => $score, 'passed' => false, 'detail' => $detail])->with('toast', ['type' => 'error', 'message' => "Skor {$score}, belum lulus (minimal 80). Lihat pembahasan di bawah, lalu coba lagi!"]);
     }
 

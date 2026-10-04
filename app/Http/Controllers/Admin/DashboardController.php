@@ -30,9 +30,9 @@ class DashboardController extends Controller
                   ->orWhere('email', 'like', '%' . $request->q . '%');
             });
         }
-        $users = $query->paginate(15)->withQueryString();
+        $users = $query->with(['taughtClassrooms' => fn ($q) => $q->withCount('students')])->paginate(15)->withQueryString();
         $classrooms = Classroom::with(['teacher'])->withCount('students')->latest()->take(10)->get();
-        $modules = Module::orderBy('order')->get();
+        $modules = Module::orderBy('order')->withCount('quizzes')->get();
 
         return view('admin.dashboard', compact('stats', 'users', 'classrooms', 'modules'));
     }

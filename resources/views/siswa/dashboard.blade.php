@@ -54,9 +54,9 @@
                     <div class="flex items-center justify-between text-xs">
                         <span class="kka-badge">+{{ $m->xp_reward }} XP</span>
                         @if($p && $p->is_completed)
-                            <span class="font-bold text-emerald-600">Lulus • {{ $p->quiz_score }}</span>
+                            <span class="font-bold text-emerald-600">✓ Selesai • Skor {{ $p->quiz_score }}</span>
                         @elseif($p)
-                            <span class="font-bold text-orange-500">Skor {{ $p->quiz_score }} • belum lulus</span>
+                            <span class="font-bold text-orange-500">⏳ Dikerjakan • Skor {{ $p->quiz_score }}</span>
                         @else
                             <span class="font-bold text-slate-400">Belum mulai</span>
                         @endif

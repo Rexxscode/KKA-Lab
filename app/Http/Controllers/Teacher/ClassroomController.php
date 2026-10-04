@@ -16,7 +16,7 @@ class ClassroomController extends Controller
         $classrooms = $user->isAdmin()
             ? Classroom::with('teacher')->withCount('students')->latest()->get()
             : $user->taughtClassrooms()->withCount('students')->get();
-        $modules = Module::orderBy('order')->get();
+        $modules = Module::orderBy('order')->withCount('quizzes')->get();
 
         return view('guru.dashboard', compact('classrooms', 'modules'));
     }

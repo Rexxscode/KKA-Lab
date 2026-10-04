@@ -35,9 +35,11 @@
                         <div class="flex items-center justify-between text-sm border border-slate-200 rounded-xl px-4 py-2">
                             <span>{{ $m->title }}</span>
                             @if($p && $p->is_completed)
-                                <span class="font-bold text-emerald-600">Lulus ({{ $p->quiz_score }})</span>
+                                <span class="font-bold text-emerald-600">✓ Selesai ({{ $p->quiz_score }})</span>
+                            @elseif($p)
+                                <span class="font-bold text-orange-500">⏳ Dikerjakan (skor {{ $p->quiz_score }})</span>
                             @else
-                                <span class="font-bold text-orange-500">{{ $p ? 'Skor '.$p->quiz_score : 'Belum' }}</span>
+                                <span class="font-bold text-slate-400">Belum mulai</span>
                             @endif
                         </div>
                     @endforeach

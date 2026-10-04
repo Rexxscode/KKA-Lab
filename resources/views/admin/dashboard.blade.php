@@ -34,7 +34,7 @@
             </form>
         </x-card>
 
-        <x-card title="Semua Pengguna" subtitle="Cari, reset password, atau hapus akun.">
+        <x-card title="Semua Pengguna" subtitle="Cari, reset kata sandi, atau hapus akun.">
             <form method="GET" action="{{ route('admin.dashboard') }}" class="flex flex-col sm:flex-row gap-2 mb-4">
                 <input name="q" value="{{ request('q') }}" placeholder="Cari nama / email..." class="flex-1 rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
                 <select name="role" class="rounded-xl border-slate-200">
@@ -56,7 +56,7 @@
                                 <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $u->name }}</p><p class="text-xs text-slate-400">{{ $u->email }}</p></td>
                                 <td class="py-3 pr-3"><span class="kka-badge">{{ ucfirst($u->role) }}</span></td>
                                 <td class="py-3 pr-3 text-xs text-slate-500">
-                                    @if($u->isGuru()) {{ $u->taughtClassrooms()->count() }} kelas • {{ $u->taughtClassrooms()->withCount('students')->get()->sum('students_count') }} siswa
+                                    @if($u->isGuru()) {{ $u->taughtClassrooms->count() }} kelas • {{ $u->taughtClassrooms->sum('students_count') }} siswa
                                     @elseif($u->isSiswa()) {{ $u->totalXp() }} XP • {{ $u->progress()->where('is_completed', true)->count() }}/{{ $modules->count() }} lulus
                                     @else — @endif
                                 </td>
@@ -100,7 +100,7 @@
             <x-card title="Modul KKA" subtitle="Kelola soal lewat akun guru / bank soal.">
                 @foreach($modules as $m)
                     <div class="flex items-center justify-between text-sm border border-slate-200 rounded-xl px-4 py-2 mb-2">
-                        <p class="font-bold">{{ $m->title }}</p><span class="kka-badge">+{{ $m->xp_reward }} XP</span>
+                        <div><p class="font-bold">{{ $m->title }}</p><p class="text-xs text-slate-400">{{ $m->quizzes_count }} soal</p></div><span class="kka-badge">+{{ $m->xp_reward }} XP</span>
                     </div>
                 @endforeach
                 <a href="{{ route('guru.quiz.index') }}" class="kka-btn-secondary !py-2 text-xs">Buka Bank Soal</a>

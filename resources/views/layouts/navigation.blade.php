@@ -26,7 +26,7 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
                 @auth
                     <span class="text-xs font-semibold px-2.5 py-1 rounded-full {{ auth()->user()->isGuru() ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700' }}">
-                        {{ ucfirst(auth()->user()->role) }} • {{ auth()->user()->totalXp() }} XP
+                        {{ ucfirst(auth()->user()->role) }}{{ auth()->user()->isSiswa() ? ' • ' . auth()->user()->totalXp() . ' XP' : '' }}
                     </span>
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">

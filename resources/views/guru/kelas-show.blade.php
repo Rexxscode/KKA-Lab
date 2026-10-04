@@ -32,9 +32,9 @@
                                     @php $p = $by->get($m->id); @endphp
                                     <td class="py-3 pr-3">
                                         @if($p && $p->is_completed)
-                                            <span class="kka-badge">{{ $p->quiz_score }} • Lulus</span>
+                                            <span class="kka-badge">{{ $p->quiz_score }} • Selesai</span>
                                         @elseif($p)
-                                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">{{ $p->quiz_score }} • Ulangi</span>
+                                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">{{ $p->quiz_score }} • Dikerjakan</span>
                                         @else
                                             <span class="text-slate-300 text-xs">—</span>
                                         @endif
