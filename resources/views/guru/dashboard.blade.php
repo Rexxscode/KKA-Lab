@@ -20,12 +20,12 @@
     </div>
 
     <div class="grid lg:grid-cols-2 gap-3 sm:gap-4 mt-4">
-        <x-card title="Kelas Terbaru" subtitle="5 terakhir dibuat">
+        <x-card title="Kelas Terbaru" subtitle="{{ $kelasBaru->count() }} terakhir dibuat">
             <div class="space-y-2">
                 @forelse($kelasBaru as $c)
-                    <a href="{{ route('guru.kelas.show', $c) }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-2.5 hover:border-orange-300 transition">
-                        <div><p class="font-bold text-sm text-slate-800">{{ $c->name }}</p><p class="text-xs text-slate-400">Kode {{ $c->code }} • {{ $c->students_count }} siswa</p></div>
-                        <span class="text-sm font-bold text-orange-500">→</span>
+                    <a href="{{ route('guru.kelas.show', $c) }}" class="flex items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-2.5 hover:border-orange-300 transition">
+                        <div class="min-w-0"><p class="font-bold text-sm text-slate-800 truncate">{{ $c->name }}</p><p class="text-xs text-slate-400">Kode {{ $c->code }} • {{ $c->students_count }} siswa • {{ $c->created_at->format('d M Y') }}</p></div>
+                        <span class="text-sm font-bold text-orange-500 shrink-0">→</span>
                     </a>
                 @empty
                     <p class="text-sm text-slate-400">Belum ada kelas. <a href="{{ route('guru.kelas.index') }}" class="font-bold text-orange-500">Buat di halaman Kelas Saya →</a></p>

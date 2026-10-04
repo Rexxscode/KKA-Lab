@@ -112,9 +112,11 @@ class QuizController extends Controller
             'question' => 'required|string',
             'options' => 'required|array|min:5|max:5',
             'options.*' => 'required|string|max:255',
-            'correct_index' => 'required|integer|min:0|max:' . (count($options) - 1),
+            'correct_letter' => 'required|in:A,B,C,D,E',
         ]);
 
+        $data['correct_index'] = ord($data['correct_letter']) - 65;
+        unset($data['correct_letter']);
         $data['points'] = 20;
         $data['teacher_id'] = $pemilik;
 
@@ -152,8 +154,11 @@ class QuizController extends Controller
             'question' => 'required|string',
             'options' => 'required|array|min:5|max:5',
             'options.*' => 'required|string|max:255',
-            'correct_index' => 'required|integer|min:0|max:' . (count($options) - 1),
+            'correct_letter' => 'required|in:A,B,C,D,E',
         ]);
+
+        $data['correct_index'] = ord($data['correct_letter']) - 65;
+        unset($data['correct_letter']);
 
         $quiz->update($data);
 

@@ -51,7 +51,19 @@ class ClassroomController extends Controller
         $classrooms = $user->isAdmin()
             ? Classroom::with('teacher')->withCount('students')->latest()->get()
             : $user->taughtClassrooms()->withCount('students')->get();
-        $modules = Module::orderBy('order')->withCount('quizzes')->get();
+        if ($user->isAdmin()) {
+            $modules = Module::orderBy('order')->withCount('quizzes')->get();
+            foreach ($modules as $m) {
+                $m->soal = $m->quizzes_count;
+            }
+        } else {
+            $modules = Module::whereNull('teacher_id')->orderBy('order')
+                ->withCount(['quizzes as soal' => fn ($q) => $q->whereNull('teacher_id')])->get()
+                ->concat(
+                    Module::where('teacher_id', $user->id)->orderBy('order')
+                        ->withCount(['quizzes as soal' => fn ($q) => $q->where('teacher_id', $user->id)])->get()
+                );
+        }
 
         return view('guru.kelas-index', compact('classrooms', 'modules'));
     }

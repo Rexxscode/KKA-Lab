@@ -51,7 +51,7 @@
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                     <p class="font-bold text-sm">{{ $m->title }}</p>
                     <p class="text-xs text-slate-500 mt-1">{{ $m->soal }} soal</p>
-                    <a href="{{ route('guru.quiz.module', $m) }}" class="text-xs font-bold text-orange-500 hover:text-orange-600">Lihat / salin soal →</a>
+                    <a href="{{ route('guru.quiz.module', $m) }}" class="text-xs font-bold text-orange-500 hover:text-orange-600">Lihat soal →</a>
                 </div>
             @endforeach
         </div>

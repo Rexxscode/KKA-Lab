@@ -26,12 +26,12 @@
         @endforelse
     </div>
 
-    <x-card title="4 Modul KKA" subtitle="Urutan belajar siswa." class="mt-4">
+    <x-card title="Modul KKA ({{ $modules->count() }})" subtitle="Urutan belajar siswa." class="mt-4">
         <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
             @foreach($modules as $m)
                 <div class="rounded-2xl border border-slate-200 p-4">
                     <p class="font-bold text-sm">{{ $m->title }}</p>
-                    <p class="text-xs text-slate-500 mt-1">{{ $m->quizzes_count }} soal • +{{ $m->xp_reward }} XP</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ $m->soal }} soal • +{{ $m->xp_reward }} XP</p>
                 </div>
             @endforeach
         </div>
