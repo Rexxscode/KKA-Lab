@@ -3,42 +3,47 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="font-extrabold text-xl text-slate-900">Dashboard Guru</h2>
-                <p class="text-sm text-slate-500">Buat kelas, bagikan kode 6-digit, pantau progres siswa.</p>
+                <p class="text-sm text-slate-500">Ringkasan data mengajar — kelola kelas lewat halaman Kelas Saya.</p>
             </div>
-            <a href="{{ route('guru.quiz.index') }}" class="kka-btn-secondary !py-2 text-sm">Bank Soal (edit kuis)</a>
+            <div class="flex gap-2">
+                <a href="{{ route('guru.kelas.index') }}" class="kka-btn-primary !py-2 text-sm">Kelas Saya</a>
+                <a href="{{ route('guru.quiz.index') }}" class="kka-btn-secondary !py-2 text-sm">Bank Soal</a>
+            </div>
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <x-card title="Buat Kelas Baru" subtitle="Kode unik 6-digit dibuat otomatis.">
-            <form method="POST" action="{{ route('guru.kelas.store') }}" class="flex flex-col sm:flex-row gap-2">
-                @csrf
-                <input name="name" required maxlength="100" placeholder="cth: XI RPL 3 — KKA" class="flex-1 rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-                <x-button type="submit">Buat Kelas</x-button>
-            </form>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <x-card title="Total Kelas" subtitle="kelas dibuat"><p class="text-3xl font-extrabold text-slate-900">{{ $totalKelas }}</p></x-card>
+        <x-card title="Total Siswa" subtitle="tergabung di kelas"><p class="text-3xl font-extrabold text-orange-500">{{ $totalSiswa }}</p></x-card>
+        <x-card title="Siswa Tuntas" subtitle="lulus semua modul"><p class="text-3xl font-extrabold text-emerald-500">{{ $siswaTuntas }}</p></x-card>
+        <x-card title="Bank Soal" subtitle="{{ $totalModul }} modul"><p class="text-3xl font-extrabold text-slate-900">{{ $totalSoal }} <span class="text-base font-bold text-slate-400">soal</span></p></x-card>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-3 sm:gap-4 mt-4">
+        <x-card title="Kelas Terbaru" subtitle="5 terakhir dibuat">
+            <div class="space-y-2">
+                @forelse($kelasBaru as $c)
+                    <a href="{{ route('guru.kelas.show', $c) }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-2.5 hover:border-orange-300 transition">
+                        <div><p class="font-bold text-sm text-slate-800">{{ $c->name }}</p><p class="text-xs text-slate-400">Kode {{ $c->code }} • {{ $c->students_count }} siswa</p></div>
+                        <span class="text-sm font-bold text-orange-500">→</span>
+                    </a>
+                @empty
+                    <p class="text-sm text-slate-400">Belum ada kelas. <a href="{{ route('guru.kelas.index') }}" class="font-bold text-orange-500">Buat di halaman Kelas Saya →</a></p>
+                @endforelse
+            </div>
         </x-card>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            @forelse($classrooms as $c)
-                <x-card :title="$c->name" :subtitle="'Kode: '.$c->code.' • '.$c->students_count.' siswa'">
-                    <div class="flex gap-2">
-                        <a href="{{ route('guru.kelas.show', $c) }}" class="kka-btn-primary !py-2 text-sm flex-1 text-center">Detail & Nilai</a>
-                        <a href="{{ route('guru.kelas.export', $c) }}" class="kka-btn-secondary !py-2 text-sm">CSV</a>
+        <x-card title="Siswa Paling Aktif" subtitle="berdasar XP">
+            <div class="space-y-2">
+                @forelse($siswaAktif as $i => $s)
+                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold {{ $i === 0 ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-500' }}">{{ $i + 1 }}</span>
+                        <p class="flex-1 font-bold text-sm text-slate-800 truncate">{{ $s->name }}</p>
+                        <span class="text-sm font-extrabold text-emerald-600 whitespace-nowrap">⚡ {{ $s->xp ?? 0 }}</span>
                     </div>
-                </x-card>
-            @empty
-                <x-card title="Belum ada kelas" subtitle="Buat kelas pertamamu di atas, lalu bagikan kodenya ke siswa." />
-            @endforelse
-        </div>
-
-        <x-card title="4 Modul KKA" subtitle="Urutan belajar siswa.">
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                @foreach($modules as $m)
-                    <div class="rounded-2xl border border-slate-200 p-4">
-                        <p class="font-bold text-sm">{{ $m->title }}</p>
-                        <p class="text-xs text-slate-500 mt-1">{{ $m->quizzes_count ?? $m->quizzes()->count() }} soal • +{{ $m->xp_reward }} XP</p>
-                    </div>
-                @endforeach
+                @empty
+                    <p class="text-sm text-slate-400">Belum ada siswa bergabung.</p>
+                @endforelse
             </div>
         </x-card>
     </div>

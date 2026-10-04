@@ -61,7 +61,8 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
 });
 
 Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->group(function () {
-    Route::get('/dashboard', [GuruClassroomController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [GuruClassroomController::class, 'dashboard'])->name('dashboard');
+    Route::get('/kelas', [GuruClassroomController::class, 'index'])->name('kelas.index');
     Route::post('/kelas', [GuruClassroomController::class, 'store'])->name('kelas.store');
     Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
     Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');

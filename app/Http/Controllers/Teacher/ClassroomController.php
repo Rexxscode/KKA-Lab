@@ -10,6 +10,36 @@ use Illuminate\Support\Str;
 
 class ClassroomController extends Controller
 {
+    /**
+     * Dasbor: ringkasan data spesifik (tanpa daftar kelas).
+     */
+    public function dashboard(Request $request)
+    {
+        $user = $request->user();
+        $kelasQuery = $user->isAdmin() ? Classroom::query() : $user->taughtClassrooms();
+        $kelasIds = (clone $kelasQuery)->pluck('classrooms.id');
+
+        $totalKelas = (clone $kelasQuery)->count();
+        $siswaIds = \DB::table('classroom_user')->whereIn('classroom_id', $kelasIds)->distinct()->pluck('student_id');
+        $totalSiswa = $siswaIds->count();
+        $totalModul = Module::count();
+        $totalSoal = \App\Models\Quiz::count();
+        $siswaTuntas = ($totalModul > 0 && $siswaIds->isNotEmpty())
+            ? \DB::table('student_progress')->whereIn('student_id', $siswaIds)->where('is_completed', true)
+                ->select('student_id')->groupBy('student_id')->havingRaw('COUNT(*) >= ?', [$totalModul])->get()->count()
+            : 0;
+        $kelasBaru = (clone $kelasQuery)->with('teacher')->withCount('students')->latest()->take(5)->get();
+        $siswaAktif = \App\Models\User::where('role', 'siswa')
+            ->whereIn('id', $siswaIds)
+            ->withSum('progress as xp', 'xp_earned')
+            ->orderByDesc('xp')->take(5)->get();
+
+        return view('guru.dashboard', compact('totalKelas', 'totalSiswa', 'totalModul', 'totalSoal', 'siswaTuntas', 'kelasBaru', 'siswaAktif'));
+    }
+
+    /**
+     * Halaman Kelas Saya terpisah: daftar + buat kelas.
+     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -18,7 +48,7 @@ class ClassroomController extends Controller
             : $user->taughtClassrooms()->withCount('students')->get();
         $modules = Module::orderBy('order')->withCount('quizzes')->get();
 
-        return view('guru.dashboard', compact('classrooms', 'modules'));
+        return view('guru.kelas-index', compact('classrooms', 'modules'));
     }
 
     public function store(Request $request)
