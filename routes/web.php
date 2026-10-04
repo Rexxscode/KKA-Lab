@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/ai/chat', [AiChatController::class, 'chat'])->name('ai.chat');
 });
 
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
     Route::post('/gabung-kelas', [ClassroomJoinController::class, 'store'])->name('join');
     Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
@@ -56,6 +56,8 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
     Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->name('kuis.submit');
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->name('modul.handson');
     Route::get('/sertifikat', [CertificateController::class, 'index'])->name('sertifikat');
+    // Kompatibilitas bookmark lama.
+    Route::redirect('/modul/{slug}', '/siswa/bahan/{slug}');
 });
 
 Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->group(function () {

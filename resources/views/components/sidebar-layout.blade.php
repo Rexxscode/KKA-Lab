@@ -72,6 +72,7 @@
                     <div class="space-y-1">
                         <x-side-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')" icon="users">Kelas</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
+                        <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')" icon="book">Pratinjau Siswa</x-side-link>
                     </div>
                 </div>
             @endif
