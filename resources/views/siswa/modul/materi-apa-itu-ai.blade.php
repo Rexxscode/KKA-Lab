@@ -13,19 +13,18 @@
     </div>
     <div>
         <h4 class="font-extrabold text-slate-900">2. AI Sempit vs AI Umum</h4>
-        <p><b>AI sempit (narrow AI)</b> hanya pintar di satu tugas khusus. <b>AI umum</b> bisa diajak membahas apa saja seperti manusia.</p>
+        <p><b>AI sempit (narrow AI)</b> hanya pintar di tugas khusus — dan <b>semua AI yang ada saat ini, termasuk yang terasa pintar, adalah AI sempit</b>. <b>AI umum (AGI)</b> yang sepintar manusia di segala bidang <b>belum ada</b> dan masih fiksi ilmiah.</p>
         <div class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
-            <p class="font-bold">Contoh narrow AI:</p>
+            <p class="font-bold">Contoh AI sempit (semuanya hanya bisa tugasnya masing-masing):</p>
             <ul class="list-disc ps-5 mt-1 space-y-1">
-                <li>Google Maps — pintar membaca peta dan jalan.</li>
-                <li>Filter spam — pintar memilah email sampah.</li>
-                <li>Kunci wajah HP — pintar mengenali wajah pemiliknya.</li>
+                <li>Google Maps — hanya pintar soal peta dan jalan.</li>
+                <li>ChatGPT, Claude, Gemini — hanya pintar mengolah bahasa, tidak bisa menyetir atau memasak.</li>
+                <li>Kunci wajah HP — hanya pintar mengenali wajah pemiliknya.</li>
             </ul>
-            <p class="font-bold mt-2">Contoh AI umum:</p>
+            <p class="font-bold mt-2">Contoh AI umum (belum ada di dunia nyata):</p>
             <ul class="list-disc ps-5 mt-1 space-y-1">
-                <li>ChatGPT — bisa ditanya apa saja.</li>
-                <li>Claude — bisa ditanya apa saja.</li>
-                <li>Gemini — bisa ditanya apa saja.</li>
+                <li>Robot yang bisa jadi guru, dokter, dan montir sekaligus.</li>
+                <li>Komputer yang punya kesadaran diri seperti di film.</li>
             </ul>
         </div>
     </div>
