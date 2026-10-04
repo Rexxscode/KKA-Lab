@@ -1,27 +1,68 @@
 <div class="prose max-w-none text-sm text-slate-700 space-y-4">
     <div>
         <h4 class="font-extrabold text-slate-900">1. Deepfake & Hoaks AI</h4>
-        <p><b>Deepfake</b> adalah konten palsu hasil AI (wajah, suara, video) yang terlihat asli. Ditambah <b>hoaks</b> — kabar bohong — AI membuat kebohongan makin meyakinkan dan mudah tersebar. Bedakan dua istilah: <b>disinformasi</b> (salah dan disebar <i>sengaja</i> untuk menipu) vs <b>misinformasi</b> (salah tersebar tanpa niat menipu, misal karena panik).</p>
-        <p class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3"><b>Contoh deepfake:</b> (1) video tokoh terkenal seolah mengucapkan hal yang tak pernah ia katakan; (2) suara "orang tua" menelepon minta transfer uang padahal AI; (3) foto kecelakaan palsu yang terlihat nyata. <b>Contoh disinformasi vs misinformasi:</b> akun buzzer sengaja menyebar kabar palsu vs teman panik meneruskan info keliru ke grup.</p>
+        <p><b>Deepfake</b> adalah konten palsu hasil AI yang terlihat asli. <b>Disinformasi</b> = salah dan disebar <i>sengaja</i> untuk menipu. <b>Misinformasi</b> = salah tersebar tanpa niat menipu, misal karena panik.</p>
+        <div class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+            <p class="font-bold">Contoh deepfake:</p>
+            <ul class="list-disc ps-5 mt-1 space-y-1">
+                <li>Video artis seolah mengucapkan hal yang tak pernah ia katakan.</li>
+                <li>Suara "ayah" menelepon minta transfer uang padahal AI.</li>
+                <li>Foto kecelakaan palsu yang terlihat nyata.</li>
+            </ul>
+            <p class="font-bold mt-2">Contoh bedanya:</p>
+            <ul class="list-disc ps-5 mt-1 space-y-1">
+                <li>Akun buzzer sengaja menyebar kabar palsu (disinformasi).</li>
+                <li>Teman panik meneruskan info keliru ke grup (misinformasi).</li>
+            </ul>
+        </div>
     </div>
     <div>
         <h4 class="font-extrabold text-slate-900">2. Ciri-Ciri yang Wajib Dicurigai</h4>
-        <p>AI masih sering terpeleset di detail kecil. Menemukan satu saja = lampu kuning.</p>
-        <p class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3"><b>Contoh ciri:</b> (1) jari/tangan berjumlah aneh (6 jari, menyatu); (2) teks gibberish di gambar (tulisan warung tidak terbaca); (3) gerakan bibir dan kedipan tidak wajar di video; (4) bayangan tak konsisten + sumber tidak jelas.</p>
+        <p>AI masih sering salah di detail kecil. Menemukan satu saja = lampu kuning.</p>
+        <div class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+            <p class="font-bold">Contoh:</p>
+            <ul class="list-disc ps-5 mt-1 space-y-1">
+                <li>Tangan berjumlah 6 jari atau menyatu.</li>
+                <li>Tulisan di gambar tidak terbaca (gibberish).</li>
+                <li>Bibir bergerak tidak cocok dengan suaranya.</li>
+                <li>Berita tanpa sumber yang jelas.</li>
+            </ul>
+        </div>
     </div>
     <div>
         <h4 class="font-extrabold text-slate-900">3. Rumus CHECK Sebelum Share</h4>
-        <p><b>C</b>ek sumbernya • <b>H</b>indari judul bombastis • <b>E</b>ja tanggalnya • <b>C</b>ek gambarnya • <b>K</b>roscek fakta ke media tepercaya. Ditambah <b>verifikasi silang</b>: satu sumber bisa salah, tiga sumber tepercaya yang sepakat jauh lebih meyakinkan.</p>
-        <p class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3"><b>Contoh penerapan:</b> (1) dapat info libur sekolah dadakan → cek akun resmi sekolah + dinas pendidikan; (2) foto viral → reverse-search gambarnya; (3) kabar bencana → cek tanggalnya (bisa jadi foto tahun lama).</p>
+        <p><b>C</b>ek sumbernya • <b>H</b>indari judul bombastis • <b>E</b>ja tanggalnya • <b>C</b>ek gambarnya • <b>K</b>roscek fakta. Satu sumber bisa salah — tiga sumber tepercaya yang sepakat jauh lebih meyakinkan.</p>
+        <div class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+            <p class="font-bold">Contoh:</p>
+            <ul class="list-disc ps-5 mt-1 space-y-1">
+                <li>Dapat info libur dadakan → cek akun resmi sekolah.</li>
+                <li>Dapat foto viral → cari tahu foto aslinya dari kapan.</li>
+                <li>Dapat kabar bencana → cek tanggalnya, bisa jadi foto lama.</li>
+            </ul>
+        </div>
     </div>
     <div>
         <h4 class="font-extrabold text-slate-900">4. Privasi & Izin</h4>
-        <p>Foto, suara, dan datamu adalah <b>milikmu</b>. Memakainya untuk AI <b>wajib izin</b> pemiliknya. Tanpa izin = pelanggaran privasi, sesederhana itu.</p>
-        <p class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3"><b>Contoh:</b> (1) minta izin teman sebelum memakai fotonya untuk latihan AI; (2) tidak merekam suara guru diam-diam untuk voice clone; (3) tidak mengunggah foto orang ke layanan AI publik tanpa izin.</p>
+        <p>Foto, suara, dan datamu adalah <b>milikmu</b>. Memakainya untuk AI <b>wajib izin</b> pemiliknya.</p>
+        <div class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+            <p class="font-bold">Contoh:</p>
+            <ul class="list-disc ps-5 mt-1 space-y-1">
+                <li>Izin teman sebelum memakai fotonya untuk latihan AI.</li>
+                <li>Tidak merekam suara guru diam-diam.</li>
+                <li>Tidak mengunggah foto orang ke aplikasi asing.</li>
+            </ul>
+        </div>
     </div>
     <div>
         <h4 class="font-extrabold text-slate-900">5. Kreator AI yang Bertanggung Jawab</h4>
-        <p>Aturannya tiga: <b>beri label "buatan AI"</b> saat menyebar karya generatif, <b>jangan pakai untuk menipu</b>, dan <b>hormati karya orang</b> (jangan ngaku-ngaku). Menemukan konten menipu? Laporkan ke platform dan edukasi sekitarmu dengan empati — AI hanyalah alat, verifikasi manusia tak tergantikan.</p>
-        <p class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3"><b>Contoh:</b> (1) tulis "dibuat dengan AI" pada gambar AI yang kamu posting; (2) laporkan video penipuan ke fitur lapor platform; (3) ingatkan teman baik-baik sambil tunjukkan fakta benarnya.</p>
+        <p>Aturannya tiga: <b>beri label "buatan AI"</b>, <b>jangan pakai untuk menipu</b>, dan <b>hormati karya orang</b>. Menemukan konten menipu? Laporkan dan edukasi sekitarmu.</p>
+        <div class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+            <p class="font-bold">Contoh:</p>
+            <ul class="list-disc ps-5 mt-1 space-y-1">
+                <li>Tulis "dibuat dengan AI" pada gambar AI yang kamu posting.</li>
+                <li>Tekan tombol lapor pada video penipuan.</li>
+                <li>Ingatkan teman baik-baik sambil tunjukkan fakta benarnya.</li>
+            </ul>
+        </div>
     </div>
 </div>
