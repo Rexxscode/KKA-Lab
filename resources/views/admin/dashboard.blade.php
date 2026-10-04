@@ -28,8 +28,8 @@
                     <option value="admin">Admin</option>
                     <option value="siswa">Siswa (khusus)</option>
                 </select>
-                <input name="password" type="password" required placeholder="Kata sandi" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-                <input name="password_confirmation" type="password" required placeholder="Ulangi kata sandi" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <x-password-input name="password" required placeholder="Kata sandi" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+                <x-password-input name="password_confirmation" required placeholder="Ulangi kata sandi" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
                 <div class="sm:col-span-2 lg:col-span-5"><x-button type="submit">Buat Akun</x-button></div>
             </form>
         </x-card>
@@ -66,8 +66,8 @@
                                             <summary class="kka-btn-secondary !py-1.5 !px-3 text-xs cursor-pointer list-none">Reset PW</summary>
                                             <form method="POST" action="{{ route('admin.users.reset', $u) }}" class="absolute right-0 mt-2 p-3 bg-white border border-slate-200 rounded-2xl shadow-lg flex gap-1 z-10">
                                                 @csrf @method('PATCH')
-                                                <input name="password" type="password" required placeholder="Baru" class="w-28 rounded-xl border-slate-200 text-xs" />
-                                                <input name="password_confirmation" type="password" required placeholder="Ulangi" class="w-28 rounded-xl border-slate-200 text-xs" />
+                                                <x-password-input name="password" required placeholder="Baru" class="w-28 rounded-xl border-slate-200 text-xs" />
+                                                <x-password-input name="password_confirmation" required placeholder="Ulangi" class="w-28 rounded-xl border-slate-200 text-xs" />
                                                 <button class="kka-btn-primary !py-1.5 !px-3 text-xs">OK</button>
                                             </form>
                                         </details>

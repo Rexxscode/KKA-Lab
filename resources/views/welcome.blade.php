@@ -27,7 +27,7 @@
             <h1 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Belajar AI & Koding <span class="text-orange-500">hands-on</span> di browser.</h1>
             <p class="mt-4 text-slate-600">4 modul interaktif: apa itu AI → latih model webcam → bias data → etika & hoaks. Privasi terjaga: gambar tidak dikirim ke server. Kuis minimal <b>80</b> untuk lulus, kumpulkan XP & badge, cetak sertifikat otomatis.</p>
             <div class="mt-6 flex flex-wrap gap-3">
-                <x-button href="{{ route('register') }}">Masuk sebagai Siswa</x-button>
+                <x-button href="{{ route('login') }}">Masuk sebagai Siswa</x-button>
                 <x-button variant="secondary" href="{{ route('login') }}">Portal Guru</x-button>
             </div>
             <div class="mt-6 grid grid-cols-3 gap-3 text-center">
