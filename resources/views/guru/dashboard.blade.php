@@ -13,6 +13,11 @@
     </x-slot>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        @if(auth()->user()->status === 'pending')
+            <div class="col-span-2 lg:col-span-4 rounded-2xl border border-orange-300 bg-orange-50 p-4 text-sm font-semibold text-orange-800">
+                ⏳ Akun gurumu sedang menunggu verifikasi NPK oleh admin. Kamu bisa melihat-lihat dasbor, tetapi tombol Kelas Saya, Bank Soal, dan Modul Saya terkunci untuk sementara.
+            </div>
+        @endif
         <x-card title="Total Kelas" subtitle="kelas dibuat"><p class="text-3xl font-extrabold text-slate-900">{{ $totalKelas }}</p></x-card>
         <x-card title="Total Siswa" subtitle="tergabung di kelas"><p class="text-3xl font-extrabold text-orange-500">{{ $totalSiswa }}</p></x-card>
         <x-card title="Siswa Tuntas" subtitle="lulus semua modul"><p class="text-3xl font-extrabold text-emerald-500">{{ $siswaTuntas }}</p></x-card>

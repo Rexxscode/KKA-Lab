@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller
@@ -47,8 +48,34 @@ class UserController extends Controller
         abort_if($user->id === $request->user()->id, 403, 'Tidak bisa menghapus akun sendiri.');
 
         $email = $user->email;
+        if ($user->bukti_npk_path) {
+            Storage::disk('local')->delete($user->bukti_npk_path);
+        }
         $user->delete();
 
         return back()->with('toast', ['type' => 'success', 'message' => "Akun {$email} dihapus."]);
+    }
+
+    public function setujui(User $user)
+    {
+        abort_unless($user->isGuru() && $user->status === 'pending', 404);
+        $user->update(['status' => 'aktif']);
+
+        return back()->with('toast', ['type' => 'success', 'message' => "Akun guru {$user->email} disetujui! Fitur gurunya sudah terbuka."]);
+    }
+
+    public function tolak(User $user)
+    {
+        abort_unless($user->isGuru() && $user->status === 'pending', 404);
+        $user->update(['status' => 'ditolak']);
+
+        return back()->with('toast', ['type' => 'success', 'message' => "Pengajuan {$user->email} ditolak. Ia tidak bisa masuk lagi."]);
+    }
+
+    public function unduhBukti(User $user)
+    {
+        abort_unless($user->bukti_npk_path && Storage::disk('local')->exists($user->bukti_npk_path), 404);
+
+        return Storage::disk('local')->download($user->bukti_npk_path, 'bukti-npk-' . $user->id . '.' . pathinfo($user->bukti_npk_path, PATHINFO_EXTENSION));
     }
 }

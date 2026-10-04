@@ -10,7 +10,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'status', 'bukti_npk_path'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -35,6 +35,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function guruAktif(): bool
+    {
+        return $this->isGuru() && $this->status === 'aktif';
     }
 
     public function taughtClassrooms()

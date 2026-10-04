@@ -47,6 +47,9 @@ class DashboardController extends Controller
             ->paginate(15, ['*'], 'siswa_page')
             ->withQueryString();
 
-        return view('admin.dashboard', compact('stats', 'users', 'classrooms', 'modules', 'siswaList'));
+        // Pengajuan akun guru yang menunggu verifikasi NPK.
+        $pengajuan = User::where('role', 'guru')->where('status', 'pending')->latest()->get();
+
+        return view('admin.dashboard', compact('stats', 'users', 'classrooms', 'modules', 'siswaList', 'pengajuan'));
     }
 }

@@ -30,6 +30,17 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
+        // Akun guru yang ditolak admin tidak boleh masuk sama sekali.
+        if ($user->status === 'ditolak') {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors([
+                'email' => 'Pengajuan akun gurumu ditolak admin. Hubungi admin sekolah untuk info lebih lanjut.',
+            ]);
+        }
+
         if ($user->isAdmin()) {
             return redirect()->intended(route('admin.dashboard', absolute: false));
         }

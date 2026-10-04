@@ -32,21 +32,34 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:siswa,guru'],
+            'bukti_npk' => ['required_if:role,guru', 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ]);
 
-        // Pendaftaran publik hanya untuk siswa. Akun guru & admin dibuat oleh admin.
+        $isGuru = $request->role === 'guru';
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'siswa',
+            'role' => $request->role,
+            // Siswa langsung aktif; guru menunggu verifikasi NPK oleh admin.
+            'status' => $isGuru ? 'pending' : 'aktif',
+            'bukti_npk_path' => $isGuru && $request->hasFile('bukti_npk')
+                ? $request->file('bukti_npk')->store('bukti-npk', 'local')
+                : null,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
+
+        if ($isGuru) {
+            return redirect(route('guru.dashboard', absolute: false))
+                ->with('toast', ['type' => 'success', 'message' => 'Pendaftaran diterima! Akunmu menunggu verifikasi NPK oleh admin.']);
+        }
 
         return redirect(route('siswa.dashboard', absolute: false));
     }

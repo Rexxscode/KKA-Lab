@@ -18,7 +18,33 @@
             <x-card title="Modul" subtitle="KKA"><p class="text-3xl font-extrabold text-slate-900">{{ $stats['modul'] }}</p></x-card>
         </div>
 
-        <x-card title="Buat Akun Guru / Admin" subtitle="Guru tidak bisa daftar sendiri — akunnya dibuat di sini. Kata sandi minimal 8 karakter.">
+        <x-card title="Pengajuan Akun Guru ({{ $pengajuan->count() }})" subtitle="Verifikasi foto NPK, lalu setujui atau tolak.">
+            @forelse($pengajuan as $p)
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl border border-orange-200 bg-orange-50/60 px-4 py-3 mb-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-sm text-slate-800">{{ $p->name }}</p>
+                        <p class="text-xs text-slate-500">{{ $p->email }} • daftar {{ $p->created_at->format('d M Y H:i') }}</p>
+                    </div>
+                    @if($p->bukti_npk_path)
+                        <a href="{{ route('admin.bukti.unduh', $p) }}" class="kka-btn-secondary !py-1.5 text-xs whitespace-nowrap">📄 Lihat NPK</a>
+                    @else
+                        <span class="text-xs text-slate-400">Tanpa bukti</span>
+                    @endif
+                    <form method="POST" action="{{ route('admin.pengajuan.setujui', $p) }}">
+                        @csrf
+                        <button class="kka-btn-primary !py-1.5 text-xs w-full sm:w-auto">Setujui</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.pengajuan.tolak', $p) }}" onsubmit="return confirm('Tolak pengajuan {{ $p->email }}?')">
+                        @csrf
+                        <button class="kka-btn-secondary !py-1.5 text-xs !text-red-600 w-full sm:w-auto">Tolak</button>
+                    </form>
+                </div>
+            @empty
+                <p class="text-sm text-slate-400">Tidak ada pengajuan menunggu. Semua guru sudah terverifikasi. ✅</p>
+            @endforelse
+        </x-card>
+
+        <x-card title="Buat Akun Guru / Admin" subtitle="Guru juga bisa daftar sendiri (wajib NPK, menunggu verifikasi). Akun di sini langsung aktif. Kata sandi minimal 8 karakter.">
             <form method="POST" action="{{ route('admin.users.store') }}" class="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
                 @csrf
                 <input name="name" required maxlength="100" placeholder="Nama guru" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
@@ -54,7 +80,13 @@
                         @foreach($users as $u)
                             <tr class="border-b border-slate-100">
                                 <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $u->name }}</p><p class="text-xs text-slate-400">{{ $u->email }}</p></td>
-                                <td class="py-3 pr-3"><span class="kka-badge">{{ ucfirst($u->role) }}</span></td>
+                                <td class="py-3 pr-3"><span class="kka-badge">{{ ucfirst($u->role) }}</span>
+                                    @if($u->status === 'pending')
+                                        <span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 border border-orange-200">⏳ Pending</span>
+                                    @elseif($u->status === 'ditolak')
+                                        <span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-red-700 border border-red-200">Ditolak</span>
+                                    @endif
+                                </td>
                                 <td class="py-3 pr-3 text-xs text-slate-500">
                                     @if($u->isGuru()) {{ $u->taughtClassrooms->count() }} kelas • {{ $u->taughtClassrooms->sum('students_count') }} siswa
                                     @elseif($u->isSiswa()) {{ $u->totalXp() }} XP • {{ $u->progress()->where('is_completed', true)->count() }}/{{ $modules->count() }} lulus
