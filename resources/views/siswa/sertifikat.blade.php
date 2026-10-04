@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-sidebar-layout>
     <x-slot name="header">
         <h2 class="font-extrabold text-xl text-slate-900">Sertifikat Kelulusan</h2>
         <p class="text-sm text-slate-500">Terbit otomatis jika 4 modul lulus (skor ≥80).</p>
@@ -48,4 +48,4 @@
             </x-card>
         @endif
     </div>
-</x-app-layout>
+</x-sidebar-layout>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-sidebar-layout>
     <x-slot name="header">
         <a href="{{ route('guru.dashboard') }}" class="text-sm font-semibold text-orange-500">← Semua Kelas</a>
         <div class="flex flex-wrap items-center justify-between gap-3 mt-1">
@@ -50,4 +50,4 @@
             </div>
         </x-card>
     </div>
-</x-app-layout>
+</x-sidebar-layout>

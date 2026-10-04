@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-sidebar-layout>
     <x-slot name="header">
         <h2 class="font-extrabold text-xl text-slate-900">Bank Soal (Guru bisa edit)</h2>
         <p class="text-sm text-slate-500">Tambah / ubah / hapus soal per modul. Skor lulus tetap ≥80.</p>
@@ -48,4 +48,4 @@
             </x-card>
         @endforeach
     </div>
-</x-app-layout>
+</x-sidebar-layout>

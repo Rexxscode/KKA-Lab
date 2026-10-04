@@ -4,10 +4,11 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Student\BahanController;
 use App\Http\Controllers\Student\CertificateController;
 use App\Http\Controllers\Student\ClassroomJoinController;
 use App\Http\Controllers\Student\DashboardController as SiswaDashboardController;
-use App\Http\Controllers\Student\ModuleController;
+use App\Http\Controllers\Student\KuisController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Teacher\ClassroomController as GuruClassroomController;
 use App\Http\Controllers\Teacher\ExportController;
@@ -47,8 +48,12 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
     Route::post('/gabung-kelas', [ClassroomJoinController::class, 'store'])->name('join');
-    Route::get('/modul/{slug}', [ModuleController::class, 'show'])->name('modul.show');
-    Route::post('/modul/{slug}/quiz', [ProgressController::class, 'submitQuiz'])->name('modul.quiz');
+    Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
+    Route::get('/bahan/{slug}', [BahanController::class, 'show'])->name('bahan.show');
+    Route::post('/bahan/{slug}/selesai', [BahanController::class, 'markRead'])->name('bahan.read');
+    Route::get('/kuis', [KuisController::class, 'index'])->name('kuis.index');
+    Route::get('/kuis/{slug}', [KuisController::class, 'show'])->name('kuis.show');
+    Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->name('kuis.submit');
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->name('modul.handson');
     Route::get('/sertifikat', [CertificateController::class, 'index'])->name('sertifikat');
 });

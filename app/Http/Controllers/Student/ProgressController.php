@@ -13,11 +13,18 @@ class ProgressController extends Controller
     public function submitQuiz(Request $request, string $slug)
     {
         $module = Module::where('slug', $slug)->with('quizzes')->firstOrFail();
+        $progress = $request->user()->progress()->where('module_id', $module->id)->first();
+
+        // Kuis hanya sah jika bahan bacaan sudah ditandai selesai.
+        if (! $progress || ! $progress->reading_done) {
+            return redirect()
+                ->route('siswa.bahan.show', $module->slug)
+                ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk mengerjakan kuis!']);
+        }
+
         $answers = $request->validate([
             'answers' => 'required|array',
             'answers.*' => 'nullable|integer|min:0|max:10',
-            // Kuis hanya sah jika siswa sudah konfirmasi selesai membaca materi.
-            'reading_confirmed' => 'required|accepted',
         ])['answers'];
 
         $quizzes = $module->quizzes;

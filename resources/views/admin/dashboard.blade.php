@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-sidebar-layout>
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -107,4 +107,4 @@
             </x-card>
         </div>
     </div>
-</x-app-layout>
+</x-sidebar-layout>
