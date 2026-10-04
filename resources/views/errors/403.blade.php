@@ -22,6 +22,7 @@
             @endauth
         </p>
         <div class="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
+            <button onclick="history.back()" class="kka-btn-secondary text-sm">← Halaman Sebelumnya</button>
             @auth
                 <a href="{{ route('dashboard') }}" class="kka-btn-primary text-sm">← Kembali ke Dasbor</a>
             @else
@@ -29,6 +30,21 @@
             @endauth
             <a href="{{ route('home') }}" class="kka-btn-secondary text-sm">Beranda</a>
         </div>
+        <p class="mt-4 text-xs text-slate-400">Otomatis kembali dalam <span id="hitung" class="font-bold">15</span> detik.</p>
+    </div>
+</div>
+<script>
+(function () {
+    let sisa = 15;
+    const el = document.getElementById('hitung');
+    const tujuan = document.querySelector('a.kka-btn-primary')?.href || '/';
+    const timer = setInterval(function () {
+        sisa--;
+        if (el) el.textContent = sisa;
+        if (sisa <= 0) { clearInterval(timer); window.location.href = tujuan; }
+    }, 1000);
+})();
+</script>
     </div>
 </div>
 </body>

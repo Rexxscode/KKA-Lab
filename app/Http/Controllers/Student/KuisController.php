@@ -29,8 +29,6 @@ class KuisController extends Controller
         }
 
         $progress = $item['progress'];
-        $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
-        $module->setRelation('quizzes', $quizzes);
 
         if (! $progress || ! $progress->reading_done) {
             return redirect()
@@ -38,6 +36,21 @@ class KuisController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk membuka kuis ini!']);
         }
 
-        return view('siswa.kuis-show', compact('module', 'progress'));
+        // Paket acak baru tiap kunjungan (urutan soal + opsi diacak,
+        // maksimal 15 soal bila bank lebih besar). Disimpan di sesi
+        // agar penilaian POST memakai susunan yang sama persis.
+        // Pengecualian: sehabis submit gagal (ada quiz_result), pakai
+        // paket yang sama agar pembahasan sejajar dengan jawaban.
+        $kunciPaket = 'kuis_paket_' . $module->id;
+        if (session()->has('quiz_result') && session()->has($kunciPaket)) {
+            $paket = session($kunciPaket);
+        } else {
+            $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
+            $paket = $modul->paketAcak($quizzes);
+            session([$kunciPaket => $paket]);
+        }
+        $tampil = $modul->uraikanPaket($paket);
+
+        return view('siswa.kuis-show', compact('module', 'progress', 'tampil'));
     }
 }

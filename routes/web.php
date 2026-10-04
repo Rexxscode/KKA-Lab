@@ -10,6 +10,7 @@ use App\Http\Controllers\Student\ClassroomJoinController;
 use App\Http\Controllers\Student\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Student\KuisController;
 use App\Http\Controllers\Student\ProgressController;
+use App\Http\Controllers\Student\RaportController;
 use App\Http\Controllers\Teacher\ClassroomController as GuruClassroomController;
 use App\Http\Controllers\Teacher\ExportController;
 use App\Http\Controllers\Teacher\ModuleController as GuruModuleController;
@@ -56,6 +57,7 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::get('/kuis/{slug}', [KuisController::class, 'show'])->name('kuis.show');
     Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->name('kuis.submit');
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->name('modul.handson');
+    Route::get('/raporku', [RaportController::class, 'index'])->name('raporku');
     Route::get('/sertifikat', [CertificateController::class, 'index'])->name('sertifikat');
     // Kompatibilitas bookmark lama.
     Route::redirect('/modul/{slug}', '/siswa/bahan/{slug}');

@@ -11,9 +11,7 @@
                 @if(view()->exists('siswa.modul.materi-' . $module->slug))
                     @include('siswa.modul.materi-' . $module->slug)
                 @elseif($module->materi)
-                    <div class="prose max-w-none text-sm text-slate-700 space-y-4">
-                        {!! nl2br(e($module->materi)) !!}
-                    </div>
+                    @include('siswa.modul.materi-custom', ['materi' => $module->materi])
                 @else
                     <div class="prose max-w-none text-sm text-slate-700 space-y-4">
                         <p>{{ $module->description ?? 'Pelajari materi modul ini dengan saksama sebelum mengerjakan kuis.' }}</p>
@@ -44,13 +42,52 @@
             </x-card>
         @endif
 
+        @if(in_array($module->slug, ['python-dasar-ai', 'data-logika-ai']))
+            <x-card title="Tahap 2 — Praktik Python Asli (di browser)" subtitle="Python beneran via Pyodide (WASM), bukan simulasi. Klik Jalankan — unduhan ±10MB hanya sekali, lalu bisa luring. Otomatis berhenti bila program jalan lebih dari 10 detik.">
+                <div x-data="kkaPython(@js($module->slug))" class="space-y-3">
+                    <div class="flex flex-wrap gap-2">
+                        @if($module->slug === 'python-dasar-ai')
+                            <button type="button" @click="isiContoh(0)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 1: Halo AI</button>
+                            <button type="button" @click="isiContoh(1)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 2: Variabel</button>
+                            <button type="button" @click="isiContoh(2)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 3: List & Loop</button>
+                            <button type="button" @click="isiContoh(3)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 4: Fungsi & Dict</button>
+                        @else
+                            <button type="button" @click="isiContoh(0)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 1: Rata-rata</button>
+                            <button type="button" @click="isiContoh(1)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 2: Filter</button>
+                            <button type="button" @click="isiContoh(2)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 3: Mini-Classifier</button>
+                            <button type="button" @click="isiContoh(3)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 4: Akurasi</button>
+                        @endif
+                    </div>
+                    <label for="editor-python" class="block text-xs font-bold text-slate-600">Kode Python-mu
+                        <textarea id="editor-python" x-model="kode" rows="8" spellcheck="false" class="mt-1 w-full rounded-2xl border-slate-200 font-mono text-[13px] focus:border-orange-500 focus:ring-orange-500" placeholder='print("Halo AI")'></textarea>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" @click="jalankan()" :disabled="sibuk" class="kka-btn-primary !py-2 text-sm disabled:opacity-50" x-text="sibuk ? 'Menjalankan...' : '▶ Jalankan'"></button>
+                        <button type="button" @click="hentikan()" :disabled="!sibuk" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40">⏹ Hentikan</button>
+                        <span class="kka-badge" x-text="status" role="status"></span>
+                    </div>
+                    <div x-show="memuat" class="space-y-2" aria-hidden="true">
+                        <div class="kka-skeleton h-4 w-2/3"></div>
+                        <div class="kka-skeleton h-20 w-full"></div>
+                        <p class="text-xs font-semibold text-slate-500">Mengunduh Python (Pyodide ±10MB, sekali saja — butuh internet)...</p>
+                    </div>
+                    <pre x-show="keluaran !== ''" x-text="keluaran" class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-[13px] whitespace-pre-wrap min-h-16 overflow-x-auto" aria-label="Hasil program"></pre>
+                    <p class="text-[11px] text-slate-400">Tips: ubah contohnya lalu Jalankan lagi. Modul Python tidak memakai kamera. Kode berjalan lokal di perangkatmu.</p>
+                </div>
+            </x-card>
+        @endif
+
         @if($module->slug === 'latih-ai-mu')
             <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="1) Tulis nama 2 benda → 2) Kumpulkan contoh → 3) Latih Model → 4) Uji/Pantau real-time. Tanpa API luar, gambar TIDAK dikirim ke server.">
                 <div x-data="kkaKnN()" x-init="boot()" class="space-y-4">
-                    <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
-                        <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
+                    <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">                        <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
                         <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Klik “Aktifkan Kamera” untuk ambil contoh, atau pakai Dataset Contoh di bawah.</p></template>
-                        <span class="absolute top-3 left-3 kka-badge" x-text="status"></span>
+                        <span class="absolute top-3 left-3 kka-badge" x-text="status" role="status"></span>
+                    </div>
+                    <div x-show="!modelSiap" class="space-y-2" aria-hidden="true">
+                        <div class="kka-skeleton h-4 w-3/4"></div>
+                        <div class="kka-skeleton h-16 w-full"></div>
+                        <p class="text-xs font-semibold text-slate-500">Memuat model AI (±3–5 MB, sekali saja, butuh internet)...</p>
                     </div>
                     <div class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-sm min-h-16" x-text="prediction || 'Halo! Aku AI yang akan kamu latih sendiri. Mulai dari Aktifkan Kamera ya!'"></div>
                     <div class="rounded-2xl border border-slate-200 p-4">
@@ -187,7 +224,7 @@
             imgTensor.dispose(); act.dispose();
         }
         return {
-            status: 'Belum dimuat', cameraOn: false, sibuk: false,
+            status: 'Memuat model...', cameraOn: false, sibuk: false, modelSiap: false,
             counts: [0, 0], terlatih: false, live: false, timer: null,
             namaA: 'Botol', namaB: 'Buku',
             prediction: '', ujiCount: {{ $progress->hands_on_count ?? 0 }}, xpNote: '',
@@ -218,8 +255,9 @@
                 try {
                     const m = await window.__kkaModulNet;
                     rawNet = m.net; rawKnn = m.knn;
+                    this.modelSiap = true;
                     this.status = 'Model siap — tulis nama benda lalu kumpulkan contoh';
-                } catch(e) { this.status = 'Gagal load model (butuh internet sekali)'; }
+                } catch(e) { this.modelSiap = false; this.status = 'Gagal load model (butuh internet sekali)'; }
             },
             async toggleKamera() {
                 if (this.cameraOn) {
@@ -385,6 +423,122 @@
                     this.penjelasan = data.reply || 'Tidak ada jawaban.';
                 } catch (e) { this.penjelasan = 'Gagal menghubungi Tutor AI. Coba lagi ya!'; }
                 this.jelasSibuk = false;
+            },
+        }
+    }
+    </script>
+    @endpush
+    @endif
+
+    @if(in_array($module->slug, ['python-dasar-ai', 'data-logika-ai']))
+    @push('scripts')
+    <script>
+    function kkaPython(slug) {
+        // Python asli via Pyodide (WASM) — lazy-load saat Jalankan pertama.
+        // Anti-hang: worker dihentikan paksa bila lewat 10 detik.
+        const CONTOH = {
+            'python-dasar-ai': [
+                'print("Halo AI")\nprint("Aku siap belajar Python!")',
+                'nama = "Sinta"\numur = 17\nprint("Nama:", nama)\nprint("Umur:", umur)\nprint("Tipe umur:", type(umur))',
+                'nilai = [70, 80, 90]\nprint("Isi:", nilai)\nprint("Banyak data:", len(nilai))\nfor n in nilai:\n    print("Nilai:", n)',
+                'def sapa(nama):\n    return "Halo, " + nama + "!"\n\nprint(sapa("Budi"))\nsiswa = {"nama": "Budi", "nilai": 85}\nprint("Nilai Budi:", siswa["nilai"])',
+            ],
+            'data-logika-ai': [
+                'nilai = [70, 80, 90]\nrata = sum(nilai) / len(nilai)\nprint("Rata-rata:", rata)',
+                'nilai = [70, 85, 60, 90]\nlulus = [x for x in nilai if x >= 80]\nprint("Yang lulus:", lulus)',
+                'def label(n):\n    return "lulus" if n >= 80 else "remidi"\n\ndata = [85, 60, 92, 75]\nfor n in data:\n    print(n, "->", label(n))',
+                'tebakan = ["lulus", "remidi", "lulus", "lulus"]\nbenar = ["lulus", "lulus", "lulus", "remidi"]\ncocok = sum(1 for a, b in zip(tebakan, benar) if a == b)\nprint("Akurasi:", cocok / len(benar) * 100, "%")',
+            ],
+        };
+        const DILARANG = ['import os', 'import sys', 'import subprocess', 'import socket', 'open('];
+        const awal = (CONTOH[slug] && CONTOH[slug][0]) || 'print("Halo AI")';
+        return {
+            kode: awal,
+            keluaran: '',
+            status: 'Siap — tulis kodemu lalu Jalankan',
+            sibuk: false,
+            memuat: false,
+            worker: null,
+            timerHang: null,
+            contoh() {
+                return CONTOH[slug] || [];
+            },
+            isiContoh(i) {
+                const daftar = this.contoh();
+                if (daftar[i] !== undefined) {
+                    this.kode = daftar[i];
+                    this.keluaran = '';
+                    this.status = 'Contoh dimuat — tekan Jalankan!';
+                }
+            },
+            jalankan() {
+                if (this.sibuk) return;
+                if (this.kode.trim() === '') {
+                    this.status = 'Tulis dulu kodemu (atau klik salah satu Contoh)!';
+                    return;
+                }
+                if (this.kode.length > 2000) {
+                    this.status = 'Kodenya kepanjangan (maks 2000 karakter). Pendekkan dulu ya!';
+                    return;
+                }
+                const kena = DILARANG.find(p => this.kode.includes(p));
+                if (kena) {
+                    this.status = 'Demi keamanan, "' + kena + '" tidak diizinkan di latihan ini.';
+                    return;
+                }
+                this.sibuk = true;
+                this.memuat = true;
+                this.keluaran = '';
+                this.status = 'Menyiapkan Python... (unduhan ±10MB hanya saat pertama)';
+                try {
+                    this.worker = new Worker(@js(asset('js/pyodide-worker.js')));
+                } catch (e) {
+                    this.sibuk = false; this.memuat = false;
+                    this.status = 'Browser tidak mendukung Web Worker. Coba Chrome/Edge/Firefox terbaru.';
+                    return;
+                }
+                const vm = this;
+                this.worker.onmessage = function (e) {
+                    const m = e.data || {};
+                    if (m.type === 'status' && m.data === 'mengeksekusi') {
+                        vm.memuat = false;
+                        vm.status = 'Menjalankan kodemu... (maks 10 detik)';
+                    }
+                    if (m.type === 'selesai') {
+                        vm.bersih();
+                        if (m.data && m.data.ok) {
+                            vm.keluaran = m.data.output === '' ? '(Program selesai tanpa keluaran. Coba tambah print(...).)' : m.data.output;
+                            vm.status = 'Selesai ✓ — ubah kodenya dan Jalankan lagi!';
+                        } else {
+                            vm.keluaran = (m.data && m.data.output ? m.data.output + '\n' : '') + 'ERROR: ' + ((m.data && m.data.error) || 'tidak diketahui');
+                            vm.status = (m.data && m.data.offline) ? 'Gagal memuat (butuh internet sekali) — coba lagi!' : 'Program error — baca pesan merah di atas, perbaiki, Jalankan lagi!';
+                        }
+                    }
+                };
+                this.worker.onerror = function () {
+                    vm.bersih();
+                    vm.keluaran = '';
+                    vm.status = 'Gagal memuat Python (butuh internet sekali untuk ±10MB). Periksa koneksi lalu Jalankan lagi.';
+                };
+                this.worker.postMessage({ cmd: 'jalankan', code: this.kode });
+                // Anti-hang wajib: terminate bila lewat 10 detik.
+                this.timerHang = setTimeout(function () {
+                    if (!vm.sibuk) return;
+                    vm.bersih();
+                    vm.keluaran = (vm.keluaran ? vm.keluaran + '\n' : '') + 'WAKTU HABIS (10 detik) — program dihentikan. Mungkin ada while True tanpa henti. Perbaiki lalu Jalankan lagi!';
+                    vm.status = 'Dihentikan paksa (timeout 10 detik)';
+                }, 10000);
+            },
+            hentikan() {
+                if (!this.sibuk) return;
+                this.bersih();
+                this.status = 'Dihentikan. Tekan Jalankan untuk mencoba lagi.';
+            },
+            bersih() {
+                if (this.timerHang) { clearTimeout(this.timerHang); this.timerHang = null; }
+                if (this.worker) { try { this.worker.terminate(); } catch (e) {} this.worker = null; }
+                this.sibuk = false;
+                this.memuat = false;
             },
         }
     }

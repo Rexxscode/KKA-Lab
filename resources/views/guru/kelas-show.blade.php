@@ -12,6 +12,9 @@
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <x-card title="Progres & Skor Siswa" subtitle="Hijau = lulus (≥80), orange = belum lulus.">
+            <div x-data="{ cari: '' }">
+                <label for="cari-siswa" class="sr-only">Cari siswa di kelas ini</label>
+                <input id="cari-siswa" x-model="cari" type="search" placeholder="Cari nama / email siswa..." class="w-full sm:max-w-sm rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500 mb-3" />
             <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[720px]">
                     <thead>
@@ -26,7 +29,7 @@
                     <tbody>
                         @forelse($classroom->students as $s)
                             @php $by = $s->progress->keyBy('module_id'); @endphp
-                            <tr class="border-b border-slate-100">
+                            <tr class="border-b border-slate-100" x-show="$el.dataset.cari.toLowerCase().includes(cari.toLowerCase())" data-cari="{{ strtolower($s->name . ' ' . $s->email) }}">
                                 <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $s->name }}</p><p class="text-xs text-slate-400">{{ $s->email }}</p></td>
                                 @foreach($modules as $m)
                                     @php $p = $by->get($m->id); @endphp
@@ -47,6 +50,7 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
             </div>
         </x-card>
 

@@ -120,6 +120,9 @@
         </x-card>
 
         <x-card title="Progres Belajar Siswa" subtitle="Data tiap siswa: kelas, XP, badge, dan status per modul.">
+            <div x-data="{ cari: '' }">
+                <label for="cari-progres" class="sr-only">Saring progres siswa</label>
+                <input id="cari-progres" x-model="cari" type="search" placeholder="Saring nama / email / kelas pada tabel ini..." class="w-full sm:max-w-sm rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500 mb-3" />
             <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[860px]">
                     <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-200">
@@ -134,7 +137,7 @@
                     <tbody>
                         @forelse($siswaList as $s)
                             @php $by = $s->progress->keyBy('module_id'); @endphp
-                            <tr class="border-b border-slate-100">
+                            <tr class="border-b border-slate-100" x-show="$el.dataset.cari.toLowerCase().includes(cari.toLowerCase())" data-cari="{{ strtolower($s->name . ' ' . $s->email . ' ' . $s->classrooms->pluck('name')->join(' ')) }}">
                                 <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $s->name }}</p><p class="text-xs text-slate-400">{{ $s->email }}</p></td>
                                 <td class="py-3 pr-3 text-xs text-slate-500">{{ $s->classrooms->pluck('name')->join(', ') ?: '—' }}</td>
                                 <td class="py-3 pr-3 font-extrabold text-emerald-600">{{ $s->progress->sum('xp_earned') }}</td>
@@ -159,6 +162,7 @@
                 </table>
             </div>
             <div class="mt-4">{{ $siswaList->links() }}</div>
+            </div>
         </x-card>
 
         <div class="grid lg:grid-cols-2 gap-4">

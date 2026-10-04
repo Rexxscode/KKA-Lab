@@ -16,7 +16,9 @@ class DashboardController extends Controller
         $badges = $user->badges()->with('module')->get();
         $classrooms = $user->classrooms()->with('teacher')->get();
         $kelasAktif = $modul->kelasAktif($user);
+        // Banner permanen: hasil pengerjaan terakhir (tidak hilang saat pindah halaman).
+        $terakhir = RaportController::terakhir($user->id);
 
-        return view('siswa.dashboard', compact('daftar', 'totalXp', 'badges', 'classrooms', 'kelasAktif'));
+        return view('siswa.dashboard', compact('daftar', 'totalXp', 'badges', 'classrooms', 'kelasAktif', 'terakhir'));
     }
 }

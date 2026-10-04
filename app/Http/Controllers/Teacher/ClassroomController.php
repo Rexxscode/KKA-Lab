@@ -39,7 +39,57 @@ class ClassroomController extends Controller
             ->withSum('progress as xp', 'xp_earned')
             ->orderByDesc('xp')->take(5)->get();
 
-        return view('guru.dashboard', compact('totalKelas', 'totalSiswa', 'totalModul', 'totalSoal', 'siswaTuntas', 'kelasBaru', 'siswaAktif'));
+        // Blok "Perlu Perhatian": per kelas, siapa belum mulai & siapa gagal/tertinggal,
+        // agar guru tidak perlu membuka tiap kelas satu per satu.
+        $perhatian = [];
+        $daftarKelas = (clone $kelasQuery)->with(['students.progress.module'])->withCount('students')->latest()->take(10)->get();
+        foreach ($daftarKelas as $kelas) {
+            $modulIds = $kelas->modules()->pluck('modules.id')->all();
+            if (empty($modulIds)) {
+                continue;
+            }
+            $belumMulai = [];
+            $gagal = [];
+            foreach ($kelas->students as $siswa) {
+                $byModul = $siswa->progress->keyBy('module_id');
+                $punyaAktivitas = false;
+                $skorTerendah = null;
+                $modulGagal = null;
+                foreach ($modulIds as $mid) {
+                    $p = $byModul->get($mid);
+                    if ($p && ($p->reading_done || $p->quiz_score > 0 || $p->hands_on_count > 0)) {
+                        $punyaAktivitas = true;
+                    }
+                    if ($p && ! $p->is_completed && ($p->quiz_score > 0 || $p->reading_done)) {
+                        if ($skorTerendah === null || $p->quiz_score < $skorTerendah) {
+                            $skorTerendah = $p->quiz_score;
+                            $modulGagal = $p->module->title ?? 'modul';
+                        }
+                    }
+                }
+                if (! $punyaAktivitas) {
+                    $belumMulai[] = $siswa;
+                } elseif ($skorTerendah !== null) {
+                    $gagal[] = ['siswa' => $siswa, 'skor' => $skorTerendah, 'modul' => $modulGagal];
+                }
+            }
+            // Urutkan yang paling lemah dulu, ambil 5 teratas per kategori.
+            usort($gagal, fn ($a, $b) => $a['skor'] <=> $b['skor']);
+            if (count($belumMulai) > 0 || count($gagal) > 0) {
+                $perhatian[] = [
+                    'kelas' => $kelas,
+                    'belumMulai' => array_slice($belumMulai, 0, 5),
+                    'belumMulaiTotal' => count($belumMulai),
+                    'gagal' => array_slice($gagal, 0, 5),
+                    'gagalTotal' => count($gagal),
+                ];
+            }
+            if (count($perhatian) >= 5) {
+                break;
+            }
+        }
+
+        return view('guru.dashboard', compact('totalKelas', 'totalSiswa', 'totalModul', 'totalSoal', 'siswaTuntas', 'kelasBaru', 'siswaAktif', 'perhatian'));
     }
 
     /**
@@ -82,7 +132,7 @@ class ClassroomController extends Controller
             'code' => $code,
         ]);
 
-        // Susunan awal: modul default (1-4) + modul custom guru.
+        // Susunan awal: semua modul default + modul custom guru.
         $pos = 1;
         foreach (Module::whereNull('teacher_id')->orderBy('order')->get() as $dm) {
             $classroom->modules()->attach($dm->id, ['position' => $pos++]);

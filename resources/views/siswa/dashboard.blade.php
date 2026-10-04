@@ -27,6 +27,20 @@
         </div>
     </div>
 
+    @if(isset($terakhir) && $terakhir && $terakhir->module)
+        <div class="mt-4 rounded-2xl border {{ $terakhir->is_completed ? 'border-emerald-200 bg-emerald-50' : 'border-orange-200 bg-orange-50' }} px-4 py-3 flex flex-wrap items-center gap-2 text-sm" role="status">
+            <span class="font-extrabold {{ $terakhir->is_completed ? 'text-emerald-800' : 'text-orange-800' }}">
+                Terakhir: {{ $terakhir->module->title }} — skor {{ $terakhir->quiz_score }}{{ $terakhir->is_completed ? ' (lulus)' : ' (belum lulus)' }} • +{{ $terakhir->xp_earned }} XP
+            </span>
+            <span class="flex gap-2 ml-auto">
+                <a href="{{ route('siswa.raporku') }}" class="font-bold text-orange-600 hover:text-orange-700 text-xs">Lihat Raporku →</a>
+                @if(! $terakhir->is_completed)
+                    <a href="{{ route('siswa.bahan.show', $terakhir->module->slug) }}" class="font-bold text-slate-600 hover:text-slate-800 text-xs">Pelajari lagi →</a>
+                @endif
+            </span>
+        </div>
+    @endif
+
     <div class="grid lg:grid-cols-3 gap-3 sm:gap-4 mt-4">
         <x-card title="Kuis yang Lulus" subtitle="riwayat nilaimu">
             <div class="space-y-2">
