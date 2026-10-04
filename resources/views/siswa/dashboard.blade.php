@@ -3,31 +3,37 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="font-extrabold text-xl text-slate-900">Halo {{ auth()->user()->name }}! 👋</h2>
-                <p class="text-sm text-slate-500">Lanjutkan misimu belajar AI hari ini.</p>
+                <p class="text-sm text-slate-500">
+                    @if($kelasAktif)
+                        Kelas aktif: <b class="text-orange-600">{{ $kelasAktif->name }}</b> — kerjakan modul berurutan ya!
+                    @else
+                        Lanjutkan misimu belajar AI hari ini. Gabung kelas untuk mulai!
+                    @endif
+                </p>
             </div>
             <a href="{{ route('siswa.sertifikat') }}" class="kka-btn-primary !py-2 text-sm">Sertifikat</a>
         </div>
     </x-slot>
 
-    @php $selesai = $progress->where('is_completed', true)->count(); @endphp
+    @php $selesai = collect($daftar)->where(fn ($d) => $d['progress'] && $d['progress']->is_completed)->count(); @endphp
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <x-card title="Total XP" subtitle="dari kuis & praktik"><p class="text-3xl font-extrabold text-orange-500">⚡ {{ $totalXp }}</p></x-card>
         <x-card title="Badge" subtitle="dikumpulkan"><p class="text-3xl font-extrabold text-emerald-500">🏅 {{ $badges->count() }}</p></x-card>
-        <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900">{{ $selesai }}/{{ $modules->count() }}</p></x-card>
+        <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900">{{ $selesai }}/{{ count($daftar) }}</p></x-card>
         <div class="kka-card p-6">
             <p class="text-sm text-slate-500">Progres Belajar</p>
-            <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ $modules->count() ? round($selesai / $modules->count() * 100) : 0 }}%</p>
-            <x-progress-bar :value="$selesai" :max="$modules->count() ?: 1" class="mt-2" />
+            <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ count($daftar) ? round($selesai / count($daftar) * 100) : 0 }}%</p>
+            <x-progress-bar :value="$selesai" :max="count($daftar) ?: 1" class="mt-2" />
         </div>
     </div>
 
     <div class="grid lg:grid-cols-3 gap-3 sm:gap-4 mt-4">
         <x-card title="Kuis yang Lulus" subtitle="riwayat nilaimu">
             <div class="space-y-2">
-                @forelse($progress->where('is_completed', true) as $p)
+                @forelse(collect($daftar)->filter(fn ($d) => $d['progress'] && $d['progress']->is_completed) as $d)
                     <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2 text-sm">
-                        <span class="font-semibold text-slate-700">{{ $p->module->title ?? 'Modul' }}</span>
-                        <span class="font-extrabold text-emerald-600">{{ $p->quiz_score }}</span>
+                        <span class="font-semibold text-slate-700">{{ $d['module']->title }}</span>
+                        <span class="font-extrabold text-emerald-600">{{ $d['progress']->quiz_score }}</span>
                     </div>
                 @empty
                     <p class="text-sm text-slate-400">Belum ada. Luluskan kuis dengan skor ≥80!</p>
@@ -45,9 +51,10 @@
             @if($classrooms->count())
                 <div class="mt-3 flex flex-wrap gap-2">
                     @foreach($classrooms as $c)
-                        <span class="kka-badge">{{ $c->name }} • {{ $c->code }}</span>
+                        <span class="kka-badge {{ $kelasAktif && $c->id === $kelasAktif->id ? '!bg-orange-100 !text-orange-700 !border-orange-300' : '' }}">{{ $c->name }} • {{ $c->code }}</span>
                     @endforeach
                 </div>
+                <p class="mt-2 text-[11px] text-slate-400">Kelas aktif (oranye) menentukan urutan modul & soalmu.</p>
             @endif
         </x-card>
 
@@ -62,14 +69,16 @@
         </x-card>
     </div>
 
-    <h3 class="mt-6 mb-3 font-extrabold text-slate-900">Modul Belajar</h3>
+    <h3 class="mt-6 mb-3 font-extrabold text-slate-900">Modul Belajar (berurutan)</h3>
     <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-        @foreach($modules as $m)
-            @php $p = $progress->get($m->id); @endphp
-            <x-card :title="$m->title" :subtitle="$m->description">
+        @foreach($daftar as $d)
+            @php $m = $d['module']; $p = $d['progress']; @endphp
+            <x-card :title="$d['posisi'] . '. ' . $m->title" :subtitle="$m->description">
                 <div class="flex items-center justify-between text-xs gap-2">
                     <span class="kka-badge">+{{ $m->xp_reward }} XP</span>
-                    @if($p && $p->is_completed)
+                    @if($d['terkunci'])
+                        <span class="font-bold text-slate-400 whitespace-nowrap">🔒 Terkunci</span>
+                    @elseif($p && $p->is_completed)
                         <span class="font-bold text-emerald-600 whitespace-nowrap">✓ Selesai • {{ $p->quiz_score }}</span>
                     @elseif($p && ($p->quiz_score > 0 || $p->reading_done))
                         <span class="font-bold text-orange-500 whitespace-nowrap">⏳ Dikerjakan{{ $p->quiz_score ? ' • ' . $p->quiz_score : '' }}</span>
@@ -79,7 +88,11 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2 mt-3">
                     <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary !py-2 text-sm text-center">📖 Bahan</a>
-                    <a href="{{ $p && $p->reading_done ? route('siswa.kuis.show', $m->slug) : route('siswa.bahan.show', $m->slug) }}" class="kka-btn-primary !py-2 text-sm text-center">📝 Kuis</a>
+                    @if($d['terkunci'])
+                        <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40">🔒 Kuis</span>
+                    @else
+                        <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary !py-2 text-sm text-center">📝 Kuis</a>
+                    @endif
                 </div>
             </x-card>
         @endforeach

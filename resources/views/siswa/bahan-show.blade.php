@@ -8,7 +8,14 @@
     <div class="space-y-4 sm:space-y-6" x-data="{ sampaiAkhir: false }">
         <x-card title="Tahap 1 — Bahan Ajar (wajib dibaca dulu)" subtitle="Scroll sampai akhir bacaan untuk membuka kunci kuis.">
             <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 max-h-[46vh] overflow-y-auto" @scroll="if ($el.scrollTop + $el.clientHeight >= $el.scrollHeight - 24) sampaiAkhir = true">
-                @include('siswa.modul.materi-' . $module->slug)
+                @if(view()->exists('siswa.modul.materi-' . $module->slug))
+                    @include('siswa.modul.materi-' . $module->slug)
+                @else
+                    <div class="prose max-w-none text-sm text-slate-700 space-y-4">
+                        <p>{{ $module->description ?? 'Pelajari materi modul ini dengan saksama sebelum mengerjakan kuis.' }}</p>
+                        <p>Kuis modul ini terdiri dari soal pilihan ganda buatan gurumu. Baca petunjuk di atas, kerjakan berurutan, dan capai skor minimal 80 untuk lulus.</p>
+                    </div>
+                @endif
             </div>
             <p class="mt-2 text-xs font-semibold" :class="sampaiAkhir ? 'text-emerald-600' : 'text-slate-400'" x-text="sampaiAkhir ? '✓ Kamu sudah sampai akhir bacaan.' : 'Scroll kotak bacaan sampai bawah ya...'"></p>
             <form method="POST" action="{{ route('siswa.bahan.read', $module->slug) }}" class="mt-3">

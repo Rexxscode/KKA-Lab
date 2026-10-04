@@ -12,7 +12,8 @@ class CertificateController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $modules = Module::orderBy('order')->get();
+        // Sertifikat hanya dari modul default (milik admin).
+        $modules = Module::whereNull('teacher_id')->orderBy('order')->get();
         $progress = $user->progress()->get()->keyBy('module_id');
 
         $eligible = $modules->count() > 0 && $modules->every(function ($m) use ($progress) {

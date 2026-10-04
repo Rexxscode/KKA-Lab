@@ -17,4 +17,9 @@ class Classroom extends Model
     {
         return $this->belongsToMany(User::class, 'classroom_user', 'classroom_id', 'student_id')->withTimestamps();
     }
+
+    public function modules()
+    {
+        return $this->belongsToMany(Module::class, 'classroom_module')->withPivot('position')->withTimestamps()->orderByPivot('position');
+    }
 }

@@ -6,14 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Models\Badge;
 use App\Models\Module;
 use App\Models\StudentProgress;
+use App\Services\StudentModuleService;
 use Illuminate\Http\Request;
 
 class ProgressController extends Controller
 {
-    public function submitQuiz(Request $request, string $slug)
+    public function submitQuiz(Request $request, string $slug, StudentModuleService $modul)
     {
-        $module = Module::where('slug', $slug)->with('quizzes')->firstOrFail();
-        $progress = $request->user()->progress()->where('module_id', $module->id)->first();
+        $module = Module::where('slug', $slug)->firstOrFail();
+        $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
+        abort_unless($item, 404);
+
+        if ($item['terkunci']) {
+            return redirect()
+                ->route('siswa.bahan.index')
+                ->with('toast', ['type' => 'error', 'message' => 'Selesaikan modul sebelumnya dulu sesuai urutan!']);
+        }
+
+        $progress = $item['progress'];
 
         // Kuis hanya sah jika bahan bacaan sudah ditandai selesai.
         if (! $progress || ! $progress->reading_done) {
@@ -27,7 +37,7 @@ class ProgressController extends Controller
             'answers.*' => 'nullable|integer|min:0|max:10',
         ])['answers'];
 
-        $quizzes = $module->quizzes;
+        $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
         $totalPoints = $quizzes->sum('points');
         $earned = 0;
 

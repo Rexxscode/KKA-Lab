@@ -49,5 +49,41 @@
                 </table>
             </div>
         </x-card>
+
+        <x-card title="Susunan Modul Kelas" subtitle="Urutan pengerjaan siswa (1 → 2 → 3 …). Atur dengan tombol naik/turun." class="mt-4">
+            <div class="space-y-2">
+                @forelse($modules as $i => $m)
+                    <div class="flex items-center gap-2 sm:gap-3 rounded-xl border border-slate-200 px-3 sm:px-4 py-2">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold shrink-0">{{ $i + 1 }}</span>
+                        <div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">{{ $m->title }}</p><p class="text-xs text-slate-400">{{ $m->isDefault() ? 'Default' : 'Modulmu' }}</p></div>
+                        <form method="POST" action="{{ route('guru.kelas.modul.naik', [$classroom, $m]) }}">
+                            @csrf @method('PATCH')
+                            <button class="kka-btn-secondary !py-1 !px-2.5 text-xs" @disabled($i === 0)>↑</button>
+                        </form>
+                        <form method="POST" action="{{ route('guru.kelas.modul.turun', [$classroom, $m]) }}">
+                            @csrf @method('PATCH')
+                            <button class="kka-btn-secondary !py-1 !px-2.5 text-xs" @disabled($i === $modules->count() - 1)>↓</button>
+                        </form>
+                        <form method="POST" action="{{ route('guru.kelas.modul.lepas', [$classroom, $m]) }}" onsubmit="return confirm('Lepas modul ini dari kelas?')">
+                            @csrf @method('DELETE')
+                            <button class="kka-btn-secondary !py-1 !px-2.5 text-xs !text-red-600">Lepas</button>
+                        </form>
+                    </div>
+                @empty
+                    <p class="text-sm text-slate-400">Belum ada modul di kelas ini.</p>
+                @endforelse
+            </div>
+            @if($modulTersedia->count())
+                <form method="POST" action="{{ route('guru.kelas.modul.tempel', $classroom) }}" class="mt-3 flex flex-col sm:flex-row gap-2">
+                    @csrf
+                    <select name="module_id" required class="flex-1 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500">
+                        @foreach($modulTersedia as $tm)
+                            <option value="{{ $tm->id }}">{{ $tm->title }}{{ $tm->isDefault() ? ' (default)' : '' }}</option>
+                        @endforeach
+                    </select>
+                    <x-button type="submit">Tempel ke Kelas</x-button>
+                </form>
+            @endif
+        </x-card>
     </div>
 </x-sidebar-layout>

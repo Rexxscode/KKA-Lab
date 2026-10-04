@@ -22,8 +22,13 @@ class ClassroomController extends Controller
         $totalKelas = (clone $kelasQuery)->count();
         $siswaIds = \DB::table('classroom_user')->whereIn('classroom_id', $kelasIds)->distinct()->pluck('student_id');
         $totalSiswa = $siswaIds->count();
-        $totalModul = Module::count();
-        $totalSoal = \App\Models\Quiz::count();
+        if ($user->isAdmin()) {
+            $totalModul = Module::count();
+            $totalSoal = \App\Models\Quiz::count();
+        } else {
+            $totalModul = Module::whereNull('teacher_id')->orWhere('teacher_id', $user->id)->count();
+            $totalSoal = \App\Models\Quiz::whereNull('teacher_id')->orWhere('teacher_id', $user->id)->count();
+        }
         $siswaTuntas = ($totalModul > 0 && $siswaIds->isNotEmpty())
             ? \DB::table('student_progress')->whereIn('student_id', $siswaIds)->where('is_completed', true)
                 ->select('student_id')->groupBy('student_id')->havingRaw('COUNT(*) >= ?', [$totalModul])->get()->count()
@@ -65,6 +70,15 @@ class ClassroomController extends Controller
             'code' => $code,
         ]);
 
+        // Susunan awal: modul default (1-4) + modul custom guru.
+        $pos = 1;
+        foreach (Module::whereNull('teacher_id')->orderBy('order')->get() as $dm) {
+            $classroom->modules()->attach($dm->id, ['position' => $pos++]);
+        }
+        foreach (Module::where('teacher_id', $request->user()->id)->orderBy('order')->get() as $cm) {
+            $classroom->modules()->attach($cm->id, ['position' => $pos++]);
+        }
+
         return redirect()->route('guru.kelas.show', $classroom)->with('toast', ['type' => 'success', 'message' => "Kelas {$classroom->name} dibuat! Kode: {$code}"]);
     }
 
@@ -72,9 +86,18 @@ class ClassroomController extends Controller
     {
         abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
 
-        $classroom->load(['students.progress.module']);
-        $modules = Module::orderBy('order')->get();
+        $classroom->load(['students.progress.module', 'modules']);
+        $modules = $classroom->modules;
 
-        return view('guru.kelas-show', compact('classroom', 'modules'));
+        $user = $request->user();
+        $terpasang = $modules->pluck('id')->all();
+        $modulTersedia = Module::where(function ($q) use ($user) {
+                $q->whereNull('teacher_id');
+                if (! $user->isAdmin()) {
+                    $q->orWhere('teacher_id', $user->id);
+                }
+            })->whereNotIn('id', $terpasang)->orderBy('order')->get();
+
+        return view('guru.kelas-show', compact('classroom', 'modules', 'modulTersedia'));
     }
 }

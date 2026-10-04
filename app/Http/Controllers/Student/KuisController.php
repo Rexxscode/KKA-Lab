@@ -4,22 +4,33 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Module;
+use App\Services\StudentModuleService;
 use Illuminate\Http\Request;
 
 class KuisController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, StudentModuleService $modul)
     {
-        $modules = Module::orderBy('order')->withCount('quizzes')->get();
-        $progress = $request->user()->progress()->get()->keyBy('module_id');
+        $daftar = $modul->denganStatus($request->user());
 
-        return view('siswa.kuis-index', compact('modules', 'progress'));
+        return view('siswa.kuis-index', compact('daftar'));
     }
 
-    public function show(Request $request, string $slug)
+    public function show(Request $request, string $slug, StudentModuleService $modul)
     {
-        $module = Module::where('slug', $slug)->with('quizzes')->firstOrFail();
-        $progress = $request->user()->progress()->where('module_id', $module->id)->first();
+        $module = Module::where('slug', $slug)->firstOrFail();
+        $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
+        abort_unless($item, 404);
+
+        if ($item['terkunci']) {
+            return redirect()
+                ->route('siswa.bahan.index')
+                ->with('toast', ['type' => 'error', 'message' => 'Selesaikan modul sebelumnya dulu sesuai urutan!']);
+        }
+
+        $progress = $item['progress'];
+        $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
+        $module->setRelation('quizzes', $quizzes);
 
         if (! $progress || ! $progress->reading_done) {
             return redirect()

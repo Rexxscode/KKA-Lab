@@ -14,7 +14,7 @@ class ExportController extends Controller
     {
         abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
 
-        $modules = Module::orderBy('order')->get();
+        $modules = $classroom->modules()->get();
         $classroom->load(['students.progress']);
 
         $filename = 'nilai-' . $classroom->code . '-' . now()->format('Ymd-His') . '.csv';

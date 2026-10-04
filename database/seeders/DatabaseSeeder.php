@@ -122,13 +122,25 @@ class DatabaseSeeder extends Seeder
             $module = Module::where('slug', $slug)->first();
             foreach ($items as $item) {
                 $quiz = Quiz::firstOrCreate(
-                    ['module_id' => $module->id, 'question' => $item['q']],
+                    ['module_id' => $module->id, 'teacher_id' => null, 'question' => $item['q']],
                     ['options' => $item['o'], 'correct_index' => $item['c'], 'points' => 20, 'explanation' => $item['e'] ?? null]
                 );
                 // Lengkapi pembahasan soal lama yang belum punya.
                 if (! $quiz->explanation && isset($item['e'])) {
                     $quiz->update(['explanation' => $item['e']]);
                 }
+            }
+        }
+
+        // Tempel 4 modul default (posisi 1-4) ke kelas yang belum punya susunan.
+        $defaults = Module::whereNull('teacher_id')->orderBy('order')->get();
+        foreach (\App\Models\Classroom::whereDoesntHave('modules')->get() as $kelas) {
+            $pos = 1;
+            foreach ($defaults as $dm) {
+                $kelas->modules()->syncWithoutDetaching([$dm->id => ['position' => $pos++]]);
+            }
+            foreach (Module::where('teacher_id', $kelas->teacher_id)->orderBy('order')->get() as $cm) {
+                $kelas->modules()->syncWithoutDetaching([$cm->id => ['position' => $pos++]]);
             }
         }
     }

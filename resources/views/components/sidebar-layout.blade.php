@@ -59,6 +59,7 @@
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">MENGAJAR</p>
                     <div class="space-y-1">
                         <x-side-link :href="route('guru.kelas.index')" :active="request()->routeIs('guru.kelas.*')" icon="users">Kelas Saya</x-side-link>
+                        <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Saya</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
                     </div>
                 </div>
@@ -71,8 +72,9 @@
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">KELOLA</p>
                     <div class="space-y-1">
                         <x-side-link :href="route('guru.kelas.index')" :active="request()->routeIs('guru.kelas.*')" icon="users">Kelas</x-side-link>
+                        <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Default</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
-                        <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')" icon="book">Pratinjau Siswa</x-side-link>
+                        <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')" icon="award">Pratinjau Siswa</x-side-link>
                     </div>
                 </div>
             @endif
