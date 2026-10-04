@@ -70,7 +70,6 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
     Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
     Route::get('/quiz/modul/{module}', [QuizController::class, 'module'])->name('quiz.module');
     Route::post('/quiz/modul/{module}', [QuizController::class, 'store'])->name('quiz.module.store');
-    Route::post('/quiz/modul/{module}/salin', [QuizController::class, 'salin'])->name('quiz.module.salin');
     Route::get('/modul', [GuruModuleController::class, 'index'])->name('modul.index');
     Route::post('/modul', [GuruModuleController::class, 'store'])->name('modul.store');
     Route::patch('/modul/{module}', [GuruModuleController::class, 'update'])->name('modul.update');

@@ -9,8 +9,8 @@
             @csrf
             <input name="title" required maxlength="150" placeholder="Judul modul, cth: Jaringan Komputer Dasar" class="sm:col-span-2 rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
             <input name="description" maxlength="500" placeholder="Deskripsi singkat (opsional)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-            <label class="text-xs font-semibold text-slate-600">Hadiah XP lulus
-                <input name="xp_reward" type="number" min="0" max="1000" value="100" class="mt-1 w-full rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+            <label class="text-xs font-semibold text-slate-600">Hadiah XP lulus (isi 0 bila tanpa XP)
+                <input name="xp_reward" type="number" min="0" max="1000" value="0" class="mt-1 w-full rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
             </label>
             <div class="sm:col-span-2"><x-button type="submit">Buat Modul</x-button></div>
         </form>

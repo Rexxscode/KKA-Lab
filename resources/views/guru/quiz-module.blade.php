@@ -6,13 +6,9 @@
     </x-slot>
 
     <x-card title="Tambah Soal Baru" subtitle="Untuk modul ini saja.">
-        @if(! $milikSendiri && $module->isDefault() && ! auth()->user()->isAdmin())
-            <form method="POST" action="{{ route('guru.quiz.module.salin', $module) }}">
-                @csrf
-                <p class="text-sm text-slate-600">Ini soal default milik admin (baca saja). Salin dulu agar bisa mengedit versi untuk kelas-kelasmu.</p>
-                <x-button type="submit" class="mt-2">📋 Salin {{ $module->quizzes->count() }} Soal Default</x-button>
-            </form>
-        @else
+        @if($module->isDefault() && ! auth()->user()->isAdmin())
+            <p class="text-xs rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 p-2.5 mb-3">🔒 Ini soal default admin. Silakan edit langsung — perubahan otomatis tersimpan sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
+        @endif
         <form method="POST" action="{{ route('guru.quiz.module.store', $module) }}" class="grid sm:grid-cols-2 gap-2 sm:gap-3">
             @csrf
             <input name="question" required placeholder="Tulis pertanyaan..." class="sm:col-span-2 rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
@@ -25,7 +21,6 @@
             </label>
             <div class="sm:col-span-2"><x-button type="submit">Simpan Soal</x-button></div>
         </form>
-        @endif
     </x-card>
 
     <h3 class="mt-6 mb-3 font-extrabold text-slate-900">Daftar Soal ({{ $module->quizzes->count() }})</h3>
@@ -43,7 +38,6 @@
                     @endif
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2">
-                    @if($milikSendiri)
                     <details class="relative">
                         <summary class="kka-btn-secondary !py-1.5 text-xs cursor-pointer list-none">Ubah</summary>
                         <form method="POST" action="{{ route('guru.quiz.update', $q) }}" class="mt-2 rounded-2xl border border-slate-200 p-3 grid sm:grid-cols-2 gap-2">
@@ -60,9 +54,6 @@
                         @csrf @method('DELETE')
                         <button class="kka-btn-secondary !py-1.5 text-xs !text-red-600">Hapus</button>
                     </form>
-                    @else
-                    <span class="text-xs text-slate-400">Milik admin — salin dulu untuk mengedit.</span>
-                    @endif
                 </div>
             </x-card>
         @empty

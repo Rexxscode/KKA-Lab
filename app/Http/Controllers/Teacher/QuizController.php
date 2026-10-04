@@ -43,33 +43,31 @@ class QuizController extends Controller
 
         if ($user->isAdmin() || $module->teacher_id === $user->id) {
             $soal = $module->quizzes()->where('teacher_id', $user->isAdmin() ? null : $user->id)->orderBy('id')->get();
-            $milikSendiri = true;
         } else {
-            // Modul default: tampilkan pratinjau set milik guru bila sudah disalin.
+            // Modul default: tampilkan set efektif (milik guru bila sudah ada fork, selain itu pratinjau default).
             $soal = $module->quizzes()->where('teacher_id', $user->id)->orderBy('id')->get();
-            $milikSendiri = $soal->isNotEmpty();
-            if (! $milikSendiri) {
+            if ($soal->isEmpty()) {
                 $soal = $module->quizzes()->whereNull('teacher_id')->orderBy('id')->get();
             }
         }
         $module->setRelation('quizzes', $soal);
 
-        return view('guru.quiz-module', compact('module', 'milikSendiri'));
+        return view('guru.quiz-module', compact('module'));
     }
 
     /**
-     * Salin seluruh soal default menjadi milik guru (sekali saja).
+     * Pastikan guru punya fork lengkap dari soal default modul ini.
+     * Dipanggil otomatis saat guru pertama kali menulis (tambah/ubah/hapus),
+     * sehingga soal default admin tidak pernah tersentuh.
      */
-    public function salin(Request $request, Module $module)
+    private function pastikanSalinan(Module $module, \App\Models\User $user): void
     {
-        abort_unless($module->isDefault(), 403);
-        $user = $request->user();
-        abort_if($user->isAdmin(), 403);
-
-        if ($module->quizzes()->where('teacher_id', $user->id)->exists()) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Kamu sudah punya salinan soal modul ini.']);
+        if (! $module->isDefault()) {
+            return;
         }
-
+        if ($module->quizzes()->where('teacher_id', $user->id)->exists()) {
+            return;
+        }
         foreach ($module->quizzes()->whereNull('teacher_id')->orderBy('id')->get() as $q) {
             $module->quizzes()->create([
                 'teacher_id' => $user->id,
@@ -80,8 +78,17 @@ class QuizController extends Controller
                 'points' => $q->points,
             ]);
         }
+    }
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Soal default disalin! Sekarang edit bebas tanpa mengganggu soal admin.']);
+    /**
+     * Cari baris milik guru yang bersesuaian dengan soal default asal.
+     */
+    private function padananMilik(Module $module, \App\Models\User $user, Quiz $asal): ?Quiz
+    {
+        return $module->quizzes()
+            ->where('teacher_id', $user->id)
+            ->where('question', $asal->question)
+            ->first();
     }
 
     public function store(Request $request, Module $module)
@@ -92,7 +99,10 @@ class QuizController extends Controller
             abort_unless($module->isDefault(), 403);
             $pemilik = null;
         } else {
-            abort_unless($module->teacher_id === $user->id, 403, 'Tambah soal hanya di modul milikmu (salin dulu dari default bila perlu).');
+            // Modul default ikut ter-fork otomatis: tulisan guru hanya
+            // berlaku untuk kelas-kelasnya sendiri.
+            abort_unless($module->isDefault() || $module->teacher_id === $user->id, 403);
+            $this->pastikanSalinan($module, $user);
             $pemilik = $user->id;
         }
 
@@ -116,6 +126,20 @@ class QuizController extends Controller
     public function update(Request $request, Quiz $quiz)
     {
         $user = $request->user();
+
+        // Guru mengedit soal default -> fork otomatis jadi miliknya.
+        if (! $user->isAdmin() && $quiz->isDefault()) {
+            $this->pastikanSalinan($quiz->module, $user);
+            $quiz = $this->padananMilik($quiz->module, $user, $quiz) ?? $quiz->module->quizzes()->create([
+                'teacher_id' => $user->id,
+                'question' => $quiz->question,
+                'options' => $quiz->options,
+                'correct_index' => $quiz->correct_index,
+                'explanation' => $quiz->explanation,
+                'points' => $quiz->points,
+            ]);
+        }
+
         abort_unless(
             $user->isAdmin() ? $quiz->isDefault() : $quiz->teacher_id === $user->id,
             403,
@@ -139,6 +163,18 @@ class QuizController extends Controller
     public function destroy(Request $request, Quiz $quiz)
     {
         $user = $request->user();
+
+        // Guru menghapus soal default -> fork otomatis lalu hapus
+        // padanannya, sehingga hanya hilang dari kelasnya sendiri.
+        if (! $user->isAdmin() && $quiz->isDefault()) {
+            $this->pastikanSalinan($quiz->module, $user);
+            if ($padanan = $this->padananMilik($quiz->module, $user, $quiz)) {
+                $padanan->delete();
+            }
+
+            return back()->with('toast', ['type' => 'success', 'message' => 'Soal dihapus dari bank soal kelasmu. Soal default admin tetap aman.']);
+        }
+
         abort_unless(
             $user->isAdmin() ? $quiz->isDefault() : $quiz->teacher_id === $user->id,
             403,
