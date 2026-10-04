@@ -12,11 +12,12 @@
         <form method="POST" action="{{ route('guru.quiz.module.store', $module) }}" class="grid sm:grid-cols-2 gap-2 sm:gap-3">
             @csrf
             <input name="question" required placeholder="Tulis pertanyaan..." class="sm:col-span-2 rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-            <input name="options[]" required placeholder="Opsi A" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-            <input name="options[]" required placeholder="Opsi B" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-            <input name="options[]" placeholder="Opsi C (opsional)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-            <input name="options[]" placeholder="Opsi D (opsional)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
-            <label class="text-xs font-semibold text-slate-600">Jawaban benar (0=A, 1=B, 2=C, 3=D)
+            <input name="options[]" required placeholder="Opsi A (wajib)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+            <input name="options[]" required placeholder="Opsi B (wajib)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+            <input name="options[]" required placeholder="Opsi C (wajib)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+            <input name="options[]" required placeholder="Opsi D (wajib)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+            <input name="options[]" required placeholder="Opsi E (wajib)" class="rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
+            <label class="text-xs font-semibold text-slate-600">Jawaban benar (0=A, 1=B, 2=C, 3=D, 4=E)
                 <input name="correct_index" type="number" min="0" max="4" value="0" required class="mt-1 w-full rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
             </label>
             <div class="sm:col-span-2"><x-button type="submit">Simpan Soal</x-button></div>
@@ -46,6 +47,9 @@
                             @foreach($q->options as $opt)
                                 <input name="options[]" value="{{ $opt }}" required class="rounded-xl border-slate-200 text-sm" />
                             @endforeach
+                            @for($k = count($q->options); $k < 5; $k++)
+                                <input name="options[]" value="" required placeholder="Opsi {{ chr(65 + $k) }} (wajib diisi)" class="rounded-xl border-slate-200 text-sm !border-orange-300" />
+                            @endfor
                             <input name="correct_index" type="number" min="0" value="{{ $q->correct_index }}" required class="rounded-xl border-slate-200 text-sm" />
                             <div class="sm:col-span-2"><button class="kka-btn-primary !py-1.5 text-xs">Simpan Perubahan</button></div>
                         </form>
