@@ -34,6 +34,19 @@ class DashboardController extends Controller
         $classrooms = Classroom::with(['teacher'])->withCount('students')->latest()->take(10)->get();
         $modules = Module::orderBy('order')->withCount('quizzes')->get();
 
-        return view('admin.dashboard', compact('stats', 'users', 'classrooms', 'modules'));
+        // Progres belajar tiap siswa: modul, skor, XP, badge, kelas.
+        $siswaQuery = User::where('role', 'siswa')->orderBy('name');
+        if ($request->filled('q')) {
+            $siswaQuery->where(function ($w) use ($request) {
+                $w->where('name', 'like', '%' . $request->q . '%')
+                  ->orWhere('email', 'like', '%' . $request->q . '%');
+            });
+        }
+        $siswaList = $siswaQuery
+            ->with(['progress.module', 'classrooms', 'badges'])
+            ->paginate(15, ['*'], 'siswa_page')
+            ->withQueryString();
+
+        return view('admin.dashboard', compact('stats', 'users', 'classrooms', 'modules', 'siswaList'));
     }
 }

@@ -87,6 +87,48 @@
             <div class="mt-4">{{ $users->links() }}</div>
         </x-card>
 
+        <x-card title="Progres Belajar Siswa" subtitle="Data tiap siswa: kelas, XP, badge, dan status per modul.">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[860px]">
+                    <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-200">
+                        <th class="py-2 pr-3">Siswa</th>
+                        <th class="py-2 pr-3">Kelas</th>
+                        <th class="py-2 pr-3">XP</th>
+                        <th class="py-2 pr-3">Badge</th>
+                        @foreach($modules as $m)
+                            <th class="py-2 pr-3">{{ $m->title }}</th>
+                        @endforeach
+                    </tr></thead>
+                    <tbody>
+                        @forelse($siswaList as $s)
+                            @php $by = $s->progress->keyBy('module_id'); @endphp
+                            <tr class="border-b border-slate-100">
+                                <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $s->name }}</p><p class="text-xs text-slate-400">{{ $s->email }}</p></td>
+                                <td class="py-3 pr-3 text-xs text-slate-500">{{ $s->classrooms->pluck('name')->join(', ') ?: '—' }}</td>
+                                <td class="py-3 pr-3 font-extrabold text-emerald-600">{{ $s->progress->sum('xp_earned') }}</td>
+                                <td class="py-3 pr-3 font-bold text-slate-700">{{ $s->badges->count() }}</td>
+                                @foreach($modules as $m)
+                                    @php $p = $by->get($m->id); @endphp
+                                    <td class="py-3 pr-3 text-xs">
+                                        @if($p && $p->is_completed)
+                                            <span class="kka-badge">✓ {{ $p->quiz_score }}</span>
+                                        @elseif($p && ($p->reading_done || $p->quiz_score > 0 || $p->hands_on_count > 0))
+                                            <span class="inline-flex px-2.5 py-0.5 rounded-full font-bold bg-orange-50 text-orange-700 border border-orange-200 whitespace-nowrap">⏳ {{ $p->quiz_score }}</span>
+                                        @else
+                                            <span class="text-slate-300">—</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @empty
+                            <tr><td colspan="{{ $modules->count() + 4 }}" class="py-6 text-center text-slate-400 text-sm">Belum ada siswa.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4">{{ $siswaList->links() }}</div>
+        </x-card>
+
         <div class="grid lg:grid-cols-2 gap-4">
             <x-card title="Kelas Terbaru" subtitle="Dibuat oleh guru.">
                 @forelse($classrooms as $c)
