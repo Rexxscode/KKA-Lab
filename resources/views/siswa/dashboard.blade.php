@@ -91,7 +91,7 @@
                     @if($d['terkunci'])
                         <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40">Kuis</span>
                     @else
-                        <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary !py-2 text-sm text-center">📝 Kuis</a>
+                        <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary !py-2 text-sm text-center">Kuis</a>
                     @endif
                 </div>
             </x-card>

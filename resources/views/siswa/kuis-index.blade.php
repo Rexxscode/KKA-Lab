@@ -27,7 +27,7 @@
                 @if($d['terkunci'])
                     <span class="kka-btn-secondary w-full mt-3 !py-2 text-sm text-center block opacity-40">🔒 Terkunci</span>
                 @elseif($p && $p->reading_done)
-                    <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary w-full mt-3 !py-2 text-sm text-center block">📝 {{ $p->is_completed ? 'Ulangi Kuis' : 'Kerjakan Kuis' }}</a>
+                    <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary w-full mt-3 !py-2 text-sm text-center block">{{ $p->is_completed ? 'Ulangi Kuis' : 'Kerjakan Kuis' }}</a>
                 @else
                     <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary w-full mt-3 !py-2 text-sm text-center block">📖 Baca Dulu</a>
                 @endif
