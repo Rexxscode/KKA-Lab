@@ -151,7 +151,7 @@
         </div>
     </div>
     <div class="border-t border-slate-100">
-        <p class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400">KKA Lab • Laravel Blade + Alpine.js + Tailwind + TensorFlow.js • Untuk pembelajaran AI di sekolah</p>
+        <p class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400">KKA Lab • Untuk pembelajaran AI di sekolah</p>
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
