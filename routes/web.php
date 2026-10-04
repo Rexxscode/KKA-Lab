@@ -67,7 +67,8 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
     Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
     Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');
     Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
-    Route::post('/quiz', [QuizController::class, 'store'])->name('quiz.store');
+    Route::get('/quiz/modul/{module}', [QuizController::class, 'module'])->name('quiz.module');
+    Route::post('/quiz/modul/{module}', [QuizController::class, 'store'])->name('quiz.module.store');
     Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->name('quiz.update');
     Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->name('quiz.destroy');
 });
