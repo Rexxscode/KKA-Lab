@@ -86,8 +86,74 @@
         </x-card>
     </section>
 
-    <footer class="py-8 text-center text-xs text-slate-400">KKA Lab • Dibangun dengan Laravel Blade + Alpine.js + Tailwind + TensorFlow.js (client-side) • Untuk pembelajaran AI di sekolah</footer>
+    <section class="py-8">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 text-center">
+            <p class="text-2xl font-extrabold text-orange-500">“</p>
+            <blockquote class="text-slate-700 text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
+                KKA Lab berkomitmen menghadirkan pembelajaran kecerdasan artifisial yang praktis dan menyenangkan —
+                setiap siswa berhak mencoba, melatih, dan memahami AI secara langsung, bukan sekadar membaca teori.
+            </blockquote>
+            <p class="mt-3 text-xs text-slate-400">Misi KKA Lab • Koding & Kecerdasan Artifisial untuk sekolah Indonesia</p>
+        </div>
+    </section>
+
+    <section class="py-4">
+        <div class="rounded-3xl bg-gradient-to-r from-orange-500 to-emerald-500 p-8 sm:p-10 text-center text-white">
+            <h2 class="text-2xl sm:text-3xl font-extrabold">Siap Memulai Petualangan AI-mu?</h2>
+            <p class="mt-2 text-sm sm:text-base text-white/90">Daftar sekarang dan temukan serunya melatih AI sendiri. Gratis untuk semua siswa!</p>
+            <a href="{{ route('register') }}" class="inline-block mt-5 px-7 py-3 rounded-2xl bg-white text-orange-600 font-extrabold text-sm shadow hover:bg-orange-50 transition">Daftar Sekarang — Gratis</a>
+        </div>
+    </section>
+
+    <section class="py-8">
+        <h2 class="text-2xl font-extrabold text-slate-900 text-center">Kontak Kami</h2>
+        <p class="text-sm text-slate-500 text-center mt-1">Punya pertanyaan, saran, atau ingin bekerja sama? Hubungi tim KKA Lab.</p>
+        <div class="mt-5 grid sm:grid-cols-3 gap-4">
+            <x-card title="✉️ Email" subtitle="halo@kkalab.sch.id"><p class="text-xs text-slate-500">Kami balas dalam 1–2 hari kerja.</p></x-card>
+            <x-card title="📍 Lokasi" subtitle="Indonesia"><p class="text-xs text-slate-500">Untuk SMA/SMK di seluruh Indonesia.</p></x-card>
+            <x-card title="💬 Respon" subtitle="Cepat & ramah"><p class="text-xs text-slate-500">Siswa, guru, dan sekolah dipersilakan bertanya.</p></x-card>
+        </div>
+    </section>
 </div>
+
+<footer class="border-t border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-orange-500 text-white font-extrabold">K</span>
+                <p class="font-extrabold text-slate-900">KKA <span class="text-orange-500">Lab</span></p>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Laboratorium Koding & Kecerdasan Artifisial untuk pembelajaran AI di sekolah.</p>
+        </div>
+        <div>
+            <p class="font-bold text-sm text-slate-900">Modul</p>
+            <ul class="mt-3 space-y-2 text-xs text-slate-500">
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Apa itu AI?</a></li>
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Latih AI-mu</a></li>
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Bias Data</a></li>
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Etika & Hoaks AI</a></li>
+            </ul>
+        </div>
+        <div>
+            <p class="font-bold text-sm text-slate-900">Akun</p>
+            <ul class="mt-3 space-y-2 text-xs text-slate-500">
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Masuk</a></li>
+                <li><a href="{{ route('register') }}" class="hover:text-orange-600">Daftar sebagai Siswa</a></li>
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Portal Guru</a></li>
+            </ul>
+        </div>
+        <div>
+            <p class="font-bold text-sm text-slate-900">Kontak</p>
+            <ul class="mt-3 space-y-2 text-xs text-slate-500">
+                <li>halo@kkalab.sch.id</li>
+                <li>Indonesia</li>
+            </ul>
+        </div>
+    </div>
+    <div class="border-t border-slate-100">
+        <p class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400">KKA Lab • Laravel Blade + Alpine.js + Tailwind + TensorFlow.js • Untuk pembelajaran AI di sekolah</p>
+    </div>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
 <script>
