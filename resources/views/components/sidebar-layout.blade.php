@@ -40,7 +40,7 @@
             @if(auth()->user()->isSiswa())
                 <div>
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">UTAMA</p>
-                    <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')" icon="home">Dasbor</x-side-link>
+                    <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')" icon="home">Dashboard</x-side-link>
                 </div>
                 <div>
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">BELAJAR</p>
@@ -53,7 +53,7 @@
             @elseif(auth()->user()->isGuru())
                 <div>
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">UTAMA</p>
-                    <x-side-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')" icon="home">Dasbor</x-side-link>
+                    <x-side-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')" icon="home">Dashboard</x-side-link>
                 </div>
                 <div>
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">MENGAJAR</p>
@@ -65,7 +65,7 @@
             @else
                 <div>
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">UTAMA</p>
-                    <x-side-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" icon="home">Dasbor</x-side-link>
+                    <x-side-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" icon="home">Dashboard</x-side-link>
                 </div>
                 <div>
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">KELOLA</p>
