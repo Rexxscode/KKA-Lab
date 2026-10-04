@@ -34,6 +34,7 @@ class ModuleController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:150',
             'description' => 'nullable|string',
+            'materi' => 'required|string',
             'xp_reward' => 'nullable|integer|min:0|max:1000',
         ]);
 
@@ -46,6 +47,7 @@ class ModuleController extends Controller
             'slug' => $slug,
             'order' => (int) (Module::where('teacher_id', $user->isAdmin() ? null : $user->id)->max('order') ?? 0) + 1,
             'description' => $data['description'] ?? null,
+            'materi' => $data['materi'] ?? null,
             'xp_reward' => $data['xp_reward'] ?? 100,
         ]);
 
@@ -69,6 +71,7 @@ class ModuleController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:150',
             'description' => 'nullable|string',
+            'materi' => 'nullable|string',
             'xp_reward' => 'nullable|integer|min:0|max:1000',
         ]);
 

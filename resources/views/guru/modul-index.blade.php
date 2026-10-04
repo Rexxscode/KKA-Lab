@@ -12,6 +12,9 @@
             <label class="text-xs font-semibold text-slate-600">Hadiah XP lulus (isi 0 bila tanpa XP)
                 <input name="xp_reward" type="number" min="0" max="1000" value="0" class="mt-1 w-full rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500" />
             </label>
+            <label class="sm:col-span-2 text-xs font-semibold text-slate-600">Bahan ajar (wajib diisi — dibaca siswa sebelum kuis)
+                <textarea name="materi" required rows="5" placeholder="Tulis materi bacaan: penjelasan konsep + contoh-contoh. Baris baru = paragraf baru." class="mt-1 w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500"></textarea>
+            </label>
             <div class="sm:col-span-2"><x-button type="submit">Buat Modul</x-button></div>
         </form>
     </x-card>
@@ -29,6 +32,7 @@
                             @csrf @method('PATCH')
                             <input name="title" value="{{ $m->title }}" required maxlength="150" class="w-full rounded-xl border-slate-200 text-sm" />
                             <input name="description" value="{{ $m->description }}" maxlength="500" placeholder="Deskripsi" class="w-full rounded-xl border-slate-200 text-sm" />
+                            <textarea name="materi" rows="4" placeholder="Bahan ajar {{ $m->isDefault() ? '(kosongkan = pakai materi bawaan)' : '(wajib diisi)' }}" @if(! $m->isDefault()) required @endif class="w-full rounded-xl border-slate-200 text-sm">{{ $m->materi }}</textarea>
                             <input name="xp_reward" type="number" min="0" max="1000" value="{{ $m->xp_reward }}" class="w-full rounded-xl border-slate-200 text-sm" />
                             <button class="kka-btn-primary !py-1.5 text-xs w-full">Simpan</button>
                         </form>

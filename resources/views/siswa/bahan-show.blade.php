@@ -10,6 +10,10 @@
             <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 max-h-[46vh] overflow-y-auto" @scroll="if ($el.scrollTop + $el.clientHeight >= $el.scrollHeight - 24) sampaiAkhir = true">
                 @if(view()->exists('siswa.modul.materi-' . $module->slug))
                     @include('siswa.modul.materi-' . $module->slug)
+                @elseif($module->materi)
+                    <div class="prose max-w-none text-sm text-slate-700 space-y-4">
+                        {!! nl2br(e($module->materi)) !!}
+                    </div>
                 @else
                     <div class="prose max-w-none text-sm text-slate-700 space-y-4">
                         <p>{{ $module->description ?? 'Pelajari materi modul ini dengan saksama sebelum mengerjakan kuis.' }}</p>
