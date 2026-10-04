@@ -9,7 +9,7 @@
 
   **Submission for ITX 2026 - Web Development**
 
-  **By [Nama Tim]**
+  **By Gatau dah yang penting mau juara**
 
 </div>
 
@@ -278,10 +278,9 @@ php artisan test
 
 | Nama | Peran | GitHub |
 |------|-------|--------|
-| **[Nama Lengkap 1]** | Project Lead & Full Stack Developer | [GitHub](https://github.com/[username1]) |
-| **[Nama Lengkap 2]** | Frontend Developer | [GitHub](https://github.com/[username2]) |
-| **[Nama Lengkap 3]** | Backend Developer | [GitHub](https://github.com/[username3]) |
-| **[Nama Lengkap 4]** | UI/UX Designer | [GitHub](https://github.com/[username4]) |
+| **Sofian Bahtiar** | Frontend Developer | [@Sayayyan](https://github.com/Sayayyan) |
+| **Muhamad Adzka Lainufar** | Full Stack Developer | [@Rexxscode](https://github.com/Rexxscode) |
+| **Fauzan Aji Wibisono** | Backend Developer | [@morganaji17-gif](https://github.com/morganaji17-gif) |
 
 ---
 
@@ -293,6 +292,6 @@ Proyek ini dilisensikan di bawah [MIT License](LICENSE) - lihat file LICENSE unt
 
 <div align="center">
 
-  **Made with ❤️ by [Nama Tim] for ITX 2026**
+  **Made with ❤️ by Gatau dah yang penting mau juara for ITX 2026**
 
 </div>
