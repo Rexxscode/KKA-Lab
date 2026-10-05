@@ -77,7 +77,15 @@
         if (gagal) gagal.classList.remove('hidden');
         return;
     }
+    const BATAS = 80;
+    const FONT = "'Plus Jakarta Sans', 'Figtree', sans-serif";
     const data = @js($skor);
+    const labelPenuh = data.map(d => d.label);
+    const labelPendek = data.map(d => {
+        const m = String(d.label).match(/^(\d+)\./);
+        return m ? 'M' + m[1] : String(d.label).slice(0, 12);
+    });
+    const statusSkor = (n) => n >= BATAS ? 'Lulus' : (n > 0 ? 'Belum lulus' : 'Belum dikerjakan');
     const bacaToken = () => {
         const css = getComputedStyle(document.documentElement);
         const token = (nama, ganti) => css.getPropertyValue(nama).trim() || ganti;
@@ -87,37 +95,100 @@
             kosong: token('--color-border', '#e2e8f0'),
             teks: token('--color-muted', '#64748b'),
             grid: token('--color-border', '#e2e8f0'),
+            garis: token('--color-primary-strong', '#ea580c'),
         };
     };
     const warnaBar = () => {
         const C = bacaToken();
-        return data.map(d => d.nilai >= 80 ? C.lulus : (d.nilai > 0 ? C.proses : C.kosong));
+        return data.map(d => d.nilai >= BATAS ? C.lulus : (d.nilai > 0 ? C.proses : C.kosong));
+    };
+    // Angka skor digambar di atas tiap batang (tanpa plugin tambahan).
+    const pluginNilai = {
+        id: 'nilaiDiAtas',
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta) return;
+            const C = bacaToken();
+            ctx.save();
+            ctx.font = "700 11px " + FONT;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = C.teks;
+            meta.data.forEach((bar, i) => {
+                ctx.fillText(String(data[i].nilai), bar.x, bar.y - 5);
+            });
+            ctx.restore();
+        }
     };
     const chart = new Chart(el, {
         type: 'bar',
         data: {
-            labels: data.map(d => d.label),
-            datasets: [{
-                label: 'Skor',
-                data: data.map(d => d.nilai),
-                backgroundColor: warnaBar(),
-                borderRadius: 8,
-            }],
+            labels: labelPendek,
+            datasets: [
+                {
+                    label: 'Skor',
+                    data: data.map(d => d.nilai),
+                    backgroundColor: warnaBar(),
+                    borderRadius: 10,
+                    borderSkipped: 'start',
+                    maxBarThickness: 54,
+                },
+                {
+                    type: 'line',
+                    label: 'Batas lulus (80)',
+                    data: data.map(() => BATAS),
+                    borderColor: bacaToken().garis,
+                    borderDash: [7, 5],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 0,
+                },
+            ],
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: { y: { min: 0, max: 100, ticks: { stepSize: 20 } } },
-            plugins: { legend: { display: false } },
+            layout: { padding: { top: 22 } },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8, padding: 14, font: { family: FONT, size: 11 } },
+                },
+                tooltip: {
+                    callbacks: {
+                        title: (items) => labelPenuh[items[0].dataIndex] ?? '',
+                        label: (item) => item.datasetIndex === 0
+                            ? ' Skor: ' + data[item.dataIndex].nilai + ' — ' + statusSkor(data[item.dataIndex].nilai)
+                            : ' Batas lulus: ' + BATAS,
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    min: 0,
+                    max: 100,
+                    ticks: { stepSize: 20, font: { family: FONT, size: 11 } },
+                },
+                x: {
+                    ticks: { maxRotation: 0, font: { family: FONT, size: 11, weight: 'bold' } },
+                    grid: { display: false },
+                },
+            },
         },
+        plugins: [pluginNilai],
     });
     const terapkanTema = () => {
         const C = bacaToken();
         chart.data.datasets[0].backgroundColor = warnaBar();
-        chart.options.scales.x.ticks = { color: C.teks };
-        chart.options.scales.y.ticks = { color: C.teks, stepSize: 20 };
-        chart.options.scales.x.grid = { color: C.grid };
+        chart.data.datasets[1].borderColor = C.garis;
+        chart.options.scales.x.ticks = { maxRotation: 0, color: C.teks, font: { family: FONT, size: 11, weight: 'bold' } };
+        chart.options.scales.y.ticks = { color: C.teks, stepSize: 20, font: { family: FONT, size: 11 } };
+        chart.options.scales.x.grid = { display: false };
         chart.options.scales.y.grid = { color: C.grid };
+        chart.options.plugins.legend.labels.color = C.teks;
         chart.update();
     };
     terapkanTema();
