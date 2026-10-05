@@ -1,7 +1,6 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('admin.dashboard') }}" class="text-sm font-semibold text-orange-500">← Dasbor</a>
-        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white mt-1">Log AI Seluruh Pengguna</h2>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Log AI Seluruh Pengguna</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">Audit pemakaian Tutor AI. Kuota 30/hari/pengguna.</p>
     </x-slot>
 

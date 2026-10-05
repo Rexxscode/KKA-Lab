@@ -1,7 +1,6 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('guru.kelas.show', $classroom) }}" class="text-sm font-semibold text-orange-500">← {{ $classroom->name }}</a>
-        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white mt-1">Rapor {{ $siswa->name }}</h2>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Rapor {{ $siswa->name }}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">{{ $siswa->email }} • {{ $lulus }}/{{ count($daftar) }} modul lulus • Total {{ $totalXp }} XP</p>
     </x-slot>
 

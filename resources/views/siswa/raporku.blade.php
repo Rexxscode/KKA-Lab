@@ -1,6 +1,5 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('siswa.dashboard') }}" class="text-sm font-semibold text-orange-500">← Dasbor</a>
         <div class="flex flex-wrap items-center justify-between gap-3 mt-1">
             <div>
                 <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Raporku</h2>

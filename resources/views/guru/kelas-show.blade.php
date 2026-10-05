@@ -1,7 +1,6 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('guru.kelas.index') }}" class="text-sm font-semibold text-orange-500">← Semua Kelas</a>
-        <div class="flex flex-wrap items-center justify-between gap-3 mt-1">
+        <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">{{ $classroom->name }}</h2>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Kode kelas: <b class="text-orange-500 tracking-widest">{{ $classroom->code }}</b> • {{ $classroom->students->count() }} siswa

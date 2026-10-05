@@ -1,7 +1,6 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('siswa.bahan.index') }}" class="text-sm font-semibold text-orange-500">← Semua Bahan</a>
-        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white mt-1">{{ $module->title }}</h2>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">{{ $module->title }}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">{{ $module->description }} • +{{ $module->xp_reward }} XP • Lulus jika kuis ≥80</p>
     </x-slot>
 

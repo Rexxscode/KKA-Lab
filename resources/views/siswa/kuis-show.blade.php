@@ -1,7 +1,6 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('siswa.kuis.index') }}" class="text-sm font-semibold text-orange-500">← Semua Kuis</a>
-        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white mt-1">Kuis: {{ $module->title }}</h2>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Kuis: {{ $module->title }}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">{{ count($tampil) }} soal acak per percobaan • Opsi diacak • Lulus jika skor ≥80 • Materi disembunyikan (murni pemahamanmu)</p>
         <p class="mt-1 text-sm font-bold text-orange-600 dark:text-orange-400">Batas waktu: {{ \App\Http\Controllers\Student\ProgressController::DURASI_KUIS_MENIT }} menit • Sisa: <span id="sisa-waktu" data-detik="{{ $sisaDetik }}">--:--</span></p>
     </x-slot>

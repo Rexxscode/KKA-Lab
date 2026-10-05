@@ -1,7 +1,6 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('guru.quiz.index') }}" class="text-sm font-semibold text-orange-500">← Semua Modul</a>
-        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white mt-1">Soal: {{ $module->title }}</h2>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Soal: {{ $module->title }}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">{{ $module->quizzes->count() }} soal • Poin per soal 20 • Lulus jika skor ≥80.</p>
     </x-slot>
 
