@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h2 class="font-extrabold text-xl text-slate-900">Halo {{ auth()->user()->name }}!</h2>
-                <p class="text-sm text-slate-500">
+                <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Halo {{ auth()->user()->name }}!</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
                     @if($kelasAktif)
-                        Kelas aktif: <b class="text-orange-600">{{ $kelasAktif->name }}</b> — kerjakan modul berurutan ya!
+                        Kelas aktif: <b class="text-orange-600 dark:text-orange-400">{{ $kelasAktif->name }}</b> — kerjakan modul berurutan ya!
                     @else
                         Lanjutkan misimu belajar AI hari ini. Gabung kelas untuk mulai!
                     @endif
@@ -17,25 +17,25 @@
 
     @php $selesai = collect($daftar)->where(fn ($d) => $d['progress'] && $d['progress']->is_completed)->count(); @endphp
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <x-card title="Total XP" subtitle="dari kuis & praktik"><p class="kka-stat text-orange-600 flex items-center gap-2"><x-icon name="bolt" class="w-7 h-7" />{{ $totalXp }}</p></x-card>
-        <x-card title="Badge" subtitle="dikumpulkan"><p class="kka-stat text-emerald-600 flex items-center gap-2"><x-icon name="cap" class="w-7 h-7" />{{ $badges->count() }}</p></x-card>
-        <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900">{{ $selesai }}/{{ count($daftar) }}</p></x-card>
+        <x-card title="Total XP" subtitle="dari kuis & praktik"><p class="kka-stat text-orange-600 dark:text-orange-400 flex items-center gap-2"><x-icon name="bolt" class="w-7 h-7" />{{ $totalXp }}</p></x-card>
+        <x-card title="Badge" subtitle="dikumpulkan"><p class="kka-stat text-emerald-600 dark:text-emerald-400 flex items-center gap-2"><x-icon name="cap" class="w-7 h-7" />{{ $badges->count() }}</p></x-card>
+        <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $selesai }}/{{ count($daftar) }}</p></x-card>
         <div class="kka-card p-6">
-            <p class="text-sm text-slate-500">Progres Belajar</p>
-            <p class="text-3xl font-extrabold text-slate-900 mt-1">{{ count($daftar) ? round($selesai / count($daftar) * 100) : 0 }}%</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Progres Belajar</p>
+            <p class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{{ count($daftar) ? round($selesai / count($daftar) * 100) : 0 }}%</p>
             <x-progress-bar :value="$selesai" :max="count($daftar) ?: 1" class="mt-2" />
         </div>
     </div>
 
     @if(isset($terakhir) && $terakhir && $terakhir->module)
-        <div class="mt-4 rounded-2xl border {{ $terakhir->is_completed ? 'border-emerald-200 bg-emerald-50' : 'border-orange-200 bg-orange-50' }} px-4 py-3 flex flex-wrap items-center gap-2 text-sm" role="status">
-            <span class="font-extrabold {{ $terakhir->is_completed ? 'text-emerald-800' : 'text-orange-800' }}">
+        <div class="mt-4 rounded-2xl border {{ $terakhir->is_completed ? 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10' : 'border-orange-200 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10' }} px-4 py-3 flex flex-wrap items-center gap-2 text-sm" role="status">
+            <span class="font-extrabold {{ $terakhir->is_completed ? 'text-emerald-800 dark:text-emerald-300' : 'text-orange-800 dark:text-orange-300' }}">
                 Terakhir: {{ $terakhir->module->title }} — skor {{ $terakhir->quiz_score }}{{ $terakhir->is_completed ? ' (lulus)' : ' (belum lulus)' }} • +{{ $terakhir->xp_earned }} XP
             </span>
             <span class="flex gap-2 ml-auto">
-                <a href="{{ route('siswa.raporku') }}" class="font-bold text-orange-600 hover:text-orange-700 text-xs">Lihat Raporku →</a>
+                <a href="{{ route('siswa.raporku') }}" class="font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 text-xs">Lihat Raporku →</a>
                 @if(! $terakhir->is_completed)
-                    <a href="{{ route('siswa.bahan.show', $terakhir->module->slug) }}" class="font-bold text-slate-600 hover:text-slate-800 text-xs">Pelajari lagi →</a>
+                    <a href="{{ route('siswa.bahan.show', $terakhir->module->slug) }}" class="font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 text-xs">Pelajari lagi →</a>
                 @endif
             </span>
         </div>
@@ -45,12 +45,12 @@
         <x-card title="Kuis yang Lulus" subtitle="riwayat nilaimu">
             <div class="space-y-2">
                 @forelse(collect($daftar)->filter(fn ($d) => $d['progress'] && $d['progress']->is_completed) as $d)
-                    <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2 text-sm">
-                        <span class="font-semibold text-slate-700">{{ $d['module']->title }}</span>
-                        <span class="font-extrabold text-emerald-700">{{ $d['progress']->quiz_score }}</span>
+                    <div class="flex items-center justify-between rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-500/10 px-3 py-2 text-sm">
+                        <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $d['module']->title }}</span>
+                        <span class="font-extrabold text-emerald-700 dark:text-emerald-400">{{ $d['progress']->quiz_score }}</span>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-500">Belum ada. Luluskan kuis dengan skor ≥80!</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada. Luluskan kuis dengan skor ≥80!</p>
                 @endforelse
             </div>
         </x-card>
@@ -59,7 +59,7 @@
             <form method="POST" action="{{ route('siswa.join') }}" class="flex gap-2">
                 @csrf
                 <input name="code" maxlength="6" required placeholder="cth: 482913"
-                       class="flex-1 min-w-0 rounded-xl border-slate-200 focus:border-orange-500 focus:ring-orange-500 tracking-widest text-center font-bold" />
+                       class="flex-1 min-w-0 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500 tracking-widest text-center font-bold" />
                 <x-button type="submit">Gabung</x-button>
             </form>
             @if($classrooms->count())
@@ -83,7 +83,7 @@
                 @forelse($badges as $b)
                     <span class="kka-badge"><x-icon name="cap" class="w-3.5 h-3.5" />{{ $b->name }}</span>
                 @empty
-                    <p class="text-sm text-slate-500">Lulus kuis ≥80 untuk dapat badge!</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Lulus kuis ≥80 untuk dapat badge!</p>
                 @endforelse
             </div>
         </x-card>
@@ -91,18 +91,18 @@
         <x-card title="Riwayat Kuis" subtitle="5 percobaan terakhir">
             <div class="space-y-2">
                 @forelse($riwayat as $r)
-                    <div class="flex items-center justify-between text-sm border border-slate-200 rounded-xl px-3 py-2">
-                        <span class="font-semibold text-slate-700 truncate">{{ $r->module->title ?? '—' }}</span>
-                        <span class="font-extrabold {{ $r->passed ? 'text-emerald-700' : 'text-orange-600' }}">{{ $r->score }}</span>
+                    <div class="flex items-center justify-between text-sm border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
+                        <span class="font-semibold text-slate-700 dark:text-slate-200 truncate">{{ $r->module->title ?? '—' }}</span>
+                        <span class="font-extrabold {{ $r->passed ? 'text-emerald-700 dark:text-emerald-400' : 'text-orange-600 dark:text-orange-400' }}">{{ $r->score }}</span>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-500">Belum ada percobaan. Kerjakan kuismu!</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada percobaan. Kerjakan kuismu!</p>
                 @endforelse
             </div>
         </x-card>
     </div>
 
-    <h3 class="mt-6 mb-3 font-extrabold text-slate-900">Modul Belajar (berurutan)</h3>
+    <h3 class="mt-6 mb-3 font-extrabold text-slate-900 dark:text-white">Modul Belajar (berurutan)</h3>
     <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         @foreach($daftar as $d)
             @php $m = $d['module']; $p = $d['progress']; @endphp

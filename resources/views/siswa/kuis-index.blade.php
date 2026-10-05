@@ -1,7 +1,7 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <h2 class="font-extrabold text-xl text-slate-900">Kuis</h2>
-        <p class="text-sm text-slate-500">Lulus jika skor ≥80. Terbuka berurutan setelah modul sebelumnya selesai. Soal & opsi diacak tiap percobaan.</p>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Kuis</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Lulus jika skor ≥80. Terbuka berurutan setelah modul sebelumnya selesai. Soal & opsi diacak tiap percobaan.</p>
     </x-slot>
 
     <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">

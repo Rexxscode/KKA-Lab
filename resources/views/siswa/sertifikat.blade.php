@@ -1,7 +1,7 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <h2 class="font-extrabold text-xl text-slate-900">Sertifikat Kelulusan</h2>
-        <p class="text-sm text-slate-500">Terbit otomatis jika {{ $modules->count() }} modul wajib lulus (skor ≥80).</p>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Sertifikat Kelulusan</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Terbit otomatis jika {{ $modules->count() }} modul wajib lulus (skor ≥80).</p>
     </x-slot>
 
     <div class="py-8 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,10 +33,10 @@
                 <div class="space-y-2">
                     @foreach($modules as $m)
                         @php $p = $progress->get($m->id); @endphp
-                        <div class="flex items-center justify-between text-sm border border-slate-200 rounded-xl px-4 py-2">
+                        <div class="flex items-center justify-between text-sm border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2">
                             <span>{{ $m->title }}</span>
                             @if($p && $p->is_completed)
-                                <span class="font-bold text-emerald-600">✓ Selesai ({{ $p->quiz_score }})</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400">✓ Selesai ({{ $p->quiz_score }})</span>
                             @elseif($p)
                                 <span class="kka-status-warn">Dikerjakan (skor {{ $p->quiz_score }})</span>
                             @else

@@ -6,14 +6,15 @@
     <title>403 — Akses Ditolak | KKA Lab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>try{var kkaT=localStorage.getItem('kka-theme');if(kkaT==='dark'||(!kkaT&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body style="background:var(--color-page);font-family:'Plus Jakarta Sans',sans-serif">
 <div class="min-h-screen flex items-center justify-center px-4">
     <div class="kka-card p-8 max-w-md w-full text-center">
-        <span class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-orange-100 text-orange-600"><x-icon name="shield" class="w-8 h-8" /></span>
-        <h1 class="mt-3 text-2xl font-extrabold text-slate-900">Akses Ditolak (403)</h1>
-        <p class="mt-2 text-sm text-slate-500">
+        <span class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-orange-100 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400"><x-icon name="shield" class="w-8 h-8" /></span>
+        <h1 class="mt-3 text-2xl font-extrabold text-slate-900 dark:text-white">Akses Ditolak (403)</h1>
+        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
             @auth
                 Halaman ini khusus peran lain, bukan untuk peran <b>{{ ucfirst(auth()->user()->role) }}</b>.
                 Silakan kembali ke dasbor yang sesuai.

@@ -1,25 +1,25 @@
 <x-sidebar-layout>
     <x-slot name="header">
         <a href="{{ route('siswa.bahan.index') }}" class="text-sm font-semibold text-orange-500">← Semua Bahan</a>
-        <h2 class="font-extrabold text-xl text-slate-900 mt-1">{{ $module->title }}</h2>
-        <p class="text-sm text-slate-500">{{ $module->description }} • +{{ $module->xp_reward }} XP • Lulus jika kuis ≥80</p>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white mt-1">{{ $module->title }}</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">{{ $module->description }} • +{{ $module->xp_reward }} XP • Lulus jika kuis ≥80</p>
     </x-slot>
 
     <div class="space-y-4 sm:space-y-6" x-data="{ sampaiAkhir: false }">
         <x-card title="Tahap 1 — Bahan Ajar (wajib dibaca dulu)" subtitle="Scroll sampai akhir bacaan untuk membuka kunci kuis.">
-            <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 max-h-[46vh] overflow-y-auto" @scroll="if ($el.scrollTop + $el.clientHeight >= $el.scrollHeight - 24) sampaiAkhir = true">
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/50 p-5 max-h-[46vh] overflow-y-auto" @scroll="if ($el.scrollTop + $el.clientHeight >= $el.scrollHeight - 24) sampaiAkhir = true">
                 @if(view()->exists('siswa.modul.materi-' . $module->slug))
                     @include('siswa.modul.materi-' . $module->slug)
                 @elseif($module->materi)
                     @include('siswa.modul.materi-custom', ['materi' => $module->materi])
                 @else
-                    <div class="prose max-w-none text-sm text-slate-700 space-y-4">
+                    <div class="prose max-w-none text-sm text-slate-700 dark:text-slate-200 space-y-4">
                         <p>{{ $module->description ?? 'Pelajari materi modul ini dengan saksama sebelum mengerjakan kuis.' }}</p>
                         <p>Kuis modul ini terdiri dari soal pilihan ganda buatan gurumu. Baca petunjuk di atas, kerjakan berurutan, dan capai skor minimal 80 untuk lulus.</p>
                     </div>
                 @endif
             </div>
-            <p class="mt-2 text-xs font-semibold" :class="sampaiAkhir ? 'text-emerald-600' : 'text-slate-400'" x-text="sampaiAkhir ? '✓ Kamu sudah sampai akhir bacaan.' : 'Scroll kotak bacaan sampai bawah ya...'"></p>
+            <p class="mt-2 text-xs font-semibold" :class="sampaiAkhir ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'" x-text="sampaiAkhir ? '✓ Kamu sudah sampai akhir bacaan.' : 'Scroll kotak bacaan sampai bawah ya...'"></p>
             <form method="POST" action="{{ route('siswa.bahan.read', $module->slug) }}" class="mt-3">
                 @csrf
                 <button type="submit" :disabled="!sampaiAkhir" :class="sampaiAkhir ? 'kka-btn-primary' : 'kka-btn-primary opacity-40'" class="text-sm">Saya Sudah Selesai Membaca & Siap Mengerjakan Kuis →</button>
@@ -29,11 +29,11 @@
             <x-card title="Apa itu AI?" subtitle="AI = komputer yang belajar dari data. Machine Learning = cara belajarnya.">
                 <div class="grid sm:grid-cols-3 gap-3" x-data="{ tab: 'ml' }">
                     <div class="sm:col-span-1 flex sm:flex-col gap-2">
-                        <button @click="tab='ml'" :class="tab==='ml' ? 'bg-orange-500 text-white' : 'bg-white text-slate-600'" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold">Machine Learning</button>
-                        <button @click="tab='contoh'" :class="tab==='contoh' ? 'bg-orange-500 text-white' : 'bg-white text-slate-600'" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold">Contoh Sehari-hari</button>
-                        <button @click="tab='cara'" :class="tab==='cara' ? 'bg-orange-500 text-white' : 'bg-white text-slate-600'" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold">Cara Kerja</button>
+                        <button @click="tab='ml'" :class="tab==='ml' ? 'bg-orange-500 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300'" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold">Machine Learning</button>
+                        <button @click="tab='contoh'" :class="tab==='contoh' ? 'bg-orange-500 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300'" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold">Contoh Sehari-hari</button>
+                        <button @click="tab='cara'" :class="tab==='cara' ? 'bg-orange-500 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300'" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold">Cara Kerja</button>
                     </div>
-                    <div class="sm:col-span-2 rounded-2xl bg-slate-50 border border-slate-200 p-5 text-sm text-slate-700 min-h-40">
+                    <div class="sm:col-span-2 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-5 text-sm text-slate-700 dark:text-slate-200 min-h-40">
                         <template x-if="tab==='ml'"><p><b>Machine Learning:</b> 1) Kumpulkan data → 2) Latih model → 3) Uji dengan data baru → 4) Perbaiki. Semakin beragam datanya, semakin pintar modelnya.</p></template>
                         <template x-if="tab==='contoh'"><p><b>Contoh:</b> filter spam, rekomendasi video, deteksi plagiarisme, chatbot belajar, pengenalan wajah untuk absensi.</p></template>
                         <template x-if="tab==='cara'"><p><b>Cara kerja:</b> gambar diubah jadi angka (fitur) → model mencari pola → menebak kelas paling mirip. Di Modul 2 kamu praktik langsung!</p></template>
@@ -58,8 +58,8 @@
                             <button type="button" @click="isiContoh(3)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 4: Akurasi</button>
                         @endif
                     </div>
-                    <label for="editor-python" class="block text-xs font-bold text-slate-600">Kode Python-mu
-                        <textarea id="editor-python" x-model="kode" rows="8" spellcheck="false" class="mt-1 w-full rounded-2xl border-slate-200 font-mono text-[13px] focus:border-orange-500 focus:ring-orange-500" placeholder='print("Halo AI")'></textarea>
+                    <label for="editor-python" class="block text-xs font-bold text-slate-600 dark:text-slate-300">Kode Python-mu
+                        <textarea id="editor-python" x-model="kode" rows="8" spellcheck="false" class="mt-1 w-full rounded-2xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 font-mono text-[13px] focus:border-orange-500 focus:ring-orange-500" placeholder='print("Halo AI")'></textarea>
                     </label>
                     <div class="flex flex-wrap items-center gap-2">
                         <button type="button" @click="jalankan()" :disabled="sibuk" class="kka-btn-primary !py-2 text-sm disabled:opacity-50" x-text="sibuk ? 'Menjalankan...' : '▶ Jalankan'"></button>
@@ -69,7 +69,7 @@
                     <div x-show="memuat" class="space-y-2" aria-hidden="true">
                         <div class="kka-skeleton h-4 w-2/3"></div>
                         <div class="kka-skeleton h-20 w-full"></div>
-                        <p class="text-xs font-semibold text-slate-500">Mengunduh Python (Pyodide ±10MB, sekali saja — butuh internet)...</p>
+                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Mengunduh Python (Pyodide ±10MB, sekali saja — butuh internet)...</p>
                     </div>
                     <pre x-show="keluaran !== ''" x-text="keluaran" class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-[13px] whitespace-pre-wrap min-h-16 overflow-x-auto" aria-label="Hasil program"></pre>
                     <p class="kka-note">Tips: ubah contohnya lalu Jalankan lagi. Modul Python tidak memakai kamera. Kode berjalan lokal di perangkatmu.</p>
@@ -81,7 +81,7 @@
             @vite('resources/js/ai/object-detector.js')
             <x-card title="Deteksi Objek Real-Time (100% di browser, privasi aman)" subtitle="Model pretrained COCO-SSD langsung menemukan benda + kotak lokasinya. Tanpa latih manual, tanpa upload gambar. Gambar TIDAK dikirim ke server.">
                 <div x-data="kkaDeteksi()" x-init="boot()" class="space-y-4" data-testid="det-widget">
-                    <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
+                    <div class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 aspect-video flex items-center justify-center relative">
                         <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
                         <canvas x-ref="kanvas" class="absolute inset-0 w-full h-full" aria-hidden="true"></canvas>
                         <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Klik “Aktifkan Kamera”, lalu tekan “Mulai Deteksi”. Arahkan ke benda seperti botol, buku, laptop, atau HP.</p></template>
@@ -91,12 +91,12 @@
                     <div x-show="!modelSiap" class="space-y-2" aria-hidden="true">
                         <div class="kka-skeleton h-4 w-3/4"></div>
                         <div class="kka-skeleton h-16 w-full"></div>
-                        <p class="text-xs font-semibold text-slate-500">Memuat model AI (±5 MB, sekali saja, butuh internet)...</p>
+                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Memuat model AI (±5 MB, sekali saja, butuh internet)...</p>
                     </div>
                     <div class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-sm min-h-16" x-text="hasil" data-testid="det-hasil"></div>
-                    <div class="rounded-2xl border border-slate-200 p-4">
-                        <p class="text-sm font-bold text-slate-800">Ambang confidence: <span x-text="ambang"></span>%</p>
-                        <p class="text-xs text-slate-500">Di bawah ambang, kotak disembunyikan. Naikkan bila kotak bergoyang; turunkan bila benda jelas tapi tak terdeteksi.</p>
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+                        <p class="text-sm font-bold text-slate-800 dark:text-slate-100">Ambang confidence: <span x-text="ambang"></span>%</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Di bawah ambang, kotak disembunyikan. Naikkan bila kotak bergoyang; turunkan bila benda jelas tapi tak terdeteksi.</p>
                         <label class="sr-only" for="ambang-deteksi">Ambang confidence deteksi objek</label>
                         <input id="ambang-deteksi" type="range" min="30" max="90" step="5" x-model.number="ambang" @change="if (detektor) detektor.minScore = ambang / 100" class="mt-2 w-full accent-orange-500" data-testid="det-ambang" />
                     </div>
@@ -107,17 +107,17 @@
                         <button @click="reset()" class="kka-btn-secondary !py-2 text-sm">Reset</button>
                     </div>
                     <p x-show="galat" x-text="galat" class="text-sm font-semibold text-red-600" role="alert" data-testid="det-error"></p>
-                    <p x-show="mendeteksi && terdeteksi === 0" class="text-sm text-slate-500" data-testid="det-kosong">Tidak ada objek terdeteksi — dekatkan benda ke kamera, perbaiki cahaya, atau turunkan ambang.</p>
+                    <p x-show="mendeteksi && terdeteksi === 0" class="text-sm text-slate-500 dark:text-slate-400" data-testid="det-kosong">Tidak ada objek terdeteksi — dekatkan benda ke kamera, perbaiki cahaya, atau turunkan ambang.</p>
                     <div class="flex items-center gap-3 text-sm">
                         <span class="kka-badge">Uji meyakinkan: <span x-text="ujiCount"></span>/2</span>
-                        <span class="text-xs text-slate-500" x-text="xpNote"></span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400" x-text="xpNote"></span>
                     </div>
-                    <div class="rounded-2xl border border-orange-200 bg-orange-50 p-4">
+                    <div class="rounded-2xl border border-orange-200 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 p-4">
                         <div class="flex items-center gap-2">
-                            <p class="text-sm font-bold text-slate-800">Penjelasan Tutor AI (teks)</p>
+                            <p class="text-sm font-bold text-slate-800 dark:text-slate-100">Penjelasan Tutor AI (teks)</p>
                             <button @click="jelaskan()" :disabled="jelasSibuk" class="kka-btn-secondary !py-1.5 text-xs disabled:opacity-50" x-text="jelasSibuk ? 'Meminta...' : 'Jelaskan Hasilku'"></button>
                         </div>
-                        <p class="mt-2 text-sm text-slate-700 whitespace-pre-wrap" x-show="penjelasan" x-text="penjelasan"></p>
+                        <p class="mt-2 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap" x-show="penjelasan" x-text="penjelasan"></p>
                     </div>
                     <p class="kka-note">2x Uji meyakinkan (keyakinan ≥50%) otomatis +20 XP, sekali saja. Model mengenali 80 kelas umum (botol, buku, laptop, HP, kursi, kucing, ...), bukan benda custom.</p>
                 </div>
@@ -130,10 +130,10 @@
                     <label class="block text-sm font-semibold">Data Kelompok A: <span x-text="a"></span>% <input type="range" min="5" max="95" x-model="a" @input="b = 100 - a" class="w-full accent-orange-500"></label>
                     <label class="block text-sm font-semibold">Data Kelompok B: <span x-text="b"></span>% (otomatis)</label>
                     <div class="grid sm:grid-cols-2 gap-3">
-                        <div class="rounded-2xl border border-slate-200 p-4 text-center"><p class="text-xs text-slate-500">Akurasi Kelompok A</p><p class="text-3xl font-extrabold text-emerald-500" x-text="Math.round(60 + a * 0.4) + '%'"></p></div>
-                        <div class="rounded-2xl border border-slate-200 p-4 text-center"><p class="text-xs text-slate-500">Akurasi Kelompok B</p><p class="text-3xl font-extrabold text-orange-500" x-text="Math.round(60 + b * 0.4) + '%'"></p></div>
+                        <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4 text-center"><p class="text-xs text-slate-500 dark:text-slate-400">Akurasi Kelompok A</p><p class="text-3xl font-extrabold text-emerald-500" x-text="Math.round(60 + a * 0.4) + '%'"></p></div>
+                        <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4 text-center"><p class="text-xs text-slate-500 dark:text-slate-400">Akurasi Kelompok B</p><p class="text-3xl font-extrabold text-orange-500" x-text="Math.round(60 + b * 0.4) + '%'"></p></div>
                     </div>
-                    <p class="text-sm p-4 rounded-2xl border" :class="Math.abs(a-b) > 60 ? 'bg-orange-50 border-orange-200 text-orange-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'" x-text="Math.abs(a-b) > 60 ? 'Tidak adil! Selisih >60%. Tambah data kelompok minoritas agar model adil.' : 'Bagus! Dataset relatif seimbang, model cenderung adil.'"></p>
+                    <p class="text-sm p-4 rounded-2xl border" :class="Math.abs(a-b) > 60 ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30 text-orange-800 dark:text-orange-300' : 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300'" x-text="Math.abs(a-b) > 60 ? 'Tidak adil! Selisih >60%. Tambah data kelompok minoritas agar model adil.' : 'Bagus! Dataset relatif seimbang, model cenderung adil.'"></p>
                 </div>
             </x-card>
         @endif
@@ -141,10 +141,10 @@
         @if($module->slug === 'etika-hoaks-ai')
             <x-card title="Etika & Hoaks AI" subtitle="Studi kasus: kenali deepfake sebelum share.">
                 <div class="grid sm:grid-cols-2 gap-3 text-sm">
-                    <div class="rounded-2xl border border-slate-200 p-4"><p class="font-bold">Kasus 1: Foto viral</p><p class="text-slate-600 mt-1">Cek tangan/jari, teks aneh, bayangan tidak konsisten. Verifikasi silang ke 2 sumber resmi.</p></div>
-                    <div class="rounded-2xl border border-slate-200 p-4"><p class="font-bold">Kasus 2: Suara youngsters</p><p class="text-slate-600 mt-1">AI voice clone bisa meniru guru/orang tua. Konfirmasi via kanal kedua sebelum transfer/percaya.</p></div>
-                    <div class="rounded-2xl border border-slate-200 p-4"><p class="font-bold">Prinsip etis</p><p class="text-slate-600 mt-1">Izin • Transparan (beri label “dibuat AI”) • Tanggung jawab • Jaga privasi.</p></div>
-                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><p class="font-bold text-emerald-800">Rumus CHECK</p><p class="text-emerald-700 mt-1">Cek sumber • Hindari judul bombastis • Eja tanggal • Cek gambar • Kroscek fakta.</p></div>
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4"><p class="font-bold">Kasus 1: Foto viral</p><p class="text-slate-600 dark:text-slate-300 mt-1">Cek tangan/jari, teks aneh, bayangan tidak konsisten. Verifikasi silang ke 2 sumber resmi.</p></div>
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4"><p class="font-bold">Kasus 2: Suara youngsters</p><p class="text-slate-600 dark:text-slate-300 mt-1">AI voice clone bisa meniru guru/orang tua. Konfirmasi via kanal kedua sebelum transfer/percaya.</p></div>
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4"><p class="font-bold">Prinsip etis</p><p class="text-slate-600 dark:text-slate-300 mt-1">Izin • Transparan (beri label “dibuat AI”) • Tanggung jawab • Jaga privasi.</p></div>
+                    <div class="rounded-2xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-4"><p class="font-bold text-emerald-800 dark:text-emerald-300">Rumus CHECK</p><p class="text-emerald-700 dark:text-emerald-400 mt-1">Cek sumber • Hindari judul bombastis • Eja tanggal • Cek gambar • Kroscek fakta.</p></div>
                 </div>
             </x-card>
         @endif

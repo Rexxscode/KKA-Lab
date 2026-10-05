@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
+        <h2 class="text-lg font-medium text-slate-900 dark:text-white">
             {{ __('Ubah Kata Sandi') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
             {{ __('Pastikan akunmu memakai kata sandi yang panjang dan acak agar tetap aman.') }}
         </p>
     </header>
@@ -15,19 +15,19 @@
 
         <div>
             <x-input-label for="update_password_current_password" :value="__('Kata Sandi Saat Ini')" />
-            <x-password-input id="update_password_current_password" name="current_password" class="mt-1 block w-full" autocomplete="current-password" />
+            <x-password-input id="update_password_current_password" name="current_password" class="mt-1 block w-full dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" autocomplete="current-password" />
             <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
         </div>
 
         <div>
             <x-input-label for="update_password_password" :value="__('Kata Sandi Baru')" />
-            <x-password-input id="update_password_password" name="password" class="mt-1 block w-full" autocomplete="new-password" />
+            <x-password-input id="update_password_password" name="password" class="mt-1 block w-full dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" autocomplete="new-password" />
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
         </div>
 
         <div>
             <x-input-label for="update_password_password_confirmation" :value="__('Konfirmasi Kata Sandi')" />
-            <x-password-input id="update_password_password_confirmation" name="password_confirmation" class="mt-1 block w-full" autocomplete="new-password" />
+            <x-password-input id="update_password_password_confirmation" name="password_confirmation" class="mt-1 block w-full dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" autocomplete="new-password" />
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
 
@@ -40,7 +40,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
+                    class="text-sm text-slate-600 dark:text-slate-300"
                 >{{ __('Tersimpan.') }}</p>
             @endif
         </div>
