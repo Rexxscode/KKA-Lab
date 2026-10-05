@@ -7,7 +7,7 @@
     </button>
 
     <div x-show="open" x-transition id="panel-asisten-ai" role="dialog" aria-label="Tutor AI KKA Lab" class="fixed bottom-20 right-5 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] kka-card !p-0 overflow-hidden" style="display: none">
-        <div class="px-4 py-3 bg-orange-700 text-white">
+        <div class="px-4 py-3 bg-orange-500 text-white">
             <p class="font-extrabold text-sm">Tutor AI KKA Lab</p>
             <p class="text-xs text-white/90">Tanya soal AI, deteksi objek, bias data, atau etika. Bukan kunci jawaban kuis ya!</p>
         </div>
