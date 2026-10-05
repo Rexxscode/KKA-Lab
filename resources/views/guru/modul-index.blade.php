@@ -86,6 +86,10 @@
                         @csrf @method('DELETE')
                         <button class="kka-btn-secondary !py-1.5 text-xs !text-red-600">Hapus</button>
                     </form>
+                    <form method="POST" action="{{ route('guru.modul.duplikat', $m) }}">
+                        @csrf
+                        <button class="kka-btn-secondary !py-1.5 text-xs">Duplikat</button>
+                    </form>
                 </div>
             </x-card>
         @empty
@@ -101,6 +105,10 @@
                     <p class="font-bold text-sm">{{ $m->title }}</p>
                     <p class="text-xs text-slate-500 mt-1">{{ $m->soal }} soal</p>
                     <a href="{{ route('guru.quiz.module', $m) }}" class="text-xs font-bold text-orange-500 hover:text-orange-600">Lihat soal →</a>
+                    <form method="POST" action="{{ route('guru.modul.duplikat', $m) }}" class="mt-2">
+                        @csrf
+                        <button class="kka-btn-secondary !py-1 text-xs w-full">Jadikan milikku</button>
+                    </form>
                 </div>
             @endforeach
         </div>

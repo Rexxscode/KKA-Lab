@@ -4,9 +4,14 @@
         <div class="flex flex-wrap items-center justify-between gap-3 mt-1">
             <div>
                 <h2 class="font-extrabold text-xl text-slate-900">{{ $classroom->name }}</h2>
-                <p class="text-sm text-slate-500">Kode kelas: <b class="text-orange-500 tracking-widest">{{ $classroom->code }}</b> • {{ $classroom->students->count() }} siswa</p>
+                <p class="text-sm text-slate-500">Kode kelas: <b class="text-orange-500 tracking-widest">{{ $classroom->code }}</b> • {{ $classroom->students->count() }} siswa
+                    @if($classroom->status === 'arsip') <span class="ml-1 px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold">Arsip</span> @endif</p>
             </div>
             <div class="flex flex-wrap gap-2">
+                <form method="POST" action="{{ route('guru.kelas.arsip', $classroom) }}" onsubmit="return confirm('{{ $classroom->status === 'arsip' ? 'Buka lagi kelas ini?' : 'Arsipkan kelas ini? Siswa tak bisa gabung & kelas tak aktif.' }}')">
+                    @csrf @method('PATCH')
+                    <button class="kka-btn-secondary !py-2 text-sm">{{ $classroom->status === 'arsip' ? 'Buka Lagi' : 'Arsipkan' }}</button>
+                </form>
                 <form method="POST" action="{{ route('guru.kelas.kode', $classroom) }}" onsubmit="return confirm('Buat kode baru? Kode lama langsung hangus.')">
                     @csrf @method('PATCH')
                     <button class="kka-btn-secondary !py-2 text-sm">Kode Baru</button>
@@ -36,7 +41,18 @@
                         @forelse($classroom->students as $s)
                             @php $by = $s->progress->keyBy('module_id'); @endphp
                             <tr class="border-b border-slate-100" x-show="$el.dataset.cari.toLowerCase().includes(cari.toLowerCase())" data-cari="{{ strtolower($s->name . ' ' . $s->email) }}">
-                                <td class="py-3 pr-3"><a href="{{ route('guru.kelas.siswa.show', [$classroom, $s->id]) }}" class="font-bold text-slate-800 hover:text-orange-600">{{ $s->name }}</a><p class="text-xs text-slate-400">{{ $s->email }}</p></td>
+                                <td class="py-3 pr-3"><a href="{{ route('guru.kelas.siswa.show', [$classroom, $s->id]) }}" class="font-bold text-slate-800 hover:text-orange-600">{{ $s->name }}</a><p class="text-xs text-slate-400">{{ $s->email }}</p>
+                                    <div class="mt-1 flex gap-2">
+                                        <form method="POST" action="{{ route('guru.kelas.siswa.reset', [$classroom, $s->id]) }}" onsubmit="return confirm('Ulangi progres {{ $s->name }} di kelas ini dari nol?')">
+                                            @csrf @method('DELETE')
+                                            <button class="text-[11px] font-bold text-orange-600 hover:text-orange-700">Reset progres</button>
+                                        </form>
+                                        <form method="POST" action="{{ route('guru.kelas.siswa.kick', [$classroom, $s->id]) }}" onsubmit="return confirm('Keluarkan {{ $s->name }} dari kelas?')">
+                                            @csrf @method('DELETE')
+                                            <button class="text-[11px] font-bold text-red-600 hover:text-red-700">Keluarkan</button>
+                                        </form>
+                                    </div>
+                                </td>
                                 @foreach($modules as $m)
                                     @php $p = $by->get($m->id); @endphp
                                     <td class="py-3 pr-3">

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AiLogController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\BahanController;
 use App\Http\Controllers\Student\CertificateController;
@@ -52,6 +53,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/papan-peringkat', [SiswaDashboardController::class, 'leaderboard'])->name('leaderboard');
     Route::post('/gabung-kelas', [ClassroomJoinController::class, 'store'])->middleware('throttle:10,1')->name('join');
     Route::delete('/keluar-kelas', [ClassroomJoinController::class, 'destroy'])->middleware('throttle:10,1')->name('leave');
     Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
@@ -79,6 +81,9 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
         Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');
         Route::patch('/kelas/{classroom}/kode-baru', [GuruClassroomController::class, 'kodeBaru'])->name('kelas.kode');
+        Route::patch('/kelas/{classroom}/arsip', [GuruClassroomController::class, 'arsip'])->name('kelas.arsip');
+        Route::delete('/kelas/{classroom}/siswa/{user}', [GuruClassroomController::class, 'kick'])->name('kelas.siswa.kick');
+        Route::delete('/kelas/{classroom}/siswa/{user}/progres', [GuruClassroomController::class, 'resetProgres'])->name('kelas.siswa.reset');
         Route::get('/kelas/{classroom}/siswa/{siswa}', [StudentReportController::class, 'show'])->name('kelas.siswa.show');
         Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
         Route::get('/quiz/modul/{module}', [QuizController::class, 'module'])->name('quiz.module');
@@ -87,12 +92,14 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::post('/modul', [GuruModuleController::class, 'store'])->name('modul.store');
         Route::patch('/modul/{module}', [GuruModuleController::class, 'update'])->name('modul.update');
         Route::delete('/modul/{module}', [GuruModuleController::class, 'destroy'])->name('modul.destroy');
+        Route::post('/modul/{module}/duplikat', [GuruModuleController::class, 'duplikat'])->name('modul.duplikat');
         Route::post('/kelas/{classroom}/modul', [GuruModuleController::class, 'tempel'])->name('kelas.modul.tempel');
         Route::delete('/kelas/{classroom}/modul/{module}', [GuruModuleController::class, 'lepas'])->name('kelas.modul.lepas');
         Route::patch('/kelas/{classroom}/modul/{module}/naik', [GuruModuleController::class, 'naik'])->name('kelas.modul.naik');
         Route::patch('/kelas/{classroom}/modul/{module}/turun', [GuruModuleController::class, 'turun'])->name('kelas.modul.turun');
         Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->name('quiz.update');
         Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->name('quiz.destroy');
+        Route::get('/ai-logs', [AiLogController::class, 'guru'])->name('ai.index');
     });
 });
 
@@ -104,6 +111,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/pengajuan/{user}/setujui', [AdminUserController::class, 'setujui'])->name('pengajuan.setujui');
     Route::post('/pengajuan/{user}/tolak', [AdminUserController::class, 'tolak'])->name('pengajuan.tolak');
     Route::get('/bukti/{user}', [AdminUserController::class, 'unduhBukti'])->middleware('throttle:10,1')->name('bukti.unduh');
+    Route::get('/ai-logs', [AiLogController::class, 'admin'])->name('ai.index');
 });
 
 Route::get('/verifikasi-sertifikat/{code}', [VerifyCertificateController::class, 'show'])

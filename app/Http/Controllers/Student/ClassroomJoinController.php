@@ -15,7 +15,7 @@ class ClassroomJoinController extends Controller
 
         $classroom = Classroom::where('code', $request->code)->first();
 
-        if (! $classroom) {
+        if (! $classroom || $classroom->status === 'arsip') {
             return back()->with('toast', ['type' => 'error', 'message' => 'Kode kelas salah. Coba tanya ke gurumu ya!']);
         }
 

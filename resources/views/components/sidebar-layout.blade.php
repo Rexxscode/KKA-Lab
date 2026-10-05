@@ -49,6 +49,7 @@
                         <x-side-link :href="route('siswa.bahan.index')" :active="request()->routeIs('siswa.bahan.*')" icon="book">Bahan Belajar</x-side-link>
                         <x-side-link :href="route('siswa.kuis.index')" :active="request()->routeIs('siswa.kuis.*')" icon="quiz">Kuis</x-side-link>
                         <x-side-link :href="route('siswa.raporku')" :active="request()->routeIs('siswa.raporku')" icon="award">Raporku</x-side-link>
+                        <x-side-link :href="route('siswa.leaderboard')" :active="request()->routeIs('siswa.leaderboard')" icon="trophy">Peringkat</x-side-link>
                         <x-side-link :href="route('siswa.sertifikat')" :active="request()->routeIs('siswa.sertifikat')" icon="award">Sertifikat</x-side-link>
                     </div>
                 </div>
@@ -63,6 +64,7 @@
                         <x-side-link :href="route('guru.kelas.index')" :active="request()->routeIs('guru.kelas.*')" icon="users">Kelas Saya</x-side-link>
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Saya</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
+                        <x-side-link :href="route('guru.ai.index')" :active="request()->routeIs('guru.ai.*')" icon="chat">Log AI</x-side-link>
                     </div>
                 </div>
             @else
@@ -76,6 +78,7 @@
                         <x-side-link :href="route('guru.kelas.index')" :active="request()->routeIs('guru.kelas.*')" icon="users">Kelas</x-side-link>
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Default</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
+                        <x-side-link :href="route('admin.ai.index')" :active="request()->routeIs('admin.ai.*')" icon="chat">Log AI</x-side-link>
                         <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')" icon="award">Pratinjau Siswa</x-side-link>
                     </div>
                 </div>

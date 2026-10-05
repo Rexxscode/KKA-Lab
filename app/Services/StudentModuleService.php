@@ -27,7 +27,7 @@ class StudentModuleService
     public const SOAL_PERCOBAAN = 15;
     public function kelasAktif(User $user): ?Classroom
     {
-        return $user->classrooms()->orderByDesc('classroom_user.id')->first();
+        return $user->classrooms()->where('classrooms.status', 'buka')->orderByDesc('classroom_user.id')->first();
     }
 
     public function guruKelasAktif(User $user): ?int

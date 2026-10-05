@@ -21,4 +21,18 @@ class DashboardController extends Controller
 
         return view('siswa.dashboard', compact('daftar', 'totalXp', 'badges', 'classrooms', 'kelasAktif', 'terakhir'));
     }
+
+    /**
+     * Papan peringkat kelas aktif berdasar total XP.
+     */
+    public function leaderboard(Request $request, StudentModuleService $modul)
+    {
+        $user = $request->user();
+        $kelas = $modul->kelasAktif($user);
+        $papan = $kelas
+            ? $kelas->students()->withSum('progress as xp', 'xp_earned')->orderByDesc('xp')->take(20)->get()
+            : collect();
+
+        return view('siswa.papan-peringkat', compact('kelas', 'papan'));
+    }
 }

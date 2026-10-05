@@ -162,8 +162,7 @@ class ClassroomController extends Controller
     }
 
     public function show(Request $request, Classroom $classroom)
-    {
-        abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
+    {        abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
 
         $classroom->load(['students.progress.module', 'modules']);
         $modules = $classroom->modules;
@@ -178,5 +177,52 @@ class ClassroomController extends Controller
             })->whereNotIn('id', $terpasang)->orderBy('order')->get();
 
         return view('guru.kelas-show', compact('classroom', 'modules', 'modulTersedia'));
+    }
+
+    /**
+     * Keluarkan siswa dari kelas (progresnya tetap tersimpan).
+     */
+    public function kick(Request $request, Classroom $classroom, \App\Models\User $user)
+    {
+        $this->milik($request, $classroom);
+        abort_unless($classroom->students()->where('users.id', $user->id)->exists(), 404);
+
+        $classroom->students()->detach($user->id);
+        \Log::info('guru.kick_siswa', ['actor' => $request->user()->id, 'kelas' => $classroom->id, 'target' => $user->id]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => "{$user->name} dikeluarkan dari {$classroom->name}."]);
+    }
+
+    /**
+     * Ulangi progres siswa di modul-modul kelas ini dari nol.
+     */
+    public function resetProgres(Request $request, Classroom $classroom, \App\Models\User $user)
+    {
+        $this->milik($request, $classroom);
+        abort_unless($classroom->students()->where('users.id', $user->id)->exists(), 404);
+
+        $modulIds = $classroom->modules()->pluck('modules.id');
+        \App\Models\StudentProgress::where('student_id', $user->id)->whereIn('module_id', $modulIds)->delete();
+        \Log::info('guru.reset_progres', ['actor' => $request->user()->id, 'kelas' => $classroom->id, 'target' => $user->id]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => "Progres {$user->name} di {$classroom->name} diulang dari nol."]);
+    }
+
+    /**
+     * Arsipkan / buka lagi kelas. Kelas arsip tak bisa dimasuki & tak aktif.
+     */
+    public function arsip(Request $request, Classroom $classroom)
+    {
+        $this->milik($request, $classroom);
+
+        $classroom->update(['status' => $classroom->status === 'arsip' ? 'buka' : 'arsip']);
+        \Log::info('guru.arsip_kelas', ['actor' => $request->user()->id, 'kelas' => $classroom->id, 'status' => $classroom->status]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => $classroom->status === 'arsip' ? "Kelas {$classroom->name} diarsipkan." : "Kelas {$classroom->name} dibuka lagi."]);
+    }
+
+    private function milik(Request $request, Classroom $classroom): void
+    {
+        abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
     }
 }
