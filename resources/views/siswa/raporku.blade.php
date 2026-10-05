@@ -50,6 +50,13 @@
 (function () {
     const el = document.getElementById('grafik-rapor');
     if (!el || typeof Chart === 'undefined') return;
+    const css = getComputedStyle(document.documentElement);
+    const token = (nama, ganti) => css.getPropertyValue(nama).trim() || ganti;
+    const C = {
+        lulus: token('--color-success', '#10b981'),
+        proses: token('--color-primary', '#f97316'),
+        kosong: token('--color-border', '#e2e8f0'),
+    };
     const data = @js($skor);
     new Chart(el, {
         type: 'bar',
@@ -58,7 +65,7 @@
             datasets: [{
                 label: 'Skor',
                 data: data.map(d => d.nilai),
-                backgroundColor: data.map(d => d.nilai >= 80 ? '#10b981' : (d.nilai > 0 ? '#f97316' : '#cbd5e1')),
+                backgroundColor: data.map(d => d.nilai >= 80 ? C.lulus : (d.nilai > 0 ? C.proses : C.kosong)),
                 borderRadius: 8,
             }],
         },

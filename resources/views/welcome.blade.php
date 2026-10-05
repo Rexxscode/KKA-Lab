@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background:#FAFAFA;font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="boot()">
+<body style="background:var(--color-page);font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="boot()">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <nav class="flex items-center justify-between py-5">
         <div class="flex items-center gap-2">

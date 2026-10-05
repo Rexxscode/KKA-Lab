@@ -1,0 +1,83 @@
+/* Design Tokens - Auto-generated */
+/* Do not edit directly - modify tokens.json instead */
+
+/* === PRIMITIVES === */
+:root {
+  --primitive-color-orange-50: #fff7ed;
+  --primitive-color-orange-100: #ffedd5;
+  --primitive-color-orange-200: #fed7aa;
+  --primitive-color-orange-500: #f97316;
+  --primitive-color-orange-600: #ea580c;
+  --primitive-color-orange-700: #c2410c;
+  --primitive-color-emerald-50: #ecfdf5;
+  --primitive-color-emerald-100: #d1fae5;
+  --primitive-color-emerald-200: #a7f3d0;
+  --primitive-color-emerald-500: #10b981;
+  --primitive-color-emerald-600: #059669;
+  --primitive-color-emerald-700: #047857;
+  --primitive-color-emerald-800: #065f46;
+  --primitive-color-slate-100: #f1f5f9;
+  --primitive-color-slate-200: #e2e8f0;
+  --primitive-color-slate-500: #64748b;
+  --primitive-color-slate-700: #334155;
+  --primitive-color-slate-800: #1e293b;
+  --primitive-color-slate-900: #0f172a;
+  --primitive-color-white: #ffffff;
+  --primitive-color-page: #fafafa;
+  --primitive-radius-md: 0.75rem;
+  --primitive-radius-lg: 1rem;
+  --primitive-radius-pill: 9999px;
+  --primitive-font-sans: "Plus Jakarta Sans", "Figtree", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --primitive-motion-fast: 150ms;
+  --primitive-motion-base: 200ms;
+  --primitive-motion-slow: 300ms;
+  --primitive-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.05);
+  --primitive-shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1);
+}
+
+/* === SEMANTIC === */
+:root {
+  --color-primary: #f97316;
+  --color-primary-strong: #ea580c;
+  --color-primary-ink: #c2410c;
+  --color-primary-tint: #fff7ed;
+  --color-primary-border: #fed7aa;
+  --color-success: #10b981;
+  --color-success-strong: #059669;
+  --color-success-ink: #047857;
+  --color-success-deep: #065f46;
+  --color-success-tint: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-page: #fafafa;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-muted: #64748b;
+  --color-ink: #0f172a;
+  --color-ink-soft: #334155;
+  --color-focus: #f97316;
+  --radius-card: 1rem;
+  --radius-input: 0.75rem;
+  --radius-badge: 9999px;
+  --font-sans: "Plus Jakarta Sans", "Figtree", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-size-display: 2.25rem;
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+/* === COMPONENTS === */
+:root {
+  --btn-primary-bg: #f97316;
+  --btn-primary-bg-hover: #ea580c;
+  --btn-primary-fg: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-radius: 1rem;
+  --badge-bg: #ecfdf5;
+  --badge-fg: #065f46;
+  --badge-border: #a7f3d0;
+  --progress-track: #f1f5f9;
+  --progress-fill: #10b981;
+  --skeleton-base: #e2e8f0;
+  --input-focus-border: #f97316;
+}

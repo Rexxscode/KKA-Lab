@@ -13,7 +13,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="antialiased" style="background:#FAFAFA" x-data="{ SidebarTerbuka: false }">
+<body class="antialiased" style="background:var(--color-page)" x-data="{ SidebarTerbuka: false }">
 <div class="min-h-screen lg:flex">
 
     <!-- Overlay HP -->

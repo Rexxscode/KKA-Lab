@@ -11,7 +11,7 @@
             <p class="font-extrabold text-sm">Tutor AI KKA Lab</p>
             <p class="text-xs text-white/85">Tanya soal AI, KNN, bias data, atau etika. Bukan kunci jawaban kuis ya!</p>
         </div>
-        <div class="h-64 overflow-y-auto p-3 space-y-2 bg-[#FAFAFA]" x-ref="box">
+        <div class="h-64 overflow-y-auto p-3 space-y-2 bg-[var(--color-page)]" x-ref="box">
             <template x-for="(m, i) in messages" :key="i">
                 <div :class="m.role === 'user' ? 'ml-8 bg-orange-500 text-white' : 'mr-8 bg-white border border-slate-200 text-slate-700'"
                      class="px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap" x-text="m.text"></div>
