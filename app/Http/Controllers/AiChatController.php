@@ -24,6 +24,11 @@ class AiChatController extends Controller
 
         $user = $request->user();
 
+        // Guru yang belum diverifikasi NPK tak boleh memakai AI.
+        if ($user->isGuru() && $user->status !== 'aktif') {
+            return response()->json(['message' => 'Akun gurumu masih menunggu verifikasi admin, AI belum bisa dipakai.'], 403);
+        }
+
         // Reservasi kuota atomik: cek + catat di dalam lock agar request
         // paralel tak bisa lolos ganda melewati batas harian.
         $kunci = 'ai:kuota:' . $user->id . ':' . today()->toDateString();

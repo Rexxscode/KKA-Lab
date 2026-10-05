@@ -40,17 +40,19 @@ class RegisteredUserController extends Controller
 
         $isGuru = $request->role === 'guru';
 
-        $user = User::create([
+        $user = new User([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
-            // Siswa langsung aktif; guru menunggu verifikasi NPK oleh admin.
-            'status' => $isGuru ? 'pending' : 'aktif',
-            'bukti_npk_path' => $isGuru && $request->hasFile('bukti_npk')
-                ? $request->file('bukti_npk')->store('bukti-npk', 'local')
-                : null,
         ]);
+        // Hak akses diisi eksplisit (role/status tidak fillable).
+        $user->role = $request->role;
+        // Siswa langsung aktif; guru menunggu verifikasi NPK oleh admin.
+        $user->status = $isGuru ? 'pending' : 'aktif';
+        $user->bukti_npk_path = $isGuru && $request->hasFile('bukti_npk')
+            ? $request->file('bukti_npk')->store('bukti-npk', 'local')
+            : null;
+        $user->save();
 
         event(new Registered($user));
 

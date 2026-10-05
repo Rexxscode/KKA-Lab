@@ -12,7 +12,10 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'status', 'bukti_npk_path', 'avatar_path'];
+    // 'role' & 'status' SENGAJA tidak fillable: hak akses hanya boleh
+    // diubah lewat assignment eksplisit di controller terpercaya
+    // (register, admin), bukan via mass-assignment input user.
+    protected $fillable = ['name', 'email', 'password', 'bukti_npk_path', 'avatar_path'];
 
     protected $hidden = ['password', 'remember_token'];
 

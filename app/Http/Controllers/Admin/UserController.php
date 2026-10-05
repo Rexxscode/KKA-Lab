@@ -23,12 +23,13 @@ class UserController extends Controller
             'role' => 'required|in:guru,admin,siswa',
         ]);
 
-        User::create([
+        $baru = new User([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => $data['role'],
         ]);
+        $baru->role = $data['role'];
+        $baru->save();
 
         return back()->with('toast', ['type' => 'success', 'message' => "Akun {$data['role']} {$data['email']} berhasil dibuat!"]);
     }
@@ -74,7 +75,8 @@ class UserController extends Controller
     public function setujui(Request $request, User $user)
     {
         abort_unless($user->isGuru() && $user->status === 'pending', 404);
-        $user->update(['status' => 'aktif']);
+        $user->status = 'aktif';
+        $user->save();
         Log::info('admin.setujui_guru', ['actor' => $request->user()->id, 'target' => $user->id]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Akun guru {$user->email} disetujui! Fitur gurunya sudah terbuka."]);
@@ -83,7 +85,8 @@ class UserController extends Controller
     public function tolak(Request $request, User $user)
     {
         abort_unless($user->isGuru() && $user->status === 'pending', 404);
-        $user->update(['status' => 'ditolak']);
+        $user->status = 'ditolak';
+        $user->save();
         Log::info('admin.tolak_guru', ['actor' => $request->user()->id, 'target' => $user->id]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Pengajuan {$user->email} ditolak. Ia tidak bisa masuk lagi."]);

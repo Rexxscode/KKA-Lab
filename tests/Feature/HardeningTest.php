@@ -134,6 +134,15 @@ class HardeningTest extends TestCase
         $this->assertSame(0, AiChat::where('user_id', $siswa->id)->count());
     }
 
+    public function test_guru_pending_tak_bisa_pakai_ai(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'pending']);
+
+        $this->actingAs($guru)->postJson(route('ai.chat'), ['message' => 'halo?'])
+            ->assertForbidden();
+        $this->assertSame(0, AiChat::where('user_id', $guru->id)->count());
+    }
+
     public function test_siswa_bisa_keluar_kelas_aktif(): void
     {
         $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);

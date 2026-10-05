@@ -15,18 +15,20 @@ class DatabaseSeeder extends Seeder
     {
         User::firstOrCreate(
             ['email' => 'admin@kkalab.sch.id'],
-            ['name' => 'Admin KKA Lab', 'password' => Hash::make('password'), 'role' => 'admin']
-        );
+            ['name' => 'Admin KKA Lab', 'password' => Hash::make('password')]
+        )->forceFill(['role' => 'admin'])->save();
 
         $guru = User::firstOrCreate(
             ['email' => 'guru@kkalab.sch.id'],
-            ['name' => 'Bu Marissa (Guru)', 'password' => Hash::make('password'), 'role' => 'guru']
+            ['name' => 'Bu Marissa (Guru)', 'password' => Hash::make('password')]
         );
+        $guru->forceFill(['role' => 'guru'])->save();
 
         $siswa = User::firstOrCreate(
             ['email' => 'siswa@kkalab.sch.id'],
-            ['name' => 'Siswa Demo', 'password' => Hash::make('password'), 'role' => 'siswa']
+            ['name' => 'Siswa Demo', 'password' => Hash::make('password')]
         );
+        $siswa->forceFill(['role' => 'siswa'])->save();
 
         $modules = [
             ['title' => 'Modul 1: Apa itu AI?', 'slug' => 'apa-itu-ai', 'order' => 1, 'xp_reward' => 100,
