@@ -1,7 +1,6 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <a href="{{ route('siswa.dashboard') }}" class="text-sm font-semibold text-orange-500">← Dasbor</a>
-        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white mt-1">Papan Peringkat{{ $kelas ? ' — ' . $kelas->name : '' }}</h2>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Papan Peringkat{{ $kelas ? ' — ' . $kelas->name : '' }}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">20 teratas berdasar total XP. Kejar terus!</p>
     </x-slot>
 
