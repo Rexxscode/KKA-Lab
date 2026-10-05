@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\AiChat;
 use App\Models\Classroom;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -100,5 +103,54 @@ class HardeningTest extends TestCase
         $csv = $res->streamedContent();
         $this->assertStringContainsString("'=CMD|calc", $csv);
         $this->assertStringNotContainsString("\n=CMD|", $csv);
+    }
+
+    public function test_ai_chat_dicatat_dan_kuota_harian_ditegakkan(): void
+    {
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [['content' => ['parts' => [['text' => 'Halo! Ini jawaban AI.']]]]],
+            ]),
+        ]);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($siswa)->postJson(route('ai.chat'), ['message' => 'apa itu AI?'])
+            ->assertOk()->assertJson(['reply' => 'Halo! Ini jawaban AI.']);
+        $this->assertDatabaseHas('ai_chats', ['user_id' => $siswa->id, 'message' => 'apa itu AI?']);
+
+        AiChat::where('user_id', $siswa->id)->delete();
+        for ($i = 0; $i < 30; $i++) {
+            AiChat::create(['user_id' => $siswa->id, 'message' => "tanya $i", 'reply' => 'ok']);
+        }
+        $this->actingAs($siswa)->postJson(route('ai.chat'), ['message' => 'satu lagi'])
+            ->assertStatus(429);
+        $this->assertSame(30, AiChat::where('user_id', $siswa->id)->count());
+    }
+
+    public function test_siswa_bisa_keluar_kelas_aktif(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
+        $kelas->students()->attach($siswa->id);
+
+        $this->actingAs($siswa)->delete(route('siswa.leave'))->assertRedirect();
+        $this->assertDatabaseMissing('classroom_user', ['classroom_id' => $kelas->id, 'student_id' => $siswa->id]);
+
+        // Keluar lagi saat tidak punya kelas: tetap redirect dengan pesan error.
+        $this->actingAs($siswa)->delete(route('siswa.leave'))->assertRedirect();
+    }
+
+    public function test_reset_password_admin_mengganti_password(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($admin)->patch(route('admin.users.reset', $siswa), [
+            'password' => 'baru-yang-kuat-123',
+            'password_confirmation' => 'baru-yang-kuat-123',
+        ])->assertRedirect();
+
+        $this->assertTrue(Hash::check('baru-yang-kuat-123', $siswa->fresh()->password));
     }
 }

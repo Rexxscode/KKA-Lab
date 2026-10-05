@@ -69,6 +69,12 @@
                     @endforeach
                 </div>
                 <p class="kka-note">Kelas aktif (oranye) menentukan urutan modul & soalmu.</p>
+                @if($kelasAktif)
+                    <form method="POST" action="{{ route('siswa.leave') }}" onsubmit="return confirm('Keluar dari kelas {{ $kelasAktif->name }}? Progres belajarmu tetap tersimpan.')" class="mt-2">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="text-xs font-bold text-red-600 hover:text-red-700">Keluar dari {{ $kelasAktif->name }}</button>
+                    </form>
+                @endif
             @endif
         </x-card>
 

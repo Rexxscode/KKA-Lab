@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 
@@ -41,7 +43,12 @@ class UserController extends Controller
 
         $user->update(['password' => Hash::make($data['password'])]);
 
-        return back()->with('toast', ['type' => 'success', 'message' => "Password {$user->email} berhasil di-reset."]);
+        // Keluarkan semua sesi aktif akun ini agar password lama tidak bisa dipakai lagi.
+        if (Schema::hasTable('sessions')) {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+        }
+
+        return back()->with('toast', ['type' => 'success', 'message' => "Password {$user->email} berhasil di-reset. Sesi lain milik akun ini ikut dikeluarkan."]);
     }
 
     public function destroy(Request $request, User $user)

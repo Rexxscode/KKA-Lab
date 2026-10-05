@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
     Route::post('/gabung-kelas', [ClassroomJoinController::class, 'store'])->middleware('throttle:10,1')->name('join');
+    Route::delete('/keluar-kelas', [ClassroomJoinController::class, 'destroy'])->middleware('throttle:10,1')->name('leave');
     Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
     Route::get('/bahan/{slug}', [BahanController::class, 'show'])->name('bahan.show');
     Route::post('/bahan/{slug}/selesai', [BahanController::class, 'markRead'])->name('bahan.read');
