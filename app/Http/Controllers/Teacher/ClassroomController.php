@@ -203,6 +203,11 @@ class ClassroomController extends Controller
 
         $modulIds = $classroom->modules()->pluck('modules.id');
         \App\Models\StudentProgress::where('student_id', $user->id)->whereIn('module_id', $modulIds)->delete();
+        // Bersihkan jejak turunan agar rapor & riwayat konsisten dengan progres nol.
+        \App\Models\QuizAttempt::where('student_id', $user->id)->whereIn('module_id', $modulIds)->delete();
+        $badgeIds = \App\Models\Badge::whereIn('module_id', $modulIds)->pluck('id');
+        $user->badges()->detach($badgeIds);
+        \App\Models\Feedback::where('student_id', $user->id)->where('classroom_id', $classroom->id)->whereIn('module_id', $modulIds)->delete();
         \Log::info('guru.reset_progres', ['actor' => $request->user()->id, 'kelas' => $classroom->id, 'target' => $user->id]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Progres {$user->name} di {$classroom->name} diulang dari nol."]);

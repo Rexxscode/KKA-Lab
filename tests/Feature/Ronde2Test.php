@@ -108,6 +108,32 @@ class Ronde2Test extends TestCase
         $this->assertSame(20 + $module->xp_reward + 10, (int) StudentProgress::where('student_id', $siswa->id)->where('module_id', $module->id)->firstOrFail()->xp_earned);
     }
 
+    public function test_reset_progres_membersihkan_jejak_turunan(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
+        $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $kelas->modules()->attach($module->id, ['position' => 1]);
+        $kelas->students()->attach($siswa->id);
+        StudentProgress::updateOrCreate(
+            ['student_id' => $siswa->id, 'module_id' => $module->id],
+            ['quiz_score' => 90, 'xp_earned' => 50, 'is_completed' => true, 'reading_done' => true]
+        );
+        \App\Models\QuizAttempt::create(['student_id' => $siswa->id, 'module_id' => $module->id, 'score' => 90, 'answers' => [0], 'passed' => true]);
+        $badge = \App\Models\Badge::firstOrCreate(['module_id' => $module->id], ['name' => 'Badge Tes']);
+        $siswa->badges()->syncWithoutDetaching([$badge->id]);
+        \App\Models\Feedback::create(['classroom_id' => $kelas->id, 'student_id' => $siswa->id, 'module_id' => $module->id, 'body' => 'Bagus, pertahankan!']);
+
+        $this->actingAs($guru)->delete(route('guru.kelas.siswa.reset', [$kelas, $siswa]))->assertRedirect();
+
+        $this->assertDatabaseMissing('student_progress', ['student_id' => $siswa->id, 'module_id' => $module->id]);
+        $this->assertDatabaseMissing('quiz_attempts', ['student_id' => $siswa->id, 'module_id' => $module->id]);
+        $this->assertDatabaseMissing('badge_user', ['badge_id' => $badge->id, 'user_id' => $siswa->id]);
+        $this->assertDatabaseMissing('feedbacks', ['classroom_id' => $kelas->id, 'student_id' => $siswa->id, 'module_id' => $module->id]);
+    }
+
     public function test_modul_lewat_tenggat_tak_bisa_diprogress(): void
     {
         $this->seed(DatabaseSeeder::class);
