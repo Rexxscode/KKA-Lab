@@ -9,17 +9,27 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body style="background:var(--color-page);font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="boot()">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <nav class="flex items-center justify-between py-5">
-        <div class="flex items-center gap-2">
-            <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
-            <div><p class="font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></p><p class="text-xs text-slate-500">Koding & Kecerdasan Artifisial</p></div>
-        </div>
-        <div class="flex items-center gap-3">
-            <a href="{{ route('login') }}" class="text-sm font-semibold text-slate-600 hover:text-orange-600">Masuk</a>
-            <a href="{{ route('register') }}" class="kka-btn-primary !px-4 !py-2 text-sm">Mulai Gratis</a>
+    <style>
+        @keyframes kka-nav-masuk {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .kka-nav-animasi { animation: kka-nav-masuk 500ms ease-out both; }
+        .kka-nav-logo { transition: transform 200ms ease-out; }
+        .kka-nav-logo:hover { transform: scale(1.04) rotate(-2deg); }
+    </style>
+    <nav x-data="{ sudahScroll: false }" @scroll.window="sudahScroll = window.scrollY > 24"
+         class="kka-nav-animasi sticky top-0 z-40 transition-all duration-300"
+         :class="sudahScroll ? 'bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm py-3' : 'bg-transparent border-b border-transparent py-5'">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <a href="{{ route('home') }}" class="kka-nav-logo flex items-center gap-2" aria-label="KKA Lab - Beranda">
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
+                <span><span class="block font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></span><span class="block text-xs text-slate-500">Koding & Kecerdasan Artifisial</span></span>
+            </a>
+            <a href="{{ route('login') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Masuk</a>
         </div>
     </nav>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
     <section class="grid lg:grid-cols-2 gap-8 items-center py-10">
         <div>
