@@ -127,6 +127,16 @@ summary:focus-visible,
         border-radius: var(--radius-card);
         break-inside: avoid;
         page-break-inside: avoid;
+        /* Paksa terang walau dicetak dari dark mode (dark: utilities tetap aktif saat print). */
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+    .print-area :is(h1, h2, h3, p, div, span) {
+        color: inherit !important;
+        border-color: #e2e8f0 !important;
+    }
+    .print-area a {
+        color: #047857 !important;
     }
     .print-area h1 {
         font-size: var(--font-size-display);

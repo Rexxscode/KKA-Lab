@@ -82,7 +82,7 @@
                                 <td class="py-3 pr-3"><p class="font-bold text-slate-800 dark:text-slate-100">{{ $u->name }}</p><p class="text-xs text-slate-400">{{ $u->email }}</p></td>
                                 <td class="py-3 pr-3"><span class="kka-badge">{{ ucfirst($u->role) }}</span>
                                     @if($u->status === 'pending')
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30"><x-icon name="clock" class="w-3 h-3" />Pending</span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30"><x-icon name="clock" class="w-3 h-3" />Pending</span>
                                     @elseif($u->status === 'ditolak')
                                         <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">Ditolak</span>
                                     @endif

@@ -99,7 +99,7 @@
                 @if(auth()->user()->avatar_path)
                     <img src="{{ auth()->user()->avatarUrl() }}" alt="Foto profil" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700" />
                 @else
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 text-orange-700 font-extrabold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300 font-extrabold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
                 @endif
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ auth()->user()->name }}</p>

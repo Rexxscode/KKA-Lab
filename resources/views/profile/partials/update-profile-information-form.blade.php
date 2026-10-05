@@ -13,7 +13,7 @@
                 @if($user->avatar_path)
                     <img src="{{ $user->avatarUrl() }}" alt="Foto profil" class="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700" />
                 @else
-                    <span class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-100 text-orange-700 font-extrabold text-2xl">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                    <span class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300 font-extrabold text-2xl">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                 @endif
                 <input id="avatar" name="avatar" type="file" accept=".jpg,.jpeg,.png,.webp" class="text-sm text-slate-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border file:border-slate-200 dark:file:border-slate-700 file:bg-white dark:file:bg-slate-800 file:font-bold file:text-slate-700 dark:file:text-slate-200 hover:file:border-orange-300" />
             </div>
