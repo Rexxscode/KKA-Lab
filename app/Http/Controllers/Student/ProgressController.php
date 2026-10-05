@@ -54,7 +54,7 @@ class ProgressController extends Controller
             $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
             $paket = $modul->paketAcak($quizzes);
             session([$kunciPaket => $paket, $kunciMulai => now()->toIso8601String()]);
-        } elseif (! session($kunciMulai) || now()->diffInMinutes(Carbon::parse(session($kunciMulai))) > self::DURASI_KUIS_MENIT) {
+        } elseif (! session($kunciMulai) || abs(now()->diffInMinutes(Carbon::parse(session($kunciMulai)))) > self::DURASI_KUIS_MENIT) {
             // Waktu habis: paket lama hangus, buat percobaan baru.
             session()->forget([$kunciPaket, $kunciMulai]);
 

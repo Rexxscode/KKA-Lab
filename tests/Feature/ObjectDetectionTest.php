@@ -20,7 +20,8 @@ class ObjectDetectionTest extends TestCase
             ['student_id' => $siswa->id, 'module_id' => $satu->id],
             ['quiz_score' => 90, 'xp_earned' => $satu->xp_reward, 'is_completed' => true, 'reading_done' => true]
         );
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'latih-ai-mu'))->assertRedirect();
+        $dua = Module::where('slug', 'latih-ai-mu')->firstOrFail();
+        $this->actingAs($siswa)->withSession(['baca_mulai_' . $dua->id => now()->subMinutes(5)->toIso8601String()])->post(route('siswa.bahan.read', 'latih-ai-mu'))->assertRedirect();
     }
 
     public function test_halaman_modul_dua_memakai_widget_deteksi_bukan_knn(): void

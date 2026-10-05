@@ -52,7 +52,7 @@ class KuisController extends Controller
             session([$kunciMulai => now()->toIso8601String()]);
         } elseif (
             session()->has($kunciPaket) && session()->has($kunciMulai)
-            && now()->diffInMinutes(Carbon::parse(session($kunciMulai))) < ProgressController::DURASI_KUIS_MENIT
+            && abs(now()->diffInMinutes(Carbon::parse(session($kunciMulai)))) < ProgressController::DURASI_KUIS_MENIT
         ) {
             $paket = session($kunciPaket);
         } else {
@@ -61,7 +61,7 @@ class KuisController extends Controller
             session([$kunciPaket => $paket, $kunciMulai => now()->toIso8601String()]);
         }
         $tampil = $modul->uraikanPaket($paket);
-        $sisaDetik = (int) max(0, ProgressController::DURASI_KUIS_MENIT * 60 - now()->diffInSeconds(Carbon::parse(session($kunciMulai))));
+        $sisaDetik = (int) max(0, ProgressController::DURASI_KUIS_MENIT * 60 - abs(now()->diffInSeconds(Carbon::parse(session($kunciMulai)))));
 
         return view('siswa.kuis-show', compact('module', 'progress', 'tampil', 'sisaDetik'));
     }

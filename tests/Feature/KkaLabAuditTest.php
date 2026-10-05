@@ -63,7 +63,8 @@ class KkaLabAuditTest extends TestCase
         $siswa = User::factory()->create(['role' => 'siswa']);
 
         // Modul pertama terbuka; baca bahan dulu.
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $modulBahan = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $this->actingAs($siswa)->withSession(['baca_mulai_' . $modulBahan->id => now()->subMinutes(5)->toIso8601String()])->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
 
         // Buka kuis: paket acak tersimpan di sesi.
         $res = $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'));
@@ -122,7 +123,8 @@ class KkaLabAuditTest extends TestCase
             ->assertSee('Praktik Python Asli')
             ->assertSee('pyodide-worker.js');
 
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'python-dasar-ai'))->assertRedirect();
+        $modulPy = Module::where('slug', 'python-dasar-ai')->firstOrFail();
+        $this->actingAs($siswa)->withSession(['baca_mulai_' . $modulPy->id => now()->subMinutes(5)->toIso8601String()])->post(route('siswa.bahan.read', 'python-dasar-ai'))->assertRedirect();
         $this->actingAs($siswa)->get(route('siswa.kuis.show', 'python-dasar-ai'))->assertOk();
 
         // Modul 6 masih terkunci sebelum modul 5 lulus.

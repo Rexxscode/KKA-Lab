@@ -71,12 +71,27 @@ class Ronde2Test extends TestCase
         $this->assertDatabaseHas('classroom_user', ['classroom_id' => $kelas->id, 'student_id' => $siswa->id]);
     }
 
+    public function test_tandai_baca_menolak_tanpa_jeda_baca(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        // Tanpa membuka bahan dulu: ditolak, progres tidak tercatat.
+        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))
+            ->assertRedirect(route('siswa.bahan.show', 'apa-itu-ai'));
+        $this->assertDatabaseMissing('student_progress', [
+            'student_id' => $siswa->id,
+            'module_id' => Module::where('slug', 'apa-itu-ai')->firstOrFail()->id,
+        ]);
+    }
+
     public function test_refresh_kuis_memakai_paket_yang_sama(): void
     {
         $this->seed(DatabaseSeeder::class);
         $siswa = User::factory()->create(['role' => 'siswa']);
 
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $modulBahan = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $this->actingAs($siswa)->withSession(['baca_mulai_' . $modulBahan->id => now()->subMinutes(5)->toIso8601String()])->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
         $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
         $p1 = session('kuis_paket_' . Module::where('slug', 'apa-itu-ai')->firstOrFail()->id);
         $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
@@ -91,7 +106,8 @@ class Ronde2Test extends TestCase
         $this->seed(DatabaseSeeder::class);
         $siswa = User::factory()->create(['role' => 'siswa']);
 
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $modulBahan = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $this->actingAs($siswa)->withSession(['baca_mulai_' . $modulBahan->id => now()->subMinutes(5)->toIso8601String()])->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
         $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
 
         $this->actingAs($siswa)->post(route('siswa.kuis.submit', 'apa-itu-ai'), ['answers' => [0, 1]])
@@ -102,7 +118,8 @@ class Ronde2Test extends TestCase
     {        $this->seed(DatabaseSeeder::class);
         $siswa = User::factory()->create(['role' => 'siswa']);
 
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $modulBahan = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $this->actingAs($siswa)->withSession(['baca_mulai_' . $modulBahan->id => now()->subMinutes(5)->toIso8601String()])->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
         $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
         $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
         $paket = session('kuis_paket_' . $module->id);
@@ -200,7 +217,8 @@ class Ronde2Test extends TestCase
         $this->seed(DatabaseSeeder::class);
         $siswa = User::factory()->create(['role' => 'siswa']);
 
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $modulBahan = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $this->actingAs($siswa)->withSession(['baca_mulai_' . $modulBahan->id => now()->subMinutes(5)->toIso8601String()])->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
         $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
         $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
         $paket = session('kuis_paket_' . $module->id);

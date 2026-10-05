@@ -10,6 +10,12 @@ use Illuminate\Http\Request;
 
 class BahanController extends Controller
 {
+    /**
+     * Jeda baca minimal (detik) antara membuka bahan dan boleh tandai
+     * selesai — server-side, agar gerbang scroll client-side tidak
+     * diakali sekali-klik/curl instan.
+     */
+    public const BACA_MIN_DETIK = 30;
     public function index(Request $request, StudentModuleService $modul)
     {
         $daftar = $modul->denganStatus($request->user());
@@ -31,6 +37,12 @@ class BahanController extends Controller
 
         $progress = $item['progress'];
 
+        // Catat kapan bahan pertama dibuka (sesi) untuk gerbang jeda baca.
+        $kunciBuka = 'baca_mulai_' . $module->id;
+        if (! session()->has($kunciBuka)) {
+            session([$kunciBuka => now()->toIso8601String()]);
+        }
+
         return view('siswa.bahan-show', compact('module', 'progress'));
     }
 
@@ -46,6 +58,17 @@ class BahanController extends Controller
                 ->route('siswa.kuis.show', $module->slug)
                 ->with('toast', ['type' => 'info', 'message' => 'Mode pratinjau admin: progres tidak disimpan.']);
         }
+
+        $kunciBuka = 'baca_mulai_' . $module->id;
+        $dibuka = session($kunciBuka);
+        // Carbon 3: diffInSeconds bertanda (negatif untuk waktu lampau),
+        // jadi pakai abs() agar jeda selalu bernilai positif.
+        if (! $dibuka || abs(now()->diffInSeconds(\Illuminate\Support\Carbon::parse($dibuka))) < self::BACA_MIN_DETIK) {
+            return redirect()
+                ->route('siswa.bahan.show', $module->slug)
+                ->with('toast', ['type' => 'error', 'message' => 'Baca dulu materinya sampai akhir (' . self::BACA_MIN_DETIK . ' detik), tombol selesai aktif setelah itu!']);
+        }
+        session()->forget($kunciBuka);
 
         $progress = StudentProgress::firstOrCreate(
             ['student_id' => $request->user()->id, 'module_id' => $module->id],
