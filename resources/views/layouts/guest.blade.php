@@ -6,6 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
+        <x-favicon-links />
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +25,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div class="flex items-center gap-3">
                 <a href="/" class="flex items-center gap-2.5">
-                    <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
+                    <img src="{{ asset('logo.svg') }}" alt="Logo KKA Lab" class="w-11 h-11 rounded-2xl" width="44" height="44" />
                     <span class="text-left">
                         <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KKA <span class="text-orange-500">Lab</span></span>
                         <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
