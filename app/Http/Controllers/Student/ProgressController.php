@@ -8,9 +8,16 @@ use App\Models\Module;
 use App\Models\StudentProgress;
 use App\Services\StudentModuleService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class ProgressController extends Controller
 {
+    /**
+     * Batas waktu pengerjaan satu paket kuis (server-side).
+     */
+    public const DURASI_KUIS_MENIT = 30;
+
     public function submitQuiz(Request $request, string $slug, StudentModuleService $modul)
     {
         $module = Module::where('slug', $slug)->firstOrFail();
@@ -37,20 +44,47 @@ class ProgressController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk mengerjakan kuis!']);
         }
 
-        $answers = $request->validate([
-            'answers' => 'required|array',
-            'answers.*' => 'nullable|integer|min:0|max:4',
-        ])['answers'];
-
         // Nilai memakai paket acak yang disimpan saat halaman kuis dibuka,
         // sehingga urutan soal & opsi yang diacak tetap konsisten.
-        $paket = session('kuis_paket_' . $module->id);
+        $kunciPaket = 'kuis_paket_' . $module->id;
+        $kunciMulai = 'kuis_mulai_' . $module->id;
+        $paket = session($kunciPaket);
         if (empty($paket)) {
             $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
             $paket = $modul->paketAcak($quizzes);
+            session([$kunciPaket => $paket, $kunciMulai => now()->toIso8601String()]);
+        } elseif (! session($kunciMulai) || now()->diffInMinutes(Carbon::parse(session($kunciMulai))) > self::DURASI_KUIS_MENIT) {
+            // Waktu habis: paket lama hangus, buat percobaan baru.
+            session()->forget([$kunciPaket, $kunciMulai]);
+
+            return redirect()
+                ->route('siswa.kuis.show', $module->slug)
+                ->with('toast', ['type' => 'error', 'message' => 'Waktu ' . self::DURASI_KUIS_MENIT . ' menit habis! Paket baru dibuat — coba lagi.']);
         }
         $tampil = $modul->uraikanPaket($paket);
         abort_if(empty($tampil), 422, 'Bank soal modul ini kosong.');
+
+        // Jawaban harus lengkap sejumlah soal tampil (tanpa kurang/lebih).
+        $answers = $request->validate([
+            'answers' => 'required|array|size:' . count($tampil),
+            'answers.*' => 'required|integer|min:0|max:4',
+        ])['answers'];
+
+        // Kunci anti double-submit: kiriman ganda bersamaan diproses sekali.
+        $lock = Cache::lock("kuis:{$request->user()->id}:{$module->id}", 10);
+        if (! $lock->get()) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Jawabanmu masih diproses, tunggu sebentar!']);
+        }
+
+        try {
+            return $this->nilai($request, $module, $tampil, $answers, $kunciPaket, $kunciMulai);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function nilai(Request $request, Module $module, array $tampil, array $answers, string $kunciPaket, string $kunciMulai)
+    {
 
         $totalPoints = collect($tampil)->sum(fn ($t) => $t['quiz']->points);
         $earned = 0;
@@ -86,12 +120,16 @@ class ProgressController extends Controller
 
         if ($passed && $module->badge) {
             $request->user()->badges()->syncWithoutDetaching([$module->badge->id]);
+            session()->forget([$kunciPaket, $kunciMulai]);
+
             return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus {$module->title} dengan skor {$score}. +{$xp} XP & badge didapat!"]);
         }
 
         if ($passed) {
             Badge::firstOrCreate(['module_id' => $module->id], ['name' => 'Badge ' . $module->title]);
             $request->user()->badges()->syncWithoutDetaching([Badge::where('module_id', $module->id)->first()->id]);
+            session()->forget([$kunciPaket, $kunciMulai]);
+
             return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus dengan skor {$score}. +{$xp} XP!"]);
         }
 

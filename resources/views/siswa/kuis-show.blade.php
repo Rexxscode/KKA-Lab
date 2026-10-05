@@ -3,6 +3,7 @@
         <a href="{{ route('siswa.kuis.index') }}" class="text-sm font-semibold text-orange-500">← Semua Kuis</a>
         <h2 class="font-extrabold text-xl text-slate-900 mt-1">Kuis: {{ $module->title }}</h2>
         <p class="text-sm text-slate-500">{{ count($tampil) }} soal acak per percobaan • Opsi diacak • Lulus jika skor ≥80 • Materi disembunyikan (murni pemahamanmu)</p>
+        <p class="mt-1 text-sm font-bold text-orange-600">Batas waktu: {{ \App\Http\Controllers\Student\ProgressController::DURASI_KUIS_MENIT }} menit • Sisa: <span id="sisa-waktu" data-detik="{{ $sisaDetik }}">--:--</span></p>
     </x-slot>
 
     <div class="max-w-3xl" x-data="kkaBelajar({{ count($tampil) }})">
@@ -72,7 +73,7 @@
                         <x-button type="button" @click="keSoal(soalIdx + 1)">Lanjut →</x-button>
                     </template>
                     <template x-if="soalIdx === {{ count($tampil) - 1 }}">
-                        <x-button type="submit">Kumpulkan Kuis</x-button>
+                        <x-button type="submit" ::disabled="sudahKumpul" x-text="sudahKumpul ? 'Mengumpulkan...' : 'Kumpulkan Kuis'">Kumpulkan Kuis</x-button>
                     </template>
                 </div>
             </form>
@@ -125,6 +126,29 @@ function kkaBelajar(total) {
             e.returnValue = '';
         }
     });
+})();
+// Hitung mundur batas waktu (server yang menegakkan). Habis -> kumpul otomatis.
+(function () {
+    const el = document.getElementById('sisa-waktu');
+    if (!el) return;
+    let sisa = parseInt(el.dataset.detik || '0', 10);
+    const cetak = () => {
+        const m = String(Math.floor(Math.max(0, sisa) / 60)).padStart(2, '0');
+        const d = String(Math.max(0, sisa) % 60).padStart(2, '0');
+        el.textContent = m + ':' + d;
+    };
+    cetak();
+    setInterval(function () {
+        sisa--;
+        cetak();
+        if (sisa <= 0) {
+            const form = document.getElementById('form-kuis');
+            if (form && !form.dataset.kadaluarsa) {
+                form.dataset.kadaluarsa = '1';
+                form.submit();
+            }
+        }
+    }, 1000);
 })();
 </script>
 @endpush

@@ -50,8 +50,7 @@ class Ronde2Test extends TestCase
     }
 
     public function test_regenerasi_kode_menghanguskan_kode_lama(): void
-    {
-        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+    {        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
         $siswa = User::factory()->create(['role' => 'siswa']);
         $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
 
@@ -66,5 +65,50 @@ class Ronde2Test extends TestCase
         // Kode baru diterima.
         $this->actingAs($siswa)->post(route('siswa.join'), ['code' => $baru])->assertRedirect();
         $this->assertDatabaseHas('classroom_user', ['classroom_id' => $kelas->id, 'student_id' => $siswa->id]);
+    }
+
+    public function test_refresh_kuis_memakai_paket_yang_sama(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
+        $p1 = session('kuis_paket_' . Module::where('slug', 'apa-itu-ai')->firstOrFail()->id);
+        $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
+        $p2 = session('kuis_paket_' . Module::where('slug', 'apa-itu-ai')->firstOrFail()->id);
+
+        $this->assertNotEmpty($p1);
+        $this->assertSame($p1, $p2);
+    }
+
+    public function test_submit_kuis_menolak_jawaban_tak_lengkap(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
+
+        $this->actingAs($siswa)->post(route('siswa.kuis.submit', 'apa-itu-ai'), ['answers' => [0, 1]])
+            ->assertSessionHasErrors('answers');
+    }
+
+    public function test_submit_kuis_lewat_waktu_ditolak(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
+        $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $paket = session('kuis_paket_' . $module->id);
+        $this->assertNotEmpty($paket);
+
+        $this->actingAs($siswa)->withSession([
+            'kuis_paket_' . $module->id => $paket,
+            'kuis_mulai_' . $module->id => now()->subHour()->toIso8601String(),
+        ])->post(route('siswa.kuis.submit', 'apa-itu-ai'), ['answers' => array_fill(0, 15, 0)])
+            ->assertRedirect(route('siswa.kuis.show', 'apa-itu-ai'));
     }
 }
