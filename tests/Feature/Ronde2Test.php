@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AiChat;
 use App\Models\Classroom;
 use App\Models\Module;
+use App\Models\Quiz;
 use App\Models\StudentProgress;
 use App\Models\User;
 use App\Services\StudentModuleService;
@@ -240,8 +241,7 @@ class Ronde2Test extends TestCase
     }
 
     public function test_umpan_balik_guru_tampil_di_rapor_siswa(): void
-    {
-        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+    {        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
         $siswa = User::factory()->create(['role' => 'siswa']);
         $luar = User::factory()->create(['role' => 'siswa']);
         $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
@@ -262,5 +262,36 @@ class Ronde2Test extends TestCase
             'module_id' => $modul->id,
             'body' => 'x',
         ])->assertNotFound();
+    }
+
+    public function test_password_lemah_ditolak_saat_register(): void
+    {
+        $this->post('/register', [
+            'name' => 'Lemah',
+            'email' => 'lemah@example.com',
+            'password' => 'abcdefgh',
+            'password_confirmation' => 'abcdefgh',
+            'role' => 'siswa',
+        ])->assertSessionHasErrors('password');
+        $this->assertGuest();
+    }
+
+    public function test_fork_soal_menyimpan_origin_id(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $modul = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+
+        $this->actingAs($guru)->post(route('guru.quiz.module.store', $modul), [
+            'question' => 'Soal tambahan guru?',
+            'options' => ['A1', 'B1', 'C1', 'D1', 'E1'],
+            'correct_letter' => 'A',
+        ])->assertRedirect();
+
+        // Fork otomatis: salinan soal default menunjuk ke soal asal,
+        // sedangkan soal baru buatan guru tetap origin null.
+        $milik = Quiz::where('module_id', $modul->id)->where('teacher_id', $guru->id);
+        $this->assertSame(15, (clone $milik)->whereNotNull('origin_id')->count());
+        $this->assertSame(1, (clone $milik)->whereNull('origin_id')->count());
     }
 }

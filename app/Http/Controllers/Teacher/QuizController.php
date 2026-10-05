@@ -71,6 +71,7 @@ class QuizController extends Controller
         foreach ($module->quizzes()->whereNull('teacher_id')->orderBy('id')->get() as $q) {
             $module->quizzes()->create([
                 'teacher_id' => $user->id,
+                'origin_id' => $q->id,
                 'question' => $q->question,
                 'options' => $q->options,
                 'correct_index' => $q->correct_index,
@@ -82,13 +83,14 @@ class QuizController extends Controller
 
     /**
      * Cari baris milik guru yang bersesuaian dengan soal default asal.
+     * Cocok via origin_id; fallback teks untuk data lama sebelum backfill.
      */
     private function padananMilik(Module $module, \App\Models\User $user, Quiz $asal): ?Quiz
     {
         return $module->quizzes()
             ->where('teacher_id', $user->id)
-            ->where('question', $asal->question)
-            ->first();
+            ->where(fn ($q) => $q->where('origin_id', $asal->id)->orWhere('question', $asal->question))
+            ->orderBy('id')->first();
     }
 
     public function store(Request $request, Module $module)
@@ -134,6 +136,7 @@ class QuizController extends Controller
             $this->pastikanSalinan($quiz->module, $user);
             $quiz = $this->padananMilik($quiz->module, $user, $quiz) ?? $quiz->module->quizzes()->create([
                 'teacher_id' => $user->id,
+                'origin_id' => $quiz->id,
                 'question' => $quiz->question,
                 'options' => $quiz->options,
                 'correct_index' => $quiz->correct_index,
