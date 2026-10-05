@@ -40,6 +40,13 @@ class BahanController extends Controller
         $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
         abort_unless($item && ! $item['terkunci'], 404);
 
+        // Pratinjau admin: boleh lihat, tapi progres tidak disimpan.
+        if ($request->user()->isAdmin()) {
+            return redirect()
+                ->route('siswa.kuis.show', $module->slug)
+                ->with('toast', ['type' => 'info', 'message' => 'Mode pratinjau admin: progres tidak disimpan.']);
+        }
+
         $progress = StudentProgress::firstOrCreate(
             ['student_id' => $request->user()->id, 'module_id' => $module->id],
             ['quiz_score' => 0, 'xp_earned' => 0, 'is_completed' => false]

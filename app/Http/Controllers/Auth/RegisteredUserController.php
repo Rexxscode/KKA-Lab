@@ -56,6 +56,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        $request->session()->regenerate();
+
         if ($isGuru) {
             return redirect(route('guru.dashboard', absolute: false))
                 ->with('toast', ['type' => 'success', 'message' => 'Pendaftaran diterima! Akunmu menunggu verifikasi NPK oleh admin.']);

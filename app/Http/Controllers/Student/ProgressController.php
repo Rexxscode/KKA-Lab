@@ -23,6 +23,11 @@ class ProgressController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan modul sebelumnya dulu sesuai urutan!']);
         }
 
+        // Pratinjau admin: boleh lihat soal, tapi nilai tidak disimpan.
+        if ($request->user()->isAdmin()) {
+            return back()->with('toast', ['type' => 'info', 'message' => 'Mode pratinjau admin: nilai tidak disimpan.']);
+        }
+
         $progress = $item['progress'];
 
         // Kuis hanya sah jika bahan bacaan sudah ditandai selesai.
@@ -116,6 +121,16 @@ class ProgressController extends Controller
         abort_unless($item, 404);
         if ($item['terkunci']) {
             return response()->json(['message' => 'Selesaikan modul sebelumnya dulu sesuai urutan!'], 403);
+        }
+
+        // Pratinjau admin: tidak ada yang dicatat.
+        if ($request->user()->isAdmin()) {
+            return response()->json([
+                'count' => 0,
+                'awarded' => false,
+                'xp_earned' => 0,
+                'message' => 'Mode pratinjau admin: Uji tidak dicatat.',
+            ]);
         }
 
         $progress = StudentProgress::firstOrCreate(

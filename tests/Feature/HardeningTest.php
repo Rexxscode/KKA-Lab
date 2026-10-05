@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Classroom;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -71,5 +72,33 @@ class HardeningTest extends TestCase
             'title' => 'Modul Spam',
             'materi' => str_repeat('a', 50001),
         ])->assertSessionHasErrors('materi');
+    }
+
+    public function test_pratinjau_admin_tidak_menyimpan_progres(): void
+    {
+        $this->seedKka();
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->post(route('siswa.bahan.read', 'apa-itu-ai'))
+            ->assertRedirect(route('siswa.kuis.show', 'apa-itu-ai'));
+        $this->assertDatabaseMissing('student_progress', ['student_id' => $admin->id]);
+
+        $this->actingAs($admin)->postJson(route('siswa.modul.handson', 'apa-itu-ai'), ['confidence' => 90])
+            ->assertOk()->assertJson(['count' => 0]);
+        $this->assertDatabaseMissing('student_progress', ['student_id' => $admin->id]);
+    }
+
+    public function test_csv_menetralkan_formula_injection(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'Kelas A', 'code' => 'ABC123']);
+        $jahat = User::factory()->create(['role' => 'siswa', 'name' => '=CMD|calc', 'email' => 'jahat@example.com']);
+        $kelas->students()->attach($jahat->id);
+
+        $res = $this->actingAs($guru)->get(route('guru.kelas.export', $kelas));
+        $res->assertOk();
+        $csv = $res->streamedContent();
+        $this->assertStringContainsString("'=CMD|calc", $csv);
+        $this->assertStringNotContainsString("\n=CMD|", $csv);
     }
 }

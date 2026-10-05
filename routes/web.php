@@ -22,6 +22,7 @@ Route::get('/', function () {
     try {
         $modules = Module::orderBy('order')->get();
     } catch (\Throwable $e) {
+        report($e);
         $modules = collect();
     }
 
