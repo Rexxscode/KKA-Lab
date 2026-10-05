@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>KKA Lab — Laboratorium Koding & Kecerdasan Artifisial</title>
+    <x-favicon-links />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
@@ -26,7 +27,7 @@
          :class="sudahScroll ? 'bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm py-3' : 'bg-transparent border-b border-transparent py-5'">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <a href="{{ route('home') }}" class="kka-nav-logo flex items-center gap-2" aria-label="KKA Lab - Beranda">
-                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
+                <img src="{{ asset('logo.svg') }}" alt="Logo KKA Lab" class="w-10 h-10 rounded-2xl" width="40" height="40" />
                 <span><span class="block font-extrabold text-slate-900 dark:text-white dark:text-white leading-none">KKA <span class="text-orange-500">Lab</span></span><span class="block text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Koding & Kecerdasan Artifisial</span></span>
             </a>
             <div class="flex items-center gap-2">
@@ -146,7 +147,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         <div>
             <div class="flex items-center gap-2">
-                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-orange-500 text-white font-extrabold">K</span>
+                <img src="{{ asset('logo.svg') }}" alt="Logo KKA Lab" class="w-9 h-9 rounded-xl" width="36" height="36" />
                 <p class="font-extrabold text-slate-900 dark:text-white">KKA <span class="text-orange-500">Lab</span></p>
             </div>
             <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Laboratorium Koding & Kecerdasan Artifisial untuk pembelajaran AI di sekolah.</p>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><title>KKA Lab logo</title><g transform="translate(-19.46 -19.46) scale(3.072)">
+  
+  <rect x="8" y="8" width="80" height="80" rx="22" fill="#f97316"/>
+  <rect x="25" y="24" width="14" height="48" rx="7" fill="#ffffff"/>
+  <path d="M39 46 L62 26" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <path d="M39 48 L60 72" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none"/>
+</g></svg>

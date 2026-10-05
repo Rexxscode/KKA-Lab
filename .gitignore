@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Transkrip sesi AI / debug lokal — jangan commit
+session-*.md
+ses_*.md
+scan-dark.py
