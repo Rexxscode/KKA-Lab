@@ -16,15 +16,26 @@ class SetSecurityHeaders
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+        // Host CDN yang memang dipakai aplikasi (model COCO-SSD/MobileNet,
+        // runtime Pyodide, Chart.js). Tanpa ini fetch bobot model diblokir
+        // browser dan fitur deteksi/Python mati total.
+        $cdn = 'https://cdn.jsdelivr.net https://storage.googleapis.com';
+
+        // Izin localhost (Vite HMR) hanya saat pengembangan lokal.
+        $dev = app()->environment('local') || (bool) config('app.debug');
+        $localhostScript = $dev ? ' http://localhost:*' : '';
+        $localhostConnect = $dev ? ' ws://localhost:* wss://localhost:*' : '';
+
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             // Inline script/style dipakai Blade + Alpine; CDN jsdelivr untuk Chart.js.
             // 'unsafe-eval' wajib: Alpine menilai ekspresi x-data/@click via AsyncFunction.
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net http://localhost:*",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net" . $localhostScript,
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             'font-src \'self\' https://fonts.gstatic.com',
             'img-src \'self\' data: blob:',
-            'connect-src \'self\' ws://localhost:* wss://localhost:*',
+            "connect-src 'self' " . $cdn . $localhostConnect,
+            "worker-src 'self'",
             "frame-ancestors 'self'",
             "object-src 'none'",
             "base-uri 'self'",
