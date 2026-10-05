@@ -11,6 +11,7 @@ use App\Services\StudentModuleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 
 class ProgressController extends Controller
 {
@@ -66,10 +67,21 @@ class ProgressController extends Controller
         abort_if(empty($tampil), 422, 'Bank soal modul ini kosong.');
 
         // Jawaban harus lengkap sejumlah soal tampil (tanpa kurang/lebih).
-        $answers = $request->validate([
+        // Validasi manual agar gagalnya jadi toast ramah + withInput,
+        // bukan halaman error (kasus auto-submit saat waktu habis).
+        $validator = Validator::make($request->all(), [
             'answers' => 'required|array|size:' . count($tampil),
             'answers.*' => 'required|integer|min:0|max:4',
-        ])['answers'];
+        ]);
+        if ($validator->fails()) {
+            $terjawab = is_array($request->input('answers')) ? count(array_filter($request->input('answers'), fn ($a) => $a !== null && $a !== '')) : 0;
+
+            return back()->withInput()->withErrors($validator)->with('toast', [
+                'type' => 'error',
+                'message' => "Masih ada soal belum dijawab ({$terjawab}/" . count($tampil) . '). Lengkapi semua soal dulu baru kumpulkan!',
+            ]);
+        }
+        $answers = $validator->validated()['answers'];
 
         // Kunci anti double-submit: kiriman ganda bersamaan diproses sekali.
         $lock = Cache::lock("kuis:{$request->user()->id}:{$module->id}", 10);
