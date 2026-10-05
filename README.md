@@ -38,7 +38,7 @@ Kemendikdasmen memperkuat pembelajaran mendalam lewat Koding & Kecerdasan Artifi
 
 ### Solusi yang Ditawarkan
 
-KKA Lab adalah aplikasi web interaktif tempat siswa **melatih model AI sungguhan langsung di browser** (klasifikasi gambar via webcam dengan TensorFlow.js + KNN — gambar tidak pernah keluar dari perangkat), mengerjakan bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
+KKA Lab adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung di browser** (deteksi objek real-time via webcam dengan TensorFlow.js COCO-SSD — gambar tidak pernah keluar dari perangkat), mengerjakan bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
 
 ### Tujuan Proyek
 
@@ -54,7 +54,7 @@ KKA Lab adalah aplikasi web interaktif tempat siswa **melatih model AI sungguhan
 
 | Fitur | Deskripsi | Keunggulan |
 |----------|--------------|---------------|
-| **Latih AI-mu (KNN Webcam)** | Kumpulkan contoh 2 benda, latih model KNN lokal, uji real-time + pantau live | 100% client-side: 0 latency, hemat kuota, privasi terjaga |
+| **Deteksi Objek Real-Time** | Model pretrained COCO-SSD menemukan benda + bounding box + confidence, label Indonesia, slider ambang | 100% client-side: tanpa latih manual, tanpa upload, CPU-friendly |
 | **Alur 2 Tahap Berurutan** | Bahan bacaan wajib selesai (terkunci scroll) sebelum kuis terbuka; modul N+1 terkunci sampai modul N lulus | Murni pemahaman, tidak bisa contek |
 | **Kuis 15 Soal + Pembahasan** | Stepper 1 soal per layar, indikator progres, skor & XP otomatis, ulasan benar/salah + pembahasan | Evaluasi adil, jawaban dipertahankan |
 | **Soal & Modul per Guru** | Guru salin/fork soal default jadi versinya (otomatis), buat modul sendiri, atur urutan per kelas | Default admin aman, tiap guru merdeka |
@@ -96,7 +96,7 @@ KKA Lab adalah aplikasi web interaktif tempat siswa **melatih model AI sungguhan
 ```
 Framework    : Laravel Blade + Alpine.js
 UI Library   : Tailwind CSS
-AI Client    : TensorFlow.js (MobileNet + KNN Classifier via CDN)
+AI Client    : TensorFlow.js + COCO-SSD pretrained (object detection, di-bundle via npm)
 ```
 
 #### Backend
@@ -120,6 +120,20 @@ AI Assistant : Tutor chat + penjelasan hasil praktikum
 |-----------|------------------|
 | **Laravel Blade + Alpine.js** | Full-stack ringan tanpa build frontend berat; cocok untuk tugas sekolah dan hosting sederhana |
 | **TensorFlow.js client-side** | Inferensi di browser = privasi (gambar tak keluar device), 0 latency, hemat kuota API |
+
+### Deteksi Objek Real-Time (Modul 2)
+
+```
+Model        : COCO-SSD lite_mobilenet_v2 (pretrained, tanpa training)
+Kode         : resources/js/ai/object-detector.js (+ detect-utils.js murni)
+Halaman      : resources/views/siswa/bahan-show.blade.php (widget Modul 2)
+Uji JS       : npm run test:js  (logika label/ambang tanpa webcam)
+```
+
+- Bounding box + label bahasa Indonesia + confidence + jumlah objek, ambang 30–90% (default 50%).
+- Inference dibatasi ±5–10 FPS dan tidak tumpang tindih agar CPU kentang tetap responsif.
+- Izin kamera ditolak / kamera dipakai aplikasi lain / model gagal dimuat ditangani dengan pesan bahasa Indonesia; semua media track dihentikan saat kamera dimatikan.
+- Butuh internet sekali (±5 MB bobot model), butuh cahaya cukup; benda custom di luar 80 kelas COCO tidak dikenali.
 | **MySQL (Laragon)** | Sudah tersedia di lingkungan sekolah + terlihat langsung di phpMyAdmin |
 | **Gemini (teks saja)** | Hanya untuk penjelasan edukatif, bukan klasifikasi — LLM generalis tidak cocok untuk visi real-time |
 

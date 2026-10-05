@@ -45,7 +45,7 @@
     </div>
     <div>
         <h4 class="font-extrabold text-slate-900">5. Jembatan ke Machine Learning</h4>
-        <p>Saat polanya terlalu rumit ditulis manual (mengenali wajah, menyaring spam gaya baru) tetapi <b>contohnya banyak</b>, saat itulah aturan diganti <b>model yang belajar dari data</b> — persis KNN Modul 2. Dan ingat Modul 3: jika contohnya timpang, model ikut bias walau kodenya Python.</p>
+        <p>Saat polanya terlalu rumit ditulis manual (mengenali wajah, menyaring spam gaya baru) tetapi <b>contohnya banyak</b>, saat itulah aturan diganti <b>model yang belajar dari data</b> — seperti COCO-SSD di Modul 2 yang dulu juga dilatih dari ratusan ribu foto. Dan ingat Modul 3: jika contohnya timpang, model ikut bias walau kodenya Python.</p>
         <div class="mt-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
             <p class="font-bold">Contoh:</p>
             <ul class="list-disc ps-5 mt-1 space-y-1 font-mono text-[13px]">
