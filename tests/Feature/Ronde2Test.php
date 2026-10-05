@@ -85,6 +85,29 @@ class Ronde2Test extends TestCase
         ]);
     }
 
+    public function test_xp_handson_tidak_hilang_saat_submit_kuis(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        StudentProgress::updateOrCreate(
+            ['student_id' => $siswa->id, 'module_id' => $module->id],
+            ['quiz_score' => 0, 'xp_earned' => 20, 'is_completed' => false, 'reading_done' => true, 'hands_on_count' => 2, 'hands_on_xp_awarded' => true]
+        );
+
+        $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
+        $tampil = (new StudentModuleService)->uraikanPaket(session('kuis_paket_' . $module->id));
+        $answers = [];
+        foreach ($tampil as $i => $t) {
+            $answers[$i] = $t['correct'];
+        }
+        $this->actingAs($siswa)->post(route('siswa.kuis.submit', 'apa-itu-ai'), ['answers' => $answers])
+            ->assertRedirect(route('siswa.dashboard'));
+
+        // Lulus 100: xp_reward + 10, bonus hands-on 20 wajib ikut.
+        $this->assertSame(20 + $module->xp_reward + 10, (int) StudentProgress::where('student_id', $siswa->id)->where('module_id', $module->id)->firstOrFail()->xp_earned);
+    }
+
     public function test_refresh_kuis_memakai_paket_yang_sama(): void
     {
         $this->seed(DatabaseSeeder::class);

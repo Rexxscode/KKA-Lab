@@ -20,6 +20,11 @@ class ProgressController extends Controller
      */
     public const DURASI_KUIS_MENIT = 30;
 
+    /**
+     * Bonus XP praktik hands-on (diberikan sekali per modul).
+     */
+    public const HANDS_ON_XP_BONUS = 20;
+
     public function submitQuiz(Request $request, string $slug, StudentModuleService $modul)
     {
         $module = Module::where('slug', $slug)->firstOrFail();
@@ -124,7 +129,13 @@ class ProgressController extends Controller
 
         $score = $totalPoints > 0 ? (int) round($earned / $totalPoints * 100) : 0;
         $passed = $score >= StudentProgress::PASS_SCORE;
-        $xp = $passed ? $module->xp_reward + (int) round($score / 10) : (int) round($score / 10);
+
+        // Bonus hands-on yang sudah diklaim tidak boleh hilang tertimpa
+        // nilai kuis: baca ulang dari DB (bukan model lama di memori).
+        $bonusHandsOn = (int) (StudentProgress::where('student_id', $request->user()->id)
+            ->where('module_id', $module->id)
+            ->value('hands_on_xp_awarded') ? self::HANDS_ON_XP_BONUS : 0);
+        $xp = $bonusHandsOn + ($passed ? $module->xp_reward + (int) round($score / 10) : (int) round($score / 10));
 
         // Jejak tiap percobaan (skor terakhir boleh ditimpa, histori tidak).
         QuizAttempt::create([
@@ -218,12 +229,12 @@ class ProgressController extends Controller
 
         if ($progress->hands_on_count >= 2 && ! $progress->hands_on_xp_awarded) {
             $progress->update([
-                'xp_earned' => $progress->xp_earned + 20,
+                'xp_earned' => $progress->xp_earned + self::HANDS_ON_XP_BONUS,
                 'hands_on_xp_awarded' => true,
             ]);
-            $message = 'Hebat! 2 Uji meyakinkan tercapai — +20 XP otomatis masuk!';
+            $message = 'Hebat! 2 Uji meyakinkan tercapai — +' . self::HANDS_ON_XP_BONUS . ' XP otomatis masuk!';
         } elseif ($progress->hands_on_xp_awarded) {
-            $message = 'XP hands-on modul ini sudah diklaim penuh (+20 XP). Lanjut ke kuis untuk XP tambahan!';
+            $message = 'XP hands-on modul ini sudah diklaim penuh (+' . self::HANDS_ON_XP_BONUS . ' XP). Lanjut ke kuis untuk XP tambahan!';
         }
 
         return response()->json([
