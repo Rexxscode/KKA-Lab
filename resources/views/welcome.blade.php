@@ -33,7 +33,7 @@
             <div class="mt-6 grid grid-cols-3 gap-3 text-center">
                 <div class="kka-card !p-4"><p class="kka-stat text-orange-600">6</p><p class="text-xs text-slate-500">Modul interaktif</p></div>
                 <div class="kka-card !p-4"><p class="kka-stat text-emerald-600">950</p><p class="text-xs text-slate-500">Total XP</p></div>
-                <div class="kka-card !p-4"><p class="kka-stat text-slate-900">PDF</p><p class="text-xs text-slate-500">Sertifikat otomatis</p></div>
+                <div class="kka-card !p-4"><p class="kka-stat text-slate-900">90</p><p class="text-xs text-slate-500">Soal berpembahasan</p></div>
             </div>
         </div>
         <x-card title="Coba AI Langsung — Kamera Asli" subtitle="Aktifkan kamera, arahkan ke benda, klik Uji. AI menebak benda yang terlihat — 100% di browser.">
@@ -89,21 +89,29 @@
     </section>
 
     <section class="py-8">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 text-center">
-            <p class="text-2xl font-extrabold text-orange-500">“</p>
-            <blockquote class="text-slate-700 text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
-                KKA Lab berkomitmen menghadirkan pembelajaran kecerdasan artifisial yang praktis dan menyenangkan —
-                setiap siswa berhak mencoba, melatih, dan memahami AI secara langsung, bukan sekadar membaca teori.
-            </blockquote>
-            <p class="mt-3 text-xs text-slate-500">Misi KKA Lab • Koding & Kecerdasan Artifisial untuk sekolah Indonesia</p>
+        <h2 class="text-2xl font-extrabold text-slate-900">Cara mulai</h2>
+        <p class="text-slate-500 text-sm mt-1">Empat langkah, tanpa instal apa pun. Semua jalan di browser HP atau laptop.</p>
+        <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <x-card title="1. Daftar" subtitle="Buat akun siswa gratis dengan email."><p class="text-xs text-slate-500">Satu menit, langsung masuk dasbor.</p></x-card>
+            <x-card title="2. Gabung kelas" subtitle="Minta kode 6 digit ke gurumu."><p class="text-xs text-slate-500">Urutan modul dan soal mengikuti kelasmu.</p></x-card>
+            <x-card title="3. Kerjakan berurutan" subtitle="Baca bahan, praktik, lalu kuis."><p class="text-xs text-slate-500">Soal dan opsi diacak setiap percobaan.</p></x-card>
+            <x-card title="4. Lulus & cetak" subtitle="Skor ≥80 di 6 modul."><p class="text-xs text-slate-500">Sertifikat PDF terbit otomatis.</p></x-card>
         </div>
     </section>
 
     <section class="py-4">
-        <div class="rounded-3xl bg-gradient-to-r from-orange-500 to-emerald-500 p-8 sm:p-10 text-center text-white">
-            <h2 class="text-2xl sm:text-3xl font-extrabold">Siap Memulai Petualangan AI-mu?</h2>
-            <p class="mt-2 text-sm sm:text-base text-white/90">Daftar sekarang dan temukan serunya melatih AI sendiri. Gratis untuk semua siswa!</p>
-            <a href="{{ route('register') }}" class="inline-block mt-5 px-7 py-3 rounded-2xl bg-white text-orange-600 font-extrabold text-sm shadow hover:bg-orange-50 transition">Daftar Sekarang — Gratis</a>
+        <div class="rounded-3xl bg-slate-900 p-8 sm:p-10 text-white overflow-hidden">
+            <div class="flex flex-wrap items-end justify-between gap-6">
+                <div class="max-w-xl">
+                    <p class="text-xs font-bold tracking-widest text-emerald-400">6 MODUL • 90 SOAL • 950 XP</p>
+                    <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold">Selesaikan 6 modul, bawa pulang sertifikat.</h2>
+                    <p class="mt-2 text-sm sm:text-base text-slate-300">Mulai dari konsep AI, latih model pakai webcam, sampai nulis Python asli di browser. Kuis lulus di skor 80.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('register') }}" class="inline-block px-7 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm transition">Daftar gratis</a>
+                    <a href="{{ route('login') }}" class="inline-block px-7 py-3 rounded-2xl border border-slate-600 text-slate-200 font-bold text-sm hover:border-slate-400 transition">Masuk</a>
+                </div>
+            </div>
         </div>
     </section>
 
