@@ -108,6 +108,24 @@ class Ronde2Test extends TestCase
         $this->assertSame(20 + $module->xp_reward + 10, (int) StudentProgress::where('student_id', $siswa->id)->where('module_id', $module->id)->firstOrFail()->xp_earned);
     }
 
+    public function test_modul_lewat_tenggat_tak_bisa_diprogress(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
+        $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $kelas->modules()->attach($module->id, ['position' => 1, 'due_at' => now()->subDay()]);
+        $kelas->students()->attach($siswa->id);
+
+        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))
+            ->assertRedirect(route('siswa.bahan.index'));
+        $this->assertDatabaseMissing('student_progress', [
+            'student_id' => $siswa->id,
+            'module_id' => $module->id,
+        ]);
+    }
+
     public function test_refresh_kuis_memakai_paket_yang_sama(): void
     {
         $this->seed(DatabaseSeeder::class);

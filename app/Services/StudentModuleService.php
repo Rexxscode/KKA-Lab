@@ -35,6 +35,34 @@ class StudentModuleService
         return $this->kelasAktif($user)?->teacher_id;
     }
 
+    /**
+     * Tenggat modul di kelas aktif siswa (null bila tak ada tenggat).
+     * Dipakai menegakkan due_at di sisi server.
+     */
+    public function tenggatUntuk(User $user, Module $module): ?\Illuminate\Support\Carbon
+    {
+        $kelas = $this->kelasAktif($user);
+        if (! $kelas) {
+            return null;
+        }
+        $pivot = $kelas->modules()->where('modules.id', $module->id)->first()?->pivot;
+
+        return $pivot?->due_at ? \Illuminate\Support\Carbon::parse($pivot->due_at) : null;
+    }
+
+    /**
+     * True bila tenggat lewat dan modul belum lulus.
+     */
+    public function tenggatLewat(User $user, Module $module, $progress = null): bool
+    {
+        $tenggat = $this->tenggatUntuk($user, $module);
+        if (! $tenggat || ! $tenggat->isPast()) {
+            return false;
+        }
+
+        return ! ($progress && $progress->is_completed);
+    }
+
     public function daftarModul(User $user)
     {
         $kelas = $this->kelasAktif($user);
