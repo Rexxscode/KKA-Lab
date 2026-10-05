@@ -8,25 +8,32 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+        <!-- Tema awal tanpa kedip: localStorage dulu, lalu sistem -->
+        <script>
+        try { var kkaT = localStorage.getItem('kka-theme'); if (kkaT === 'dark' || (!kkaT && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark'); } catch (e) {}
+        </script>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased" style="background:var(--color-page)">
+    <body class="font-sans text-slate-900 dark:text-slate-100 antialiased" style="background:var(--color-page)">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
-            <div>
+            <div class="flex items-center gap-3">
                 <a href="/" class="flex items-center gap-2.5">
                     <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
                     <span class="text-left">
-                        <span class="block font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></span>
-                        <span class="block text-[11px] text-slate-500 mt-0.5">Koding & Kecerdasan Artifisial</span>
+                        <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KKA <span class="text-orange-500">Lab</span></span>
+                        <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
                     </span>
                 </a>
+                <x-theme-toggle />
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-6 bg-white border border-slate-200 shadow-sm overflow-hidden sm:rounded-2xl">
+            <div class="w-full sm:max-w-md mt-6 px-6 py-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden sm:rounded-2xl">
                 {{ $slot }}
             </div>
         </div>

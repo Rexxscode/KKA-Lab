@@ -71,22 +71,30 @@
 (function () {
     const el = document.getElementById('grafik-rapor');
     if (!el || typeof Chart === 'undefined') return;
-    const css = getComputedStyle(document.documentElement);
-    const token = (nama, ganti) => css.getPropertyValue(nama).trim() || ganti;
-    const C = {
-        lulus: token('--color-success', '#10b981'),
-        proses: token('--color-primary', '#f97316'),
-        kosong: token('--color-border', '#e2e8f0'),
-    };
     const data = @js($skor);
-    new Chart(el, {
+    const bacaToken = () => {
+        const css = getComputedStyle(document.documentElement);
+        const token = (nama, ganti) => css.getPropertyValue(nama).trim() || ganti;
+        return {
+            lulus: token('--color-success', '#10b981'),
+            proses: token('--color-primary', '#f97316'),
+            kosong: token('--color-border', '#e2e8f0'),
+            teks: token('--color-muted', '#64748b'),
+            grid: token('--color-border', '#e2e8f0'),
+        };
+    };
+    const warnaBar = () => {
+        const C = bacaToken();
+        return data.map(d => d.nilai >= 80 ? C.lulus : (d.nilai > 0 ? C.proses : C.kosong));
+    };
+    const chart = new Chart(el, {
         type: 'bar',
         data: {
             labels: data.map(d => d.label),
             datasets: [{
                 label: 'Skor',
                 data: data.map(d => d.nilai),
-                backgroundColor: data.map(d => d.nilai >= 80 ? C.lulus : (d.nilai > 0 ? C.proses : C.kosong)),
+                backgroundColor: warnaBar(),
                 borderRadius: 8,
             }],
         },
@@ -97,6 +105,17 @@
             plugins: { legend: { display: false } },
         },
     });
+    const terapkanTema = () => {
+        const C = bacaToken();
+        chart.data.datasets[0].backgroundColor = warnaBar();
+        chart.options.scales.x.ticks = { color: C.teks };
+        chart.options.scales.y.ticks = { color: C.teks, stepSize: 20 };
+        chart.options.scales.x.grid = { color: C.grid };
+        chart.options.scales.y.grid = { color: C.grid };
+        chart.update();
+    };
+    terapkanTema();
+    window.addEventListener('kka:theme', terapkanTema);
 })();
 </script>
 @endpush
