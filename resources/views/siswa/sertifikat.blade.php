@@ -19,9 +19,10 @@
                 <p class="mt-3 text-sm text-slate-600 max-w-xl mx-auto">Telah menyelesaikan {{ $modules->count() }} modul wajib ({{ $modules->pluck('title')->join(', ') }}) dengan skor minimal 80 per modul.</p>
                 <div class="mt-5 flex items-center justify-center gap-6 text-sm">
                     <div><p class="text-slate-500 text-xs">Total XP</p><p class="font-extrabold text-emerald-600 text-xl">{{ $totalXp }}</p></div>
-                    <div><p class="text-slate-500 text-xs">Kode Sertifikat</p><p class="font-bold">{{ $code }}</p></div>
-                    <div><p class="text-slate-500 text-xs">Tanggal</p><p class="font-bold">{{ now()->format('d M Y') }}</p></div>
+                    <div><p class="text-slate-500 text-xs">Kode Sertifikat</p><p class="font-bold">{{ $certificate->code }}</p></div>
+                    <div><p class="text-slate-500 text-xs">Tanggal Terbit</p><p class="font-bold">{{ $certificate->issued_at->format('d M Y') }}</p></div>
                 </div>
+                <p class="mt-4 text-xs text-slate-500">Verifikasi keaslian: <a href="{{ route('sertifikat.verifikasi', $certificate->code) }}" class="font-bold text-emerald-600 underline">{{ route('sertifikat.verifikasi', $certificate->code) }}</a></p>
                 <div class="mt-8 flex justify-between text-xs text-slate-500">
                     <div><p class="border-t border-slate-300 pt-2 px-8">Guru Pembimbing</p></div>
                     <div><p class="border-t border-slate-300 pt-2 px-8">KKA Lab</p></div>

@@ -30,7 +30,7 @@
                         @forelse($classroom->students as $s)
                             @php $by = $s->progress->keyBy('module_id'); @endphp
                             <tr class="border-b border-slate-100" x-show="$el.dataset.cari.toLowerCase().includes(cari.toLowerCase())" data-cari="{{ strtolower($s->name . ' ' . $s->email) }}">
-                                <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $s->name }}</p><p class="text-xs text-slate-400">{{ $s->email }}</p></td>
+                                <td class="py-3 pr-3"><a href="{{ route('guru.kelas.siswa.show', [$classroom, $s->id]) }}" class="font-bold text-slate-800 hover:text-orange-600">{{ $s->name }}</a><p class="text-xs text-slate-400">{{ $s->email }}</p></td>
                                 @foreach($modules as $m)
                                     @php $p = $by->get($m->id); @endphp
                                     <td class="py-3 pr-3">

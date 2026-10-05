@@ -1,8 +1,13 @@
 <x-sidebar-layout>
     <x-slot name="header">
         <a href="{{ route('siswa.dashboard') }}" class="text-sm font-semibold text-orange-500">← Dasbor</a>
-        <h2 class="font-extrabold text-xl text-slate-900 mt-1">Raporku</h2>
-        <p class="text-sm text-slate-500">{{ $lulus }}/{{ count($daftar) }} modul lulus • Total {{ $totalXp }} XP • Saran otomatis di bawah grafik.</p>
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-1">
+            <div>
+                <h2 class="font-extrabold text-xl text-slate-900">Raporku</h2>
+                <p class="text-sm text-slate-500">{{ $lulus }}/{{ count($daftar) }} modul lulus • Total {{ $totalXp }} XP • Saran otomatis di bawah grafik.</p>
+            </div>
+            <a href="{{ route('siswa.raporku.cetak') }}" class="kka-btn-primary !py-2 text-sm">Cetak / Simpan PDF</a>
+        </div>
     </x-slot>
 
     <div class="grid lg:grid-cols-2 gap-3 sm:gap-4">

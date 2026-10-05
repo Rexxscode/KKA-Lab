@@ -15,6 +15,8 @@ use App\Http\Controllers\Teacher\ClassroomController as GuruClassroomController;
 use App\Http\Controllers\Teacher\ExportController;
 use App\Http\Controllers\Teacher\ModuleController as GuruModuleController;
 use App\Http\Controllers\Teacher\QuizController;
+use App\Http\Controllers\Teacher\StudentReportController;
+use App\Http\Controllers\VerifyCertificateController;
 use App\Models\Module;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +61,7 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->middleware('throttle:10,1')->name('kuis.submit');
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->middleware('throttle:30,1')->name('modul.handson');
     Route::get('/raporku', [RaportController::class, 'index'])->name('raporku');
+    Route::get('/raporku/cetak', [RaportController::class, 'cetak'])->name('raporku.cetak');
     Route::get('/sertifikat', [CertificateController::class, 'index'])->name('sertifikat');
     // Kompatibilitas bookmark lama.
     Route::redirect('/modul/{slug}', '/siswa/bahan/{slug}');
@@ -74,6 +77,7 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::post('/kelas', [GuruClassroomController::class, 'store'])->name('kelas.store');
         Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
         Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');
+        Route::get('/kelas/{classroom}/siswa/{siswa}', [StudentReportController::class, 'show'])->name('kelas.siswa.show');
         Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
         Route::get('/quiz/modul/{module}', [QuizController::class, 'module'])->name('quiz.module');
         Route::post('/quiz/modul/{module}', [QuizController::class, 'store'])->name('quiz.module.store');
@@ -99,5 +103,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/pengajuan/{user}/tolak', [AdminUserController::class, 'tolak'])->name('pengajuan.tolak');
     Route::get('/bukti/{user}', [AdminUserController::class, 'unduhBukti'])->name('bukti.unduh');
 });
+
+Route::get('/verifikasi-sertifikat/{code}', [VerifyCertificateController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('sertifikat.verifikasi');
 
 require __DIR__ . '/auth.php';

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Certificate;
 use App\Models\Module;
 use App\Models\StudentProgress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CertificateController extends Controller
 {
@@ -21,8 +23,24 @@ class CertificateController extends Controller
         });
 
         $totalXp = $user->totalXp();
-        $code = 'KKA-' . strtoupper(substr(md5($user->id . $user->email), 0, 8));
 
-        return view('siswa.sertifikat', compact('modules', 'progress', 'eligible', 'totalXp', 'code'));
+        // Kode acak tersimpan: stabil tiap kunjungan & bisa diverifikasi publik.
+        $certificate = $eligible
+            ? Certificate::firstOrCreate(
+                ['user_id' => $user->id],
+                ['code' => $this->kodeUnik(), 'issued_at' => now()]
+            )
+            : null;
+
+        return view('siswa.sertifikat', compact('modules', 'progress', 'eligible', 'totalXp', 'certificate'));
+    }
+
+    private function kodeUnik(): string
+    {
+        do {
+            $code = 'KKA-' . Str::upper(Str::random(8));
+        } while (Certificate::where('code', $code)->exists());
+
+        return $code;
     }
 }
