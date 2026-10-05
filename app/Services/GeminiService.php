@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Ai\Agents\TutorAgent;
+use App\Models\User;
 use Laravel\Ai\Messages\AssistantMessage;
 use Laravel\Ai\Messages\UserMessage;
 
@@ -18,10 +19,10 @@ class GeminiService
      *
      * @param  array  $history  [['role' => 'user'|'model', 'text' => string]]
      */
-    public function tutorChat(string $message, array $history = [], ?string $moduleContext = null): string
+    public function tutorChat(string $message, array $history = [], ?string $moduleContext = null, ?User $user = null): string
     {
         $key = config('services.gemini.key');
-        $model = config('services.gemini.model', 'gemini-2.0-flash');
+        $model = config('services.gemini.model', 'gemini-3.5-flash');
 
         if (! $key) {
             return 'Asisten AI belum dikonfigurasi. Minta gurumu mengisi GEMINI_API_KEY di file .env ya! (ambil gratis di AI Studio)';
@@ -38,7 +39,7 @@ class GeminiService
         }
 
         try {
-            $response = (new TutorAgent($moduleContext))
+            $response = (new TutorAgent(user: $user, moduleContext: $moduleContext))
                 ->withMessages($messages)
                 ->prompt(mb_substr($message, 0, 2000), provider: 'gemini', model: $model, timeout: 30);
 

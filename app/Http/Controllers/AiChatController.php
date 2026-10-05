@@ -29,7 +29,8 @@ class AiChatController extends Controller
         $reply = $gemini->tutorChat(
             $data['message'],
             $data['history'] ?? [],
-            $data['module'] ?? null
+            $data['module'] ?? null,
+            $user
         );
 
         AiChat::create([
