@@ -96,7 +96,11 @@
 
         <div class="p-3 border-t border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-3 px-3 py-2">
-                <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 text-orange-700 font-extrabold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                @if(auth()->user()->avatar_path)
+                    <img src="{{ auth()->user()->avatarUrl() }}" alt="Foto profil" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700" />
+                @else
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 text-orange-700 font-extrabold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                @endif
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ auth()->user()->email }}</p>

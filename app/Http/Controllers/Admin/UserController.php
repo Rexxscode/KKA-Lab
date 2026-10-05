@@ -62,6 +62,9 @@ class UserController extends Controller
         if ($user->bukti_npk_path) {
             Storage::disk('local')->delete($user->bukti_npk_path);
         }
+        if ($user->avatar_path) {
+            Storage::disk('public')->delete($user->avatar_path);
+        }
         $user->delete();
         Log::info('admin.hapus_akun', ['actor' => $request->user()->id, 'target_email' => $email]);
 

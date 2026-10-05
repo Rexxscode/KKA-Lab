@@ -6,12 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'status', 'bukti_npk_path'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'status', 'bukti_npk_path', 'avatar_path'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -66,5 +67,13 @@ class User extends Authenticatable implements MustVerifyEmail
     public function totalXp(): int
     {
         return (int) $this->progress()->sum('xp_earned');
+    }
+
+    /**
+     * URL foto profil publik, null bila belum pasang.
+     */
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path ? Storage::url($this->avatar_path) : null;
     }
 }
