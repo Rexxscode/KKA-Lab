@@ -28,7 +28,7 @@
     <aside :class="SidebarTerbuka ? 'translate-x-0' : '-translate-x-full'"
            class="fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-5 h-16 border-b border-slate-100 dark:border-slate-800">
-            <img src="{{ asset('logo.svg') }}" alt="Logo KKA Lab" class="w-9 h-9 rounded-xl shrink-0" width="36" height="36" />
+            <img src="{{ asset('logo.png') }}" alt="Logo KKA Lab" class="w-9 h-9 rounded-xl shrink-0" width="36" height="36" />
             <span>
                 <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KKA <span class="text-orange-500">Lab</span></span>
                 <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
