@@ -8,32 +8,42 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background:#FAFAFA;font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="boot()">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <nav class="flex items-center justify-between py-5">
-        <div class="flex items-center gap-2">
-            <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
-            <div><p class="font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></p><p class="text-xs text-slate-500">Koding & Kecerdasan Artifisial</p></div>
-        </div>
-        <div class="flex items-center gap-3">
-            <a href="{{ route('login') }}" class="text-sm font-semibold text-slate-600 hover:text-orange-600">Masuk</a>
-            <a href="{{ route('register') }}" class="kka-btn-primary !px-4 !py-2 text-sm">Mulai Gratis</a>
+<body style="background:var(--color-page);font-family:'Plus Jakarta Sans',sans-serif" x-data="kkaLandingCam()" x-init="boot()">
+    <style>
+        @keyframes kka-nav-masuk {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .kka-nav-animasi { animation: kka-nav-masuk 500ms ease-out both; }
+        .kka-nav-logo { transition: transform 200ms ease-out; }
+        .kka-nav-logo:hover { transform: scale(1.04) rotate(-2deg); }
+    </style>
+    <nav x-data="{ sudahScroll: false }" @scroll.window="sudahScroll = window.scrollY > 24"
+         class="kka-nav-animasi sticky top-0 z-40 transition-all duration-300"
+         :class="sudahScroll ? 'bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm py-3' : 'bg-transparent border-b border-transparent py-5'">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <a href="{{ route('home') }}" class="kka-nav-logo flex items-center gap-2" aria-label="KKA Lab - Beranda">
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
+                <span><span class="block font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></span><span class="block text-xs text-slate-500">Koding & Kecerdasan Artifisial</span></span>
+            </a>
+            <a href="{{ route('login') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Masuk</a>
         </div>
     </nav>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
     <section class="grid lg:grid-cols-2 gap-8 items-center py-10">
         <div>
             <span class="kka-badge">Untuk SMA/SMK • Kurikulum KKA • 100% Praktik di Browser</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Belajar AI & Koding <span class="text-orange-500">hands-on</span> di browser.</h1>
-            <p class="mt-4 text-slate-600">4 modul interaktif: apa itu AI → latih model webcam → bias data → etika & hoaks. Privasi terjaga: gambar tidak dikirim ke server. Kuis minimal <b>80</b> untuk lulus, kumpulkan XP & badge, cetak sertifikat otomatis.</p>
+            <p class="mt-4 text-slate-600">6 modul interaktif: konsep AI → latih model webcam → bias data → etika & hoaks → Python dasar → data & logika AI. Privasi terjaga: gambar tidak dikirim ke server. Kuis minimal <b>80</b> untuk lulus, kumpulkan XP & badge, cetak sertifikat otomatis.</p>
             <div class="mt-6 flex flex-wrap gap-3">
                 <x-button href="{{ route('login') }}">Masuk sebagai Siswa</x-button>
                 <x-button variant="secondary" href="{{ route('login') }}">Portal Guru</x-button>
             </div>
             <div class="mt-6 grid grid-cols-3 gap-3 text-center">
-                <div class="kka-card !p-4"><p class="text-2xl font-extrabold text-orange-500">4</p><p class="text-xs text-slate-500">Modul interaktif</p></div>
-                <div class="kka-card !p-4"><p class="text-2xl font-extrabold text-emerald-500">600</p><p class="text-xs text-slate-500">Total XP</p></div>
-                <div class="kka-card !p-4"><p class="text-2xl font-extrabold text-slate-900">PDF</p><p class="text-xs text-slate-500">Sertifikat otomatis</p></div>
+                <div class="kka-card !p-4"><p class="kka-stat text-orange-600">6</p><p class="text-xs text-slate-500">Modul interaktif</p></div>
+                <div class="kka-card !p-4"><p class="kka-stat text-emerald-600">950</p><p class="text-xs text-slate-500">Total XP</p></div>
+                <div class="kka-card !p-4"><p class="kka-stat text-slate-900">90</p><p class="text-xs text-slate-500">Soal berpembahasan</p></div>
             </div>
         </div>
         <x-card title="Coba AI Langsung — Kamera Asli" subtitle="Aktifkan kamera, arahkan ke benda, klik Uji. AI menebak benda yang terlihat — 100% di browser.">
@@ -50,13 +60,13 @@
                 <button class="kka-btn-primary !py-2 text-sm" @click="toggleKamera()" x-text="cameraOn ? 'Matikan Kamera' : 'Aktifkan Kamera'"></button>
                 <button class="kka-btn-secondary !py-2 text-sm" @click="uji()" x-text="sibuk ? 'Menganalisis...' : 'Uji'"></button>
             </div>
-            <p class="mt-2 text-[11px] text-slate-400">Butuh internet sekali untuk memuat model + izin kamera. Versi latihan sendiri (KNN) ada di Modul 2 setelah daftar.</p>
+            <p class="mt-2 text-xs text-slate-500">Butuh internet sekali untuk memuat model + izin kamera. Versi deteksi objek ada di Modul 2 setelah daftar.</p>
         </x-card>
     </section>
 
     <section class="py-8">
-        <h2 class="text-2xl font-extrabold text-slate-900">4 Modul KKA</h2>
-        <p class="text-slate-500 text-sm mt-1">Urut dari konsep → praktik → kritis → etis.</p>
+        <h2 class="text-2xl font-extrabold text-slate-900">{{ $modules->count() ?: 6 }} Modul KKA</h2>
+        <p class="text-slate-500 text-sm mt-1">Dari konsep → praktik kamera → data kritis → etika → Python untuk AI.</p>
         <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @forelse($modules as $m)
                 <x-card :title="$m->title" :subtitle="$m->description">
@@ -67,9 +77,11 @@
                 </x-card>
             @empty
                 <x-card title="Modul 1: Apa itu AI?" subtitle="Konsep dasar AI & ML dengan visual interaktif + kuis." />
-                <x-card title="Modul 2: Latih AI-mu" subtitle="Klasifikasi gambar via webcam (KNN lokal) + mode tanpa kamera." />
+                <x-card title="Modul 2: Latih AI-mu" subtitle="Deteksi objek real-time via webcam (COCO-SSD pretrained) + bounding box." />
                 <x-card title="Modul 3: Bias Data" subtitle="Simulasi dataset tidak seimbang dengan Alpine.js." />
                 <x-card title="Modul 4: Etika & Hoaks AI" subtitle="Studi kasus deepfake & kuis literasi digital." />
+                <x-card title="Modul 5: Python Dasar untuk AI" subtitle="Python asli di browser: print, list, loop, fungsi, dict." />
+                <x-card title="Modul 6: Data & Logika AI" subtitle="Rata-rata, filter data, dan mini-classifier aturan." />
             @endforelse
         </div>
     </section>
@@ -81,27 +93,35 @@
         <x-card title="Untuk Guru" subtitle="Buat kelas, generate kode unik, pantau progres & ekspor CSV nilai.">
             <x-button href="{{ route('login') }}" class="w-full">Masuk Portal Guru</x-button>
         </x-card>
-        <x-card title="Sertifikat" subtitle="Otomatis terbit jika 4 modul lulus (skor ≥ 80). Siap cetak PDF via browser.">
-            <span class="kka-badge">Syarat: 4/4 lulus • ≥80</span>
+        <x-card title="Sertifikat" subtitle="Otomatis terbit jika 6 modul lulus (skor ≥ 80). Siap cetak PDF via browser.">
+            <span class="kka-badge">Syarat: 6/6 lulus • ≥80</span>
         </x-card>
     </section>
 
     <section class="py-8">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 text-center">
-            <p class="text-2xl font-extrabold text-orange-500">“</p>
-            <blockquote class="text-slate-700 text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
-                KKA Lab berkomitmen menghadirkan pembelajaran kecerdasan artifisial yang praktis dan menyenangkan —
-                setiap siswa berhak mencoba, melatih, dan memahami AI secara langsung, bukan sekadar membaca teori.
-            </blockquote>
-            <p class="mt-3 text-xs text-slate-400">Misi KKA Lab • Koding & Kecerdasan Artifisial untuk sekolah Indonesia</p>
+        <h2 class="text-2xl font-extrabold text-slate-900">Cara mulai</h2>
+        <p class="text-slate-500 text-sm mt-1">Empat langkah, tanpa instal apa pun. Semua jalan di browser HP atau laptop.</p>
+        <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <x-card title="1. Daftar" subtitle="Buat akun siswa gratis dengan email."><p class="text-xs text-slate-500">Satu menit, langsung masuk dasbor.</p></x-card>
+            <x-card title="2. Gabung kelas" subtitle="Minta kode 6 digit ke gurumu."><p class="text-xs text-slate-500">Urutan modul dan soal mengikuti kelasmu.</p></x-card>
+            <x-card title="3. Kerjakan berurutan" subtitle="Baca bahan, praktik, lalu kuis."><p class="text-xs text-slate-500">Soal dan opsi diacak setiap percobaan.</p></x-card>
+            <x-card title="4. Lulus & cetak" subtitle="Skor ≥80 di 6 modul."><p class="text-xs text-slate-500">Sertifikat PDF terbit otomatis.</p></x-card>
         </div>
     </section>
 
     <section class="py-4">
-        <div class="rounded-3xl bg-gradient-to-r from-orange-500 to-emerald-500 p-8 sm:p-10 text-center text-white">
-            <h2 class="text-2xl sm:text-3xl font-extrabold">Siap Memulai Petualangan AI-mu?</h2>
-            <p class="mt-2 text-sm sm:text-base text-white/90">Daftar sekarang dan temukan serunya melatih AI sendiri. Gratis untuk semua siswa!</p>
-            <a href="{{ route('register') }}" class="inline-block mt-5 px-7 py-3 rounded-2xl bg-white text-orange-600 font-extrabold text-sm shadow hover:bg-orange-50 transition">Daftar Sekarang — Gratis</a>
+        <div class="rounded-3xl bg-slate-900 p-8 sm:p-10 text-white overflow-hidden">
+            <div class="flex flex-wrap items-end justify-between gap-6">
+                <div class="max-w-xl">
+                    <p class="text-xs font-bold tracking-widest text-emerald-400">6 MODUL • 90 SOAL • 950 XP</p>
+                    <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold">Selesaikan 6 modul, bawa pulang sertifikat.</h2>
+                    <p class="mt-2 text-sm sm:text-base text-slate-300">Mulai dari konsep AI, latih model pakai webcam, sampai nulis Python asli di browser. Kuis lulus di skor 80.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('register') }}" class="inline-block px-7 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm transition">Daftar gratis</a>
+                    <a href="{{ route('login') }}" class="inline-block px-7 py-3 rounded-2xl border border-slate-600 text-slate-200 font-bold text-sm hover:border-slate-400 transition">Masuk</a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -109,9 +129,9 @@
         <h2 class="text-2xl font-extrabold text-slate-900 text-center">Kontak Kami</h2>
         <p class="text-sm text-slate-500 text-center mt-1">Punya pertanyaan, saran, atau ingin bekerja sama? Hubungi tim KKA Lab.</p>
         <div class="mt-5 grid sm:grid-cols-3 gap-4">
-            <x-card title="✉️ Email" subtitle="halo@kkalab.sch.id"><p class="text-xs text-slate-500">Kami balas dalam 1–2 hari kerja.</p></x-card>
-            <x-card title="📍 Lokasi" subtitle="Indonesia"><p class="text-xs text-slate-500">Untuk SMA/SMK di seluruh Indonesia.</p></x-card>
-            <x-card title="💬 Respon" subtitle="Cepat & ramah"><p class="text-xs text-slate-500">Siswa, guru, dan sekolah dipersilakan bertanya.</p></x-card>
+            <x-card title="Email" subtitle="halo@kkalab.sch.id"><p class="text-xs text-slate-500 flex items-center gap-1.5"><x-icon name="mail" class="w-4 h-4 text-orange-500" />Kami balas dalam 1–2 hari kerja.</p></x-card>
+            <x-card title="Lokasi" subtitle="Indonesia"><p class="text-xs text-slate-500 flex items-center gap-1.5"><x-icon name="pin" class="w-4 h-4 text-orange-500" />Untuk SMA/SMK di seluruh Indonesia.</p></x-card>
+            <x-card title="Respon" subtitle="Cepat & ramah"><p class="text-xs text-slate-500 flex items-center gap-1.5"><x-icon name="chat" class="w-4 h-4 text-orange-500" />Siswa, guru, dan sekolah dipersilakan bertanya.</p></x-card>
         </div>
     </section>
 </div>
@@ -132,6 +152,8 @@
                 <li><a href="{{ route('login') }}" class="hover:text-orange-600">Latih AI-mu</a></li>
                 <li><a href="{{ route('login') }}" class="hover:text-orange-600">Bias Data</a></li>
                 <li><a href="{{ route('login') }}" class="hover:text-orange-600">Etika & Hoaks AI</a></li>
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Python Dasar untuk AI</a></li>
+                <li><a href="{{ route('login') }}" class="hover:text-orange-600">Data & Logika AI</a></li>
             </ul>
         </div>
         <div>
@@ -151,7 +173,7 @@
         </div>
     </div>
     <div class="border-t border-slate-100">
-        <p class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400">KKA Lab • Untuk pembelajaran AI di sekolah</p>
+        <p class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-500">KKA Lab • Untuk pembelajaran AI di sekolah</p>
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>

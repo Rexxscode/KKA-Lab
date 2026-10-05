@@ -11,9 +11,7 @@
                 @if(view()->exists('siswa.modul.materi-' . $module->slug))
                     @include('siswa.modul.materi-' . $module->slug)
                 @elseif($module->materi)
-                    <div class="prose max-w-none text-sm text-slate-700 space-y-4">
-                        {!! nl2br(e($module->materi)) !!}
-                    </div>
+                    @include('siswa.modul.materi-custom', ['materi' => $module->materi])
                 @else
                     <div class="prose max-w-none text-sm text-slate-700 space-y-4">
                         <p>{{ $module->description ?? 'Pelajari materi modul ini dengan saksama sebelum mengerjakan kuis.' }}</p>
@@ -44,39 +42,72 @@
             </x-card>
         @endif
 
+        @if(in_array($module->slug, ['python-dasar-ai', 'data-logika-ai']))
+            <x-card title="Tahap 2 — Praktik Python Asli (di browser)" subtitle="Python beneran via Pyodide (WASM), bukan simulasi. Klik Jalankan — unduhan ±10MB hanya sekali, lalu bisa luring. Otomatis berhenti bila program jalan lebih dari 10 detik.">
+                <div x-data="kkaPython(@js($module->slug))" class="space-y-3">
+                    <div class="flex flex-wrap gap-2">
+                        @if($module->slug === 'python-dasar-ai')
+                            <button type="button" @click="isiContoh(0)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 1: Halo AI</button>
+                            <button type="button" @click="isiContoh(1)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 2: Variabel</button>
+                            <button type="button" @click="isiContoh(2)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 3: List & Loop</button>
+                            <button type="button" @click="isiContoh(3)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 4: Fungsi & Dict</button>
+                        @else
+                            <button type="button" @click="isiContoh(0)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 1: Rata-rata</button>
+                            <button type="button" @click="isiContoh(1)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 2: Filter</button>
+                            <button type="button" @click="isiContoh(2)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 3: Mini-Classifier</button>
+                            <button type="button" @click="isiContoh(3)" class="kka-btn-secondary !py-1.5 text-xs">Contoh 4: Akurasi</button>
+                        @endif
+                    </div>
+                    <label for="editor-python" class="block text-xs font-bold text-slate-600">Kode Python-mu
+                        <textarea id="editor-python" x-model="kode" rows="8" spellcheck="false" class="mt-1 w-full rounded-2xl border-slate-200 font-mono text-[13px] focus:border-orange-500 focus:ring-orange-500" placeholder='print("Halo AI")'></textarea>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" @click="jalankan()" :disabled="sibuk" class="kka-btn-primary !py-2 text-sm disabled:opacity-50" x-text="sibuk ? 'Menjalankan...' : '▶ Jalankan'"></button>
+                        <button type="button" @click="hentikan()" :disabled="!sibuk" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40">⏹ Hentikan</button>
+                        <span class="kka-badge" x-text="status" role="status"></span>
+                    </div>
+                    <div x-show="memuat" class="space-y-2" aria-hidden="true">
+                        <div class="kka-skeleton h-4 w-2/3"></div>
+                        <div class="kka-skeleton h-20 w-full"></div>
+                        <p class="text-xs font-semibold text-slate-500">Mengunduh Python (Pyodide ±10MB, sekali saja — butuh internet)...</p>
+                    </div>
+                    <pre x-show="keluaran !== ''" x-text="keluaran" class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-[13px] whitespace-pre-wrap min-h-16 overflow-x-auto" aria-label="Hasil program"></pre>
+                    <p class="kka-note">Tips: ubah contohnya lalu Jalankan lagi. Modul Python tidak memakai kamera. Kode berjalan lokal di perangkatmu.</p>
+                </div>
+            </x-card>
+        @endif
+
         @if($module->slug === 'latih-ai-mu')
-            <x-card title="Latih AI-mu (100% di browser, privasi aman)" subtitle="1) Tulis nama 2 benda → 2) Kumpulkan contoh → 3) Latih Model → 4) Uji/Pantau real-time. Tanpa API luar, gambar TIDAK dikirim ke server.">
-                <div x-data="kkaKnN()" x-init="boot()" class="space-y-4">
+            @vite('resources/js/ai/object-detector.js')
+            <x-card title="Deteksi Objek Real-Time (100% di browser, privasi aman)" subtitle="Model pretrained COCO-SSD langsung menemukan benda + kotak lokasinya. Tanpa latih manual, tanpa upload gambar. Gambar TIDAK dikirim ke server.">
+                <div x-data="kkaDeteksi()" x-init="boot()" class="space-y-4" data-testid="det-widget">
                     <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
                         <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
-                        <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Klik “Aktifkan Kamera” untuk ambil contoh, atau pakai Dataset Contoh di bawah.</p></template>
-                        <span class="absolute top-3 left-3 kka-badge" x-text="status"></span>
+                        <canvas x-ref="kanvas" class="absolute inset-0 w-full h-full" aria-hidden="true"></canvas>
+                        <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Klik “Aktifkan Kamera”, lalu tekan “Mulai Deteksi”. Arahkan ke benda seperti botol, buku, laptop, atau HP.</p></template>
+                        <span class="absolute top-3 left-3 kka-badge" x-text="status" role="status" data-testid="det-status"></span>
+                        <span class="absolute top-3 right-3 kka-badge" x-show="terdeteksi" x-text="terdeteksi + ' objek'" data-testid="det-count"></span>
                     </div>
-                    <div class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-sm min-h-16" x-text="prediction || 'Halo! Aku AI yang akan kamu latih sendiri. Mulai dari Aktifkan Kamera ya!'"></div>
+                    <div x-show="!modelSiap" class="space-y-2" aria-hidden="true">
+                        <div class="kka-skeleton h-4 w-3/4"></div>
+                        <div class="kka-skeleton h-16 w-full"></div>
+                        <p class="text-xs font-semibold text-slate-500">Memuat model AI (±5 MB, sekali saja, butuh internet)...</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-sm min-h-16" x-text="hasil" data-testid="det-hasil"></div>
                     <div class="rounded-2xl border border-slate-200 p-4">
-                        <p class="text-sm font-bold text-slate-800">Langkah 1 — Pilih 2 benda berbeda di sekitarmu</p>
-                        <p class="text-xs text-slate-500">Contoh: benda pertama “Botol”, benda kedua “Buku”. Nanti tunjukkan masing-masing ke kamera.</p>
-                        <div class="mt-2 grid sm:grid-cols-2 gap-2">
-                            <label class="text-xs font-semibold text-slate-600">Benda 1
-                                <input x-model="namaA" maxlength="20" placeholder="cth: Botol" class="mt-1 w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
-                            </label>
-                            <label class="text-xs font-semibold text-slate-600">Benda 2
-                                <input x-model="namaB" maxlength="20" placeholder="cth: Buku" class="mt-1 w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
-                            </label>
-                        </div>
+                        <p class="text-sm font-bold text-slate-800">Ambang confidence: <span x-text="ambang"></span>%</p>
+                        <p class="text-xs text-slate-500">Di bawah ambang, kotak disembunyikan. Naikkan bila kotak bergoyang; turunkan bila benda jelas tapi tak terdeteksi.</p>
+                        <label class="sr-only" for="ambang-deteksi">Ambang confidence deteksi objek</label>
+                        <input id="ambang-deteksi" type="range" min="30" max="90" step="5" x-model.number="ambang" @change="if (detektor) detektor.minScore = ambang / 100" class="mt-2 w-full accent-orange-500" data-testid="det-ambang" />
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <button @click="toggleKamera()" class="kka-btn-primary !py-2 text-sm" x-text="cameraOn ? 'Matikan Kamera' : 'Aktifkan Kamera'"></button>
-                        <button @click="ambilContoh(0)" class="kka-btn-secondary !py-2 text-sm">+ Contoh <span x-text="namaKelas(0)"></span> (<span x-text="counts[0]"></span>)</button>
-                        <button @click="ambilContoh(1)" class="kka-btn-secondary !py-2 text-sm">+ Contoh <span x-text="namaKelas(1)"></span> (<span x-text="counts[1]"></span>)</button>
-                        <button @click="latihModel()" class="kka-btn-primary !py-2 text-sm">Latih Model</button>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button @click="uji()" :disabled="!terlatih" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40" x-text="sibuk ? 'Menganalisis...' : 'Uji Sekali'"></button>
-                        <button @click="pantau()" :disabled="!terlatih" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40" x-text="live ? 'Stop Pantau' : 'Pantau Live'"></button>
+                        <button @click="toggleKamera()" class="kka-btn-primary !py-2 text-sm" x-text="cameraOn ? 'Hentikan Kamera' : 'Aktifkan Kamera'" data-testid="det-kamera"></button>
+                        <button @click="toggleDeteksi()" :disabled="!modelSiap || !cameraOn" class="kka-btn-primary !py-2 text-sm disabled:opacity-40" x-text="mendeteksi ? 'Berhenti Deteksi' : 'Mulai Deteksi'" data-testid="det-mulai"></button>
+                        <button @click="ujiSekali()" :disabled="!modelSiap || !cameraOn" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40" x-text="sibuk ? 'Menganalisis...' : 'Uji Sekali'"></button>
                         <button @click="reset()" class="kka-btn-secondary !py-2 text-sm">Reset</button>
-                        <button @click="muatContoh()" class="kka-btn-secondary !py-2 text-sm">Muat Dataset Contoh</button>
                     </div>
+                    <p x-show="galat" x-text="galat" class="text-sm font-semibold text-red-600" role="alert" data-testid="det-error"></p>
+                    <p x-show="mendeteksi && terdeteksi === 0" class="text-sm text-slate-500" data-testid="det-kosong">Tidak ada objek terdeteksi — dekatkan benda ke kamera, perbaiki cahaya, atau turunkan ambang.</p>
                     <div class="flex items-center gap-3 text-sm">
                         <span class="kka-badge">Uji meyakinkan: <span x-text="ujiCount"></span>/2</span>
                         <span class="text-xs text-slate-500" x-text="xpNote"></span>
@@ -88,7 +119,7 @@
                         </div>
                         <p class="mt-2 text-sm text-slate-700 whitespace-pre-wrap" x-show="penjelasan" x-text="penjelasan"></p>
                     </div>
-                    <p class="text-[11px] text-slate-400">2x Uji meyakinkan (keyakinan ≥50%) otomatis +20 XP, sekali saja. Dataset contoh berlabel simulasi (pola garis vs lingkaran).</p>
+                    <p class="kka-note">2x Uji meyakinkan (keyakinan ≥50%) otomatis +20 XP, sekali saja. Model mengenali 80 kelas umum (botol, buku, laptop, HP, kursi, kucing, ...), bukan benda custom.</p>
                 </div>
             </x-card>
         @endif
@@ -121,230 +152,160 @@
     </div>
 
     @if($module->slug === 'latih-ai-mu')
-    @push('head')
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.6/dist/knn-classifier.min.js"></script>
-    @endpush
     @push('scripts')
     <script>
-    function kkaKnN() {
-        // Model & classifier di closure biasa (BUKAN reactive data):
-        // objek tfjs yang lewat proxy Alpine merusak identity tensor.
-        // 100% client-side: MobileNet (ekstraksi fitur) + KNN (klasifikasi).
-        // Nol API luar untuk gambar; Gemini hanya untuk penjelasan teks.
-        const MIN_SAMPEL = 5;
-        let rawNet = null;
-        let rawKnn = null;
-        const snap = document.createElement('canvas');
-        const pola = document.createElement('canvas');
-        function tensorDariKanvas(c) {
-            const S = 224;
-            const ctx = c.getContext('2d', { willReadFrequently: true });
-            const d = ctx.getImageData(0, 0, S, S).data;
-            const n = S * S, vals = new Int32Array(n * 3);
-            for (let i = 0; i < n; i++) {
-                vals[i * 3] = d[i * 4]; vals[i * 3 + 1] = d[i * 4 + 1]; vals[i * 3 + 2] = d[i * 4 + 2];
+    function kkaDeteksi() {
+        // UI Modul 2 memakai window.KkaObjectDetector dari chunk Vite
+        // resources/js/ai/object-detector.js (COCO-SSD pretrained).
+        // 100% client-side: tanpa upload gambar; Gemini hanya untuk
+        // penjelasan teks.
+        async function tungguLib() {
+            for (let i = 0; i < 100; i++) {
+                if (window.KkaObjectDetector) return window.KkaObjectDetector;
+                await new Promise(r => setTimeout(r, 100));
             }
-            return tf.tensor3d(vals, [S, S, 3], 'int32');
-        }
-        // Potong tengah jadi bujur sangkar (hindari distorsi yang
-        // menurunkan akurasi), kecilkan ke 224x224.
-        function frameTensor(videoEl) {
-            const S = 224;
-            const vw = videoEl.videoWidth || 640, vh = videoEl.videoHeight || 480;
-            const side = Math.min(vw, vh), sx = (vw - side) / 2, sy = (vh - side) / 2;
-            snap.width = S; snap.height = S;
-            snap.getContext('2d', { willReadFrequently: true }).drawImage(videoEl, sx, sy, side, side, 0, 0, S, S);
-            return tensorDariKanvas(snap);
-        }
-        // Pola sintetis untuk fallback tanpa kamera (SIMULASI, bukan foto asli):
-        // Kelas A = garis vertikal, Kelas B = lingkaran, dengan jitter acak.
-        function polaTensor(cls, varian) {
-            const S = 224;
-            pola.width = S; pola.height = S;
-            const ctx = pola.getContext('2d');
-            ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, S, S);
-            const rnd = (a, b) => a + Math.random() * (b - a);
-            if (cls === 0) {
-                for (let x = 0; x < 7; x++) {
-                    ctx.fillStyle = x % 2 ? '#F97316' : '#FBBF24';
-                    ctx.fillRect(x * 32 + rnd(-6, 6) + varian * 3, 0, rnd(10, 18), S);
-                }
-            } else {
-                for (let gy = 0; gy < 4; gy++) for (let gx = 0; gx < 4; gx++) {
-                    ctx.fillStyle = (gx + gy) % 2 ? '#10B981' : '#6EE7B7';
-                    ctx.beginPath();
-                    ctx.arc(gx * 56 + 28 + rnd(-8, 8) + varian * 2, gy * 56 + 28 + rnd(-8, 8), rnd(12, 20), 0, 7);
-                    ctx.fill();
-                }
-            }
-            return tensorDariKanvas(pola);
-        }
-        function tambahContoh(imgTensor, cls) {
-            const act = rawNet.infer(imgTensor, true);
-            rawKnn.addExample(act, cls);
-            imgTensor.dispose(); act.dispose();
+            return null;
         }
         return {
-            status: 'Belum dimuat', cameraOn: false, sibuk: false,
-            counts: [0, 0], terlatih: false, live: false, timer: null,
-            namaA: 'Botol', namaB: 'Buku',
-            prediction: '', ujiCount: {{ $progress->hands_on_count ?? 0 }}, xpNote: '',
+            status: 'Memuat modul deteksi...', galat: '',
+            cameraOn: false, modelSiap: false, mendeteksi: false, sibuk: false,
+            ambang: 50, terdeteksi: 0, terakhir: [],
+            hasil: 'Halo! Aku detektor objek siap pakai. Aktifkan kamera lalu tekan Mulai Deteksi!',
+            ujiCount: {{ $progress->hands_on_count ?? 0 }}, xpNote: '',
             penjelasan: '', jelasSibuk: false,
-            // Nama kelas sesuai input siswa (fallback Benda 1/2).
-            namaKelas(i) {
-                const n = (i === 0 ? this.namaA : this.namaB).trim();
-                return n || ('Benda ' + (i + 1));
-            },
+            detektor: null, lib: null,
             async boot() {
-                if (!window.__kkaModulNet) {
-                    window.__kkaModulNet = (async () => {
-                        if (window.tf) { await tf.ready(); }
-                        const net = await mobilenet.load();
-                        // Tes mandiri jalur penuh (embedding + KNN + prediksi)
-                        const knn = knnClassifier.create();
-                        const g = new Int32Array(224 * 224 * 3).fill(128);
-                        const t0 = tf.tensor3d(g, [224, 224, 3], 'int32');
-                        try {
-                            const a0 = net.infer(t0, true);
-                            knn.addExample(a0, 0); knn.addExample(a0, 1);
-                            await knn.predictClass(a0);
-                            a0.dispose();
-                        } finally { t0.dispose(); }
-                        return { net, knn: knnClassifier.create() };
-                    })();
-                }
-                try {
-                    const m = await window.__kkaModulNet;
-                    rawNet = m.net; rawKnn = m.knn;
-                    this.status = 'Model siap — tulis nama benda lalu kumpulkan contoh';
-                } catch(e) { this.status = 'Gagal load model (butuh internet sekali)'; }
-            },
-            async toggleKamera() {
-                if (this.cameraOn) {
-                    if (this.stream) this.stream.getTracks().forEach(t => t.stop());
-                    if (this.timer) { clearInterval(this.timer); this.timer = null; this.live = false; }
-                    this.$refs.video.srcObject = null;
-                    this.cameraOn = false; this.prediction = '';
-                    this.status = rawNet ? 'Model siap — kumpulkan contoh' : 'Memuat model...';
+                const lib = await tungguLib();
+                if (!lib) {
+                    this.galat = 'Modul deteksi gagal dimuat. Periksa koneksi lalu muat ulang halaman.';
+                    this.status = 'Modul gagal dimuat';
                     return;
                 }
+                this.lib = lib;
+                this.detektor = new lib.ObjectDetector({ video: this.$refs.video, minScore: this.ambang / 100 });
+                this.status = 'Memuat model AI...';
                 try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    this.$refs.video.srcObject = this.stream;
-                    await this.$refs.video.play();
-                    this.cameraOn = true; this.status = 'Kamera menyala — tunjukkan bendanya lalu ambil contoh';
-                } catch(e) { this.status = 'Kamera ditolak — pakai tombol Dataset Contoh di bawah'; }
-            },
-            // 1. KUMPULKAN SAMPEL dari webcam (dua benda pilihanmu)
-            async ambilContoh(cls) {
-                if (!rawNet || !this.cameraOn) { this.prediction = 'Aktifkan kamera dulu ya!'; return; }
-                const img = frameTensor(this.$refs.video);
-                tambahContoh(img, cls);
-                this.counts[cls]++;
-                this.prediction = 'Contoh "' + this.namaKelas(cls) + '" tersimpan (' + this.counts[cls] + '). Tambah lagi biar model makin pintar!';
-            },
-            // Fallback tanpa kamera: 10 pola sintetis per kelas (SIMULASI).
-            muatContoh() {
-                if (!rawNet) { this.prediction = 'Tunggu model siap dulu ya!'; return; }
-                for (let i = 0; i < 10; i++) { tambahContoh(polaTensor(0, i), 0); tambahContoh(polaTensor(1, i), 1); }
-                this.counts[0] += 10; this.counts[1] += 10;
-                this.prediction = 'Dataset contoh (simulasi pola) dimuat untuk "' + this.namaKelas(0) + '" dan "' + this.namaKelas(1) + '". Klik Latih Model!';
-            },
-            // 2. LOCAL TRAINING: validasi + cek konsistensi (~2-3 detik).
-            // KNN itu instance-based: "latihan" = memastikan tiap kelas
-            // punya cukup contoh lalu menguji konsistensi model.
-            async latihModel() {
-                if (!rawNet) { this.prediction = 'Tunggu model siap dulu ya!'; return; }
-                const kurang = [];
-                if (this.counts[0] < MIN_SAMPEL) kurang.push('"' + this.namaKelas(0) + '" kurang ' + (MIN_SAMPEL - this.counts[0]) + ' contoh');
-                if (this.counts[1] < MIN_SAMPEL) kurang.push('"' + this.namaKelas(1) + '" kurang ' + (MIN_SAMPEL - this.counts[1]) + ' contoh');
-                if (kurang.length) { this.prediction = 'Belum bisa dilatih: ' + kurang.join(', ') + '.'; return; }
-                this.status = 'Melatih model (cek konsistensi)...';
-                await new Promise(r => setTimeout(r, 300));
-                try {
-                    const t = this.cameraOn ? frameTensor(this.$refs.video) : polaTensor(0, 99);
-                    const act = rawNet.infer(t, true);
-                    const res = await rawKnn.predictClass(act);
-                    const pct = Math.round((res.confidences[res.label] || 0) * 100);
-                    t.dispose(); act.dispose();
-                    this.terlatih = true;
-                    this.prediction = 'Hebat! Model AI-mu berhasil dilatih! Cek konsistensi: "' + this.namaKelas(res.label) + '" (' + pct + '%). Sekarang Uji / Pantau Live!';
-                    this.status = 'Model terlatih — silakan Uji!';
+                    await this.detektor.load();
+                    this.modelSiap = true;
+                    this.status = 'Model siap — aktifkan kamera';
                 } catch (e) {
-                    console.error(e);
-                    this.prediction = 'Latihan gagal, coba klik Latih Model lagi!';
-                    this.status = 'Model siap — kumpulkan contoh';
+                    this.galat = lib.pesanError(e);
+                    this.status = 'Model gagal dimuat';
                 }
+                window.addEventListener('pagehide', () => this.bersihSemua());
             },
-            // 3. TESTING REAL-TIME di browser (0 latency, tanpa API luar)
-            async intiUji() {
-                const t = frameTensor(this.$refs.video);
-                let res;
+            async toggleKamera() {
+                if (!this.detektor) return;
+                if (this.cameraOn) {
+                    this.detektor.stopLoop();
+                    this.detektor.stopCamera();
+                    this.cameraOn = false; this.mendeteksi = false;
+                    this.bersihKanvas();
+                    this.status = this.modelSiap ? 'Model siap — aktifkan kamera' : 'Memuat model...';
+                    return;
+                }
+                this.galat = '';
                 try {
-                    const act = rawNet.infer(t, true);
-                    try { res = await rawKnn.predictClass(act); }
-                    finally { act.dispose(); }
-                } finally { t.dispose(); }
-                return res;
-            },
-            async uji() {
-                if (!rawNet) { this.prediction = 'Model belum termuat, tunggu tulisan “Model siap”!'; return; }
-                if (!this.terlatih) { this.prediction = 'Latih model dulu (minimal 5 contoh per benda)!'; return; }
-                if (!this.cameraOn) { this.prediction = 'Aktifkan kamera dulu ya!'; return; }
-                if (this.sibuk) return;
-                const v = this.$refs.video;
-                let tunggu = 0;
-                while ((v.readyState < 2 || v.videoWidth === 0) && tunggu < 20) {
-                    await new Promise(r => setTimeout(r, 200));
-                    tunggu++;
+                    await this.detektor.startCamera();
+                    this.$refs.video.srcObject = this.detektor.stream;
+                    await this.$refs.video.play();
+                    this.cameraOn = true;
+                    this.status = 'Kamera menyala — tekan Mulai Deteksi';
+                } catch (e) {
+                    this.galat = this.lib.pesanError(e);
                 }
-                if (v.videoWidth === 0) { this.prediction = 'Kamera belum menampilkan gambar — tunggu lalu Uji lagi!'; return; }
+            },
+            toggleDeteksi() {
+                if (!this.detektor || !this.cameraOn) return;
+                if (this.mendeteksi) {
+                    this.detektor.stopLoop();
+                    this.mendeteksi = false;
+                    this.status = 'Deteksi berhenti — tekan Mulai Deteksi untuk lanjut';
+                    return;
+                }
+                this.galat = '';
+                this.mendeteksi = true;
+                this.status = 'Mendeteksi real-time...';
+                this.detektor.startLoop((hasil, err) => {
+                    if (err) return;
+                    this.terakhir = hasil;
+                    this.terdeteksi = hasil.length;
+                    this.gambarKotak(hasil);
+                    if (hasil.length) {
+                        this.hasil = 'Terdeteksi: ' + hasil.slice(0, 3).map(d =>
+                            this.lib.translateLabel(d.class) + ' ' + Math.round(d.score * 100) + '%'
+                        ).join(', ') + '.';
+                    }
+                });
+            },
+            async ujiSekali() {
+                if (!this.detektor || !this.cameraOn || this.sibuk) return;
                 this.sibuk = true;
                 try {
-                    const res = await this.intiUji();
-                    const nama = '"' + this.namaKelas(res.label) + '"';
-                    const pct = Math.round((res.confidences[res.label] || 0) * 100);
+                    const hasil = await this.detektor.detectOnce();
+                    if (!hasil) {
+                        this.hasil = 'Tunggu frame berikutnya lalu klik Uji Sekali lagi!';
+                        return;
+                    }
+                    this.terakhir = hasil;
+                    this.terdeteksi = hasil.length;
+                    this.gambarKotak(hasil);
+                    if (!hasil.length) {
+                        this.hasil = 'Tidak ada objek yang meyakinkan. Dekatkan benda, perbaiki cahaya, lalu coba lagi!';
+                        return;
+                    }
+                    const pct = Math.round(hasil[0].score * 100);
+                    const nama = this.lib.translateLabel(hasil[0].class);
                     if (pct >= 50) {
-                        this.prediction = 'Hasil: ' + nama + ' — ' + pct + '% yakin.';
+                        this.hasil = 'Hasil: "' + nama + '" — ' + pct + '% yakin.';
                         await this.laporUji(pct);
                     } else {
-                        this.prediction = 'Kurang yakin (terbaik: ' + nama + ' — ' + pct + '%). Tambah contoh tiap benda lalu Latih ulang!';
+                        this.hasil = 'Kurang yakin (terbaik: "' + nama + '" — ' + pct + '%). Perbaiki posisi & cahaya lalu coba lagi!';
                     }
                 } catch (e) {
-                    console.error(e);
-                    this.prediction = 'Gagal menganalisis. Coba klik Uji lagi!';
+                    this.galat = this.lib.pesanError(e);
                 }
                 this.sibuk = false;
             },
-            pantau() {
-                if (!this.terlatih || !this.cameraOn || this.sibuk) return;
-                if (this.live) {
-                    clearInterval(this.timer); this.timer = null; this.live = false;
-                    this.status = 'Model terlatih — silakan Uji!';
-                    return;
-                }
-                this.live = true; this.status = 'Memantau live... (klik Stop untuk berhenti)';
-                this.timer = setInterval(async () => {
-                    if (this.sibuk) return;
-                    this.sibuk = true;
-                    try {
-                        const res = await this.intiUji();
-                        const nama = '"' + this.namaKelas(res.label) + '"';
-                        const pct = Math.round((res.confidences[res.label] || 0) * 100);
-                        this.prediction = 'Live: ' + nama + ' — ' + pct + '%';
-                        if (pct >= 50) await this.laporUji(pct);
-                    } catch (e) { /* lewati frame gagal */ }
-                    this.sibuk = false;
-                }, 800);
+            gambarKotak(daftar) {
+                const v = this.$refs.video, c = this.$refs.kanvas;
+                if (!v || !c || !v.videoWidth) return;
+                if (c.width !== v.videoWidth) { c.width = v.videoWidth; c.height = v.videoHeight; }
+                const ctx = c.getContext('2d');
+                ctx.clearRect(0, 0, c.width, c.height);
+                daftar.forEach(d => {
+                    const x = d.bbox[0], y = d.bbox[1], w = d.bbox[2], h = d.bbox[3];
+                    const label = this.lib.translateLabel(d.class) + ' ' + Math.round(d.score * 100) + '%';
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#f97316';
+                    ctx.strokeRect(x, y, w, h);
+                    ctx.font = 'bold 14px sans-serif';
+                    const tw = ctx.measureText(label).width;
+                    ctx.fillStyle = '#f97316';
+                    ctx.fillRect(x, Math.max(0, y - 22), tw + 12, 22);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(label, x + 6, Math.max(14, y - 6));
+                });
+            },
+            bersihKanvas() {
+                const c = this.$refs.kanvas;
+                if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+                this.terakhir = [];
+                this.terdeteksi = 0;
             },
             reset() {
-                rawKnn = knnClassifier.create();
-                if (this.timer) { clearInterval(this.timer); this.timer = null; this.live = false; }
-                this.counts = [0, 0]; this.terlatih = false;
-                this.prediction = 'Model di-reset. Kumpulkan contoh lalu Latih ulang!';
-                this.status = 'Model siap — tulis nama benda lalu kumpulkan contoh';
+                if (this.detektor) {
+                    this.detektor.stopLoop();
+                    this.detektor.stopCamera();
+                }
+                this.cameraOn = false; this.mendeteksi = false;
+                this.bersihKanvas();
+                this.galat = '';
+                this.hasil = 'Direset. Aktifkan kamera lalu tekan Mulai Deteksi!';
+                this.status = this.modelSiap ? 'Model siap — aktifkan kamera' : 'Memuat model...';
+            },
+            bersihSemua() {
+                if (this.detektor) this.detektor.dispose();
             },
             // Lapor Uji meyakinkan ke server: dihitung + XP otomatis (anti-farm di backend).
             async laporUji(pct) {
@@ -369,6 +330,9 @@
                 this.jelasSibuk = true;
                 this.penjelasan = 'Meminta penjelasan ke Tutor AI...';
                 try {
+                    const temuan = this.terakhir.slice(0, 3).map(d =>
+                        this.lib.translateLabel(d.class) + ' (' + Math.round(d.score * 100) + '%)'
+                    ).join(', ') || 'belum ada objek terdeteksi';
                     const res = await fetch(@js(route('ai.chat')), {
                         method: 'POST',
                         headers: {
@@ -378,13 +342,129 @@
                         },
                         body: JSON.stringify({
                             module: 'latih-ai-mu',
-                            message: 'Aku baru selesai praktikum Modul 2: kukumpulkan ' + this.counts[0] + ' contoh "' + this.namaKelas(0) + '" dan ' + this.counts[1] + ' contoh "' + this.namaKelas(1) + '", lalu model KNN-ku menebak "' + this.prediction + '". Jelaskan singkat kenapa hasilku bisa akurat atau salah, dan beri 1 tips memperbaikinya.',
+                            message: 'Aku baru memakai Modul 2 deteksi objek: kamera menemukan ' + temuan + '. Jelaskan singkat cara kerja object detection pretrained dan 1 tips agar hasilnya lebih akurat.',
                         }),
                     });
                     const data = await res.json();
                     this.penjelasan = data.reply || 'Tidak ada jawaban.';
                 } catch (e) { this.penjelasan = 'Gagal menghubungi Tutor AI. Coba lagi ya!'; }
                 this.jelasSibuk = false;
+            },
+        }
+    }
+    </script>
+    @endpush
+    @endif
+
+    @if(in_array($module->slug, ['python-dasar-ai', 'data-logika-ai']))
+    @push('scripts')
+    <script>
+    function kkaPython(slug) {
+        // Python asli via Pyodide (WASM) — lazy-load saat Jalankan pertama.
+        // Anti-hang: worker dihentikan paksa bila lewat 10 detik.
+        const CONTOH = {
+            'python-dasar-ai': [
+                'print("Halo AI")\nprint("Aku siap belajar Python!")',
+                'nama = "Sinta"\numur = 17\nprint("Nama:", nama)\nprint("Umur:", umur)\nprint("Tipe umur:", type(umur))',
+                'nilai = [70, 80, 90]\nprint("Isi:", nilai)\nprint("Banyak data:", len(nilai))\nfor n in nilai:\n    print("Nilai:", n)',
+                'def sapa(nama):\n    return "Halo, " + nama + "!"\n\nprint(sapa("Budi"))\nsiswa = {"nama": "Budi", "nilai": 85}\nprint("Nilai Budi:", siswa["nilai"])',
+            ],
+            'data-logika-ai': [
+                'nilai = [70, 80, 90]\nrata = sum(nilai) / len(nilai)\nprint("Rata-rata:", rata)',
+                'nilai = [70, 85, 60, 90]\nlulus = [x for x in nilai if x >= 80]\nprint("Yang lulus:", lulus)',
+                'def label(n):\n    return "lulus" if n >= 80 else "remidi"\n\ndata = [85, 60, 92, 75]\nfor n in data:\n    print(n, "->", label(n))',
+                'tebakan = ["lulus", "remidi", "lulus", "lulus"]\nbenar = ["lulus", "lulus", "lulus", "remidi"]\ncocok = sum(1 for a, b in zip(tebakan, benar) if a == b)\nprint("Akurasi:", cocok / len(benar) * 100, "%")',
+            ],
+        };
+        const DILARANG = ['import os', 'import sys', 'import subprocess', 'import socket', 'open('];
+        const awal = (CONTOH[slug] && CONTOH[slug][0]) || 'print("Halo AI")';
+        return {
+            kode: awal,
+            keluaran: '',
+            status: 'Siap — tulis kodemu lalu Jalankan',
+            sibuk: false,
+            memuat: false,
+            worker: null,
+            timerHang: null,
+            contoh() {
+                return CONTOH[slug] || [];
+            },
+            isiContoh(i) {
+                const daftar = this.contoh();
+                if (daftar[i] !== undefined) {
+                    this.kode = daftar[i];
+                    this.keluaran = '';
+                    this.status = 'Contoh dimuat — tekan Jalankan!';
+                }
+            },
+            jalankan() {
+                if (this.sibuk) return;
+                if (this.kode.trim() === '') {
+                    this.status = 'Tulis dulu kodemu (atau klik salah satu Contoh)!';
+                    return;
+                }
+                if (this.kode.length > 2000) {
+                    this.status = 'Kodenya kepanjangan (maks 2000 karakter). Pendekkan dulu ya!';
+                    return;
+                }
+                const kena = DILARANG.find(p => this.kode.includes(p));
+                if (kena) {
+                    this.status = 'Demi keamanan, "' + kena + '" tidak diizinkan di latihan ini.';
+                    return;
+                }
+                this.sibuk = true;
+                this.memuat = true;
+                this.keluaran = '';
+                this.status = 'Menyiapkan Python... (unduhan ±10MB hanya saat pertama)';
+                try {
+                    this.worker = new Worker(@js(asset('js/pyodide-worker.js')));
+                } catch (e) {
+                    this.sibuk = false; this.memuat = false;
+                    this.status = 'Browser tidak mendukung Web Worker. Coba Chrome/Edge/Firefox terbaru.';
+                    return;
+                }
+                const vm = this;
+                this.worker.onmessage = function (e) {
+                    const m = e.data || {};
+                    if (m.type === 'status' && m.data === 'mengeksekusi') {
+                        vm.memuat = false;
+                        vm.status = 'Menjalankan kodemu... (maks 10 detik)';
+                    }
+                    if (m.type === 'selesai') {
+                        vm.bersih();
+                        if (m.data && m.data.ok) {
+                            vm.keluaran = m.data.output === '' ? '(Program selesai tanpa keluaran. Coba tambah print(...).)' : m.data.output;
+                            vm.status = 'Selesai ✓ — ubah kodenya dan Jalankan lagi!';
+                        } else {
+                            vm.keluaran = (m.data && m.data.output ? m.data.output + '\n' : '') + 'ERROR: ' + ((m.data && m.data.error) || 'tidak diketahui');
+                            vm.status = (m.data && m.data.offline) ? 'Gagal memuat (butuh internet sekali) — coba lagi!' : 'Program error — baca pesan merah di atas, perbaiki, Jalankan lagi!';
+                        }
+                    }
+                };
+                this.worker.onerror = function () {
+                    vm.bersih();
+                    vm.keluaran = '';
+                    vm.status = 'Gagal memuat Python (butuh internet sekali untuk ±10MB). Periksa koneksi lalu Jalankan lagi.';
+                };
+                this.worker.postMessage({ cmd: 'jalankan', code: this.kode });
+                // Anti-hang wajib: terminate bila lewat 10 detik.
+                this.timerHang = setTimeout(function () {
+                    if (!vm.sibuk) return;
+                    vm.bersih();
+                    vm.keluaran = (vm.keluaran ? vm.keluaran + '\n' : '') + 'WAKTU HABIS (10 detik) — program dihentikan. Mungkin ada while True tanpa henti. Perbaiki lalu Jalankan lagi!';
+                    vm.status = 'Dihentikan paksa (timeout 10 detik)';
+                }, 10000);
+            },
+            hentikan() {
+                if (!this.sibuk) return;
+                this.bersih();
+                this.status = 'Dihentikan. Tekan Jalankan untuk mencoba lagi.';
+            },
+            bersih() {
+                if (this.timerHang) { clearTimeout(this.timerHang); this.timerHang = null; }
+                if (this.worker) { try { this.worker.terminate(); } catch (e) {} this.worker = null; }
+                this.sibuk = false;
+                this.memuat = false;
             },
         }
     }

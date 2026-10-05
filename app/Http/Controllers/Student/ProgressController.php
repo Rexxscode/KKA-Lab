@@ -34,22 +34,40 @@ class ProgressController extends Controller
 
         $answers = $request->validate([
             'answers' => 'required|array',
-            'answers.*' => 'nullable|integer|min:0|max:10',
+            'answers.*' => 'nullable|integer|min:0|max:4',
         ])['answers'];
 
-        $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
-        $totalPoints = $quizzes->sum('points');
+        // Nilai memakai paket acak yang disimpan saat halaman kuis dibuka,
+        // sehingga urutan soal & opsi yang diacak tetap konsisten.
+        $paket = session('kuis_paket_' . $module->id);
+        if (empty($paket)) {
+            $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
+            $paket = $modul->paketAcak($quizzes);
+        }
+        $tampil = $modul->uraikanPaket($paket);
+        abort_if(empty($tampil), 422, 'Bank soal modul ini kosong.');
+
+        $totalPoints = collect($tampil)->sum(fn ($t) => $t['quiz']->points);
         $earned = 0;
 
         // Rincian per soal untuk pembahasan (jawaban dipertahankan via withInput).
         $detail = [];
-        foreach ($quizzes as $i => $quiz) {
+        foreach ($tampil as $i => $t) {
             $chosen = isset($answers[$i]) ? (int) $answers[$i] : null;
-            $ok = $chosen !== null && $chosen === (int) $quiz->correct_index;
+            $correct = (int) $t['correct'];
+            $ok = $chosen !== null && $chosen === $correct;
             if ($ok) {
-                $earned += $quiz->points;
+                $earned += $t['quiz']->points;
             }
-            $detail[] = ['chosen' => $chosen, 'correct' => (int) $quiz->correct_index, 'ok' => $ok];
+            $detail[] = [
+                'quiz_id' => $t['quiz']->id,
+                'question' => $t['quiz']->question,
+                'options' => $t['options'],
+                'explanation' => $t['quiz']->explanation,
+                'chosen' => $chosen,
+                'correct' => $correct,
+                'ok' => $ok,
+            ];
         }
 
         $score = $totalPoints > 0 ? (int) round($earned / $totalPoints * 100) : 0;

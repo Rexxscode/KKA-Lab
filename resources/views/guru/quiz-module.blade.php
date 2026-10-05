@@ -7,19 +7,20 @@
 
     <x-card title="Tambah Soal Baru" subtitle="Untuk modul ini saja.">
         @if($module->isDefault() && ! auth()->user()->isAdmin())
-            <p class="text-xs rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 p-2.5 mb-3">🔒 Ini soal default admin. Silakan edit langsung — perubahan otomatis tersimpan sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
+            <p class="text-xs rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 p-2.5 mb-3">Ini soal default admin. Silakan edit langsung — perubahan otomatis tersimpan sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
         @endif
         <form method="POST" action="{{ route('guru.quiz.module.store', $module) }}" class="space-y-2.5">
             @csrf
-            <input name="question" required placeholder="Tulis pertanyaan..." class="w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
+            <label for="soal-baru" class="text-xs font-bold text-slate-600">Pertanyaan baru</label>
+            <input id="soal-baru" name="question" required placeholder="Tulis pertanyaan..." class="w-full rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
             @foreach(['A', 'B', 'C', 'D', 'E'] as $huruf)
-                <label class="flex items-center gap-2.5 text-sm">
-                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-slate-100 font-extrabold text-slate-600">{{ $huruf }}</span>
-                    <input name="options[]" required placeholder="Opsi {{ $huruf }} (wajib diisi)" class="flex-1 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                <label for="opsi-baru-{{ $huruf }}" class="flex items-center gap-2.5 text-sm">
+                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-slate-100 font-extrabold text-slate-600" aria-hidden="true">{{ $huruf }}</span>
+                    <input id="opsi-baru-{{ $huruf }}" name="options[]" required placeholder="Opsi {{ $huruf }} (wajib diisi)" class="flex-1 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
                 </label>
             @endforeach
-            <label class="flex items-center gap-2.5 text-sm font-semibold text-slate-700">Jawaban benar:
-                <select name="correct_letter" required class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500">
+            <label for="jawaban-baru" class="flex items-center gap-2.5 text-sm font-semibold text-slate-700">Jawaban benar:
+                <select id="jawaban-baru" name="correct_letter" required class="rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500">
                     @foreach(['A', 'B', 'C', 'D', 'E'] as $huruf)
                         <option value="{{ $huruf }}">{{ $huruf }}</option>
                     @endforeach
@@ -30,8 +31,12 @@
     </x-card>
 
     <h3 class="mt-6 mb-3 font-extrabold text-slate-900">Daftar Soal ({{ $module->quizzes->count() }})</h3>
+    <div x-data="{ cari: '' }">
+        <label for="cari-soal" class="sr-only">Cari soal</label>
+        <input id="cari-soal" x-model="cari" type="search" placeholder="Cari teks soal..." class="w-full sm:max-w-sm rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500 mb-3" />
     <div class="space-y-3">
         @forelse($module->quizzes as $idx => $q)
+            <div x-show="$el.dataset.cari.toLowerCase().includes(cari.toLowerCase())" data-cari="{{ strtolower($q->question) }}">
             <x-card :title="'Soal ' . ($idx + 1)" :subtitle="$q->question">
                 <div class="space-y-1.5 text-sm">
                     @foreach($q->options as $oi => $opt)
@@ -40,7 +45,7 @@
                         </p>
                     @endforeach
                     @if($q->explanation)
-                        <p class="text-xs text-slate-500 rounded-xl bg-slate-50 border border-slate-200 p-2">💡 {{ $q->explanation }}</p>
+                        <p class="text-xs text-slate-500 rounded-xl bg-slate-50 border border-slate-200 p-2"><b>Pembahasan:</b> {{ $q->explanation }}</p>
                     @endif
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2">
@@ -77,8 +82,10 @@
                     </form>
                 </div>
             </x-card>
+            </div>
         @empty
             <x-card title="Belum ada soal" subtitle="Tambah soal pertama lewat formulir di atas." />
         @endforelse
+    </div>
     </div>
 </x-sidebar-layout>

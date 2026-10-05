@@ -32,11 +32,15 @@ class DatabaseSeeder extends Seeder
             ['title' => 'Modul 1: Apa itu AI?', 'slug' => 'apa-itu-ai', 'order' => 1, 'xp_reward' => 100,
              'description' => 'Konsep dasar AI, machine learning, dan contoh penerapan di kehidupan sehari-hari.'],
             ['title' => 'Modul 2: Latih AI-mu', 'slug' => 'latih-ai-mu', 'order' => 2, 'xp_reward' => 200,
-             'description' => 'Tulis nama 2 benda, kumpulkan contoh webcam, latih model KNN lokal, lalu uji real-time.'],
+             'description' => 'Deteksi objek real-time via webcam (COCO-SSD pretrained): bounding box, label Indonesia, dan confidence.'],
             ['title' => 'Modul 3: Bias Data', 'slug' => 'bias-data', 'order' => 3, 'xp_reward' => 150,
              'description' => 'Simulasi interaktif dataset tidak seimbang dan dampaknya pada keadilan model.'],
             ['title' => 'Modul 4: Etika & Hoaks AI', 'slug' => 'etika-hoaks-ai', 'order' => 4, 'xp_reward' => 150,
              'description' => 'Studi kasus etika AI, deepfake, dan cara mengenali hoaks hasil AI.'],
+            ['title' => 'Modul 5: Python Dasar untuk AI', 'slug' => 'python-dasar-ai', 'order' => 5, 'xp_reward' => 150,
+             'description' => 'Python asli di browser: print, variabel, tipe data, list, loop, fungsi, dan dict sebagai fondasi AI.'],
+            ['title' => 'Modul 6: Data & Logika AI dengan Python', 'slug' => 'data-logika-ai', 'order' => 6, 'xp_reward' => 200,
+             'description' => 'Olah data nyata: rata-rata, filter, dan mini-classifier berbasis aturan sebagai jembatan ke machine learning.'],
         ];
 
         foreach ($modules as $m) {
@@ -66,21 +70,21 @@ class DatabaseSeeder extends Seeder
                 ['q' => 'Asisten suara di HP (Siri/Asisten Google) termasuk...', 'o' => ['Bukan AI', 'Robot fisik', 'AI umum setara manusia', 'AI sempit yang pintar di tugas suara', 'Filter foto otomatis'], 'c' => 3, 'e' => 'Asisten suara adalah narrow AI: hebat mengenali suara dan perintah, tapi tidak punya kecerdasan umum.'],
             ],
             'latih-ai-mu' => [
-                ['q' => 'Langkah pertama melatih model gambar?', 'o' => ['Kumpulkan contoh tiap benda', 'Langsung uji tanpa data', 'Hapus webcam', 'Matikan browser', 'Membeli kamera baru'], 'c' => 0, 'e' => 'Tanpa contoh, model tidak punya apa pun untuk dipelajari. Kumpulkan dulu, baru latih.'],
-                ['q' => 'Kenapa butuh banyak contoh per benda?', 'o' => ['Agar baterai cepat habis', 'Agar model mengenali benda dalam berbagai variasi', 'Agar file besar', 'Tidak ada alasan', 'Agar fotonya bagus dilihat'], 'c' => 1, 'e' => 'Banyak contoh dari sudut, jarak, dan cahaya berbeda membuat model tahan terhadap variasi.'],
+                ['q' => 'Bedanya klasifikasi gambar dan deteksi objek?', 'o' => ['Sama saja', 'Klasifikasi menjawab satu label untuk seluruh foto, deteksi memberi label + kotak lokasi tiap benda', 'Deteksi hanya untuk video', 'Klasifikasi butuh kamera', 'Deteksi tidak butuh model'], 'c' => 1, 'e' => 'Deteksi objek = klasifikasi + lokalisasi: tiap benda dapat label dan bounding box-nya sendiri.'],
+                ['q' => 'Bounding box pada deteksi objek berfungsi untuk...?', 'o' => ['Menghitung nilai rapor', 'Menandai posisi benda di dalam gambar', 'Mempercepat internet', 'Mengganti label', 'Menghapus latar'], 'c' => 1, 'e' => 'Bounding box adalah kotak koordinat yang menunjukkan di mana benda berada.'],
                 ['q' => 'Data webcam di KKA Lab...', 'o' => ['Dikirim ke semua guru', 'Diunggah ke internet publik', 'Hanya diproses di browser, tidak dikirim ke server', 'Disimpan permanen', 'Dijual ke pengiklan'], 'c' => 2, 'e' => 'Privasi terjaga: frame kamera diolah lokal di perangkatmu dan tidak pernah diunggah.'],
-                ['q' => 'Jika model salah menebak, yang dilakukan?', 'o' => ['Buang laptop', 'Menyerah', 'Tambah contoh & latih ulang', 'Tutup mata', 'Mengganti laptop baru'], 'c' => 2, 'e' => 'Model yang salah = sinyal butuh data lebih baik. Tambah contoh yang mewakili, lalu latih ulang.'],
-                ['q' => 'KNN Classifier bekerja dengan...', 'o' => ['Menebak acak', 'Menghafal password', 'Membandingkan kemiripan fitur gambar', 'Menghitung nilai rapor', 'Menghitung luas lingkaran'], 'c' => 2, 'e' => 'KNN menyimpan ciri tiap contoh, lalu menebak gambar baru dengan contoh latih yang paling mirip.'],
-                ['q' => 'Urutan tahap machine learning yang benar?', 'o' => ['Langsung pakai tanpa uji', 'Kumpulkan data → latih → uji → perbaiki', 'Uji dulu baru kumpulkan data', 'Asal-asalan dulu', 'Tidur dulu baru mulai'], 'c' => 1, 'e' => 'Alur baku ML: kumpulkan data, latih model, uji dengan data baru, lalu perbaiki yang kurang.'],
-                ['q' => 'Apa itu "benda" (kelas) saat melatih model?', 'o' => ['Ukuran foto', 'Kategori yang ingin dikenali, mis. Botol vs Buku', 'Jenis kamera', 'Kelas di sekolah', 'Nilai ujian tiap siswa'], 'c' => 1, 'e' => 'Kelas adalah kategori tebakan. Di Modul 2 kamu bebas menamai dua bendamu sendiri.'],
+                ['q' => 'Jika kotak deteksi bergoyang atau salah, langkah pertama?', 'o' => ['Buang laptop', 'Menyerah', 'Perbaiki posisi, cahaya, dan cek ambang confidence', 'Tutup mata', 'Mengganti laptop baru'], 'c' => 2, 'e' => 'Model pretrained tidak kamu latih ulang; perbaiki kondisi pengambilan dan ambangnya.'],
+                ['q' => 'COCO-SSD disebut model pretrained karena...?', 'o' => ['Menebak acak', 'Menghafal password', 'Sudah dilatih dengan ratusan ribu foto sebelum dipakai', 'Menghitung nilai rapor', 'Dilatih siswa saat praktikum'], 'c' => 2, 'e' => 'Pretrained = bobotnya sudah jadi dari latihan besar; siswa tinggal memakai.'],
+                ['q' => 'Alur memakai model pretrained yang benar?', 'o' => ['Langsung percaya semua hasil', 'Siapkan kamera → muat model → deteksi → sesuaikan ambang', 'Uji dulu baru muat model', 'Asal-asalan dulu', 'Tidur dulu baru mulai'], 'c' => 1, 'e' => 'Alur pakai-pretrained: siapkan input, muat model, deteksi, lalu evaluasi ambangnya.'],
+                ['q' => '"Kelas" pada COCO-SSD artinya...?', 'o' => ['Ukuran foto', 'Kategori bawaan model: Botol/Buku/Laptop dan 77 lainnya (total 80)', 'Jenis kamera', 'Kelas di sekolah', 'Nilai ujian tiap siswa'], 'c' => 1, 'e' => 'Kelas COCO-SSD tetap: 80 kategori umum, tidak bisa tambah custom tanpa melatih model baru.'],
                 ['q' => 'Apa fungsi data uji (test data)?', 'o' => ['Mempercantik tampilan', 'Menghapus data latih', 'Menambah memori', 'Mengukur apakah model bisa menebak data yang belum pernah dilihat', 'Untuk mempercepat loading halaman'], 'c' => 3, 'e' => 'Data uji tidak ikut latihan, jadi ia mengukur kemampuan model sesungguhnya pada hal baru.'],
                 ['q' => 'Overfitting artinya...', 'o' => ['Model hafal data latih tapi gagal di data baru', 'Model berjalan sangat cepat', 'Model gratis', 'Model offline', 'Komputer yang terlalu panas'], 'c' => 0, 'e' => 'Seperti murid yang hafal soal tapi tidak paham konsep: nilai latihan bagus, nilai ujian jatuh.'],
-                ['q' => 'Apa itu transfer learning (MobileNet di Modul 2)?', 'o' => ['Memakai model yang sudah pintar sebagai titik awal lalu diadaptasi', 'Memindahkan file antar laptop', 'Belajar sambil transfer uang', 'Mengganti model tiap hari', 'Belajar kelompok bersama teman'], 'c' => 0, 'e' => 'MobileNet sudah dilatih jutaan gambar; KNN tinggal memakai cirinya untuk bendamu. Hemat waktu dan data.'],
-                ['q' => 'KNN menentukan jawaban dengan cara...', 'o' => ['Bertanya ke guru', 'Mencari contoh latih yang paling mirip lalu ikut kategorinya', 'Menebak acak', 'Menghitung rata-rata rapor', 'Mengundi dengan koin'], 'c' => 1, 'e' => 'KNN = tetangga terdekat: gambar baru dikategorikan mengikuti contoh latih yang paling mirip cirinya.'],
-                ['q' => 'Jika akurasi model hanya 60%, langkah terbaik?', 'o' => ['Hapus aplikasinya', 'Kurangi contohnya', 'Biarkan saja', 'Tambah contoh yang beragam dan latih ulang', 'Menurunkan target menjadi 60%'], 'c' => 3, 'e' => 'Akurasi rendah hampir selalu soal data: tambah contoh bervariasi, seimbangkan tiap benda, latih ulang.'],
-                ['q' => 'Apa itu label yang salah (mislabel)?', 'o' => ['Foto yang gelap', 'Foto yang besar', 'Foto kucing diberi label "anjing"', 'Foto tanpa warna', 'Foto yang diambil miring'], 'c' => 2, 'e' => 'Label salah mengajari model hal yang salah. Cek ulang label saat model bertingkah aneh.'],
-                ['q' => 'Contoh tiap benda harus bervariasi (jarak, cahaya, sudut) karena...', 'o' => ['Agar file foto besar', 'Agar kamera cepat rusak', 'Tidak penting', 'Agar model kenal bendanya dalam kondisi apa pun', 'Agar kameranya awet'], 'c' => 3, 'e' => 'Model hanya sepintar variasinya. Foto itu-itu saja = gagal saat kondisi berubah.'],
-                ['q' => 'Mengapa jumlah contoh tiap benda sebaiknya seimbang?', 'o' => ['Agar adil, model tidak berat sebelah ke benda yang contohnya banyak', 'Agar hemat baterai', 'Agar cepat selesai saja', 'Tidak ada alasan', 'Agar angkanya cantik dilihat'], 'c' => 0, 'e' => 'Kelas mayoritas mendominasi tebakan KNN. Ketidakseimbangan = bibit bias data (lihat Modul 3).'],
+                ['q' => 'Apa itu transfer learning (model pretrained di Modul 2)?', 'o' => ['Memakai model yang sudah pintar sebagai titik awal lalu dipakai langsung', 'Memindahkan file antar laptop', 'Belajar sambil transfer uang', 'Mengganti model tiap hari', 'Belajar kelompok bersama teman'], 'c' => 0, 'e' => 'Backbone COCO-SSD sudah dilatih jutaan gambar, lalu dipakai tanpa latih ulang. Hemat waktu dan data.'],
+                ['q' => 'Confidence 91% pada label "Botol" artinya...?', 'o' => ['Model 91% yakin melihat botol di kotak itu', 'Foto 91% buram', '91 piksel terdeteksi', 'Baterai tinggal 91%', 'Ditemukan 91 benda'], 'c' => 0, 'e' => 'Confidence = skor keyakinan model pada temuan itu, bukan jumlah benda.'],
+                ['q' => 'Dua kotak menumpuk pada benda yang sama biasanya berarti...?', 'o' => ['Ada dua benda kembar', 'Kamera rusak', 'Tidak ada arti', 'Model memberi kandidat ganda — naikkan ambang', 'Hapus aplikasinya'], 'c' => 3, 'e' => 'Kandidat ganda itu wajar; ambang lebih tinggi menyaring temuan yang lemah.'],
+                ['q' => 'Benda custom seperti "botol bekal biru milikku" tidak dikenal COCO-SSD karena...?', 'o' => ['Kamera rusak', 'Foto terlalu gelap', 'Label itu tidak ada di 80 kelas latihnya', 'Internet lambat', 'Layar terlalu kecil'], 'c' => 2, 'e' => 'Model hanya tahu kelas yang pernah dilihat saat pretraining.'],
+                ['q' => 'Botol 91% di meja terang turun ke 45% saat lampu dimatikan. Pelajarannya...?', 'o' => ['Modelnya rusak', 'Ganti laptop', 'Listrik sekolah jelek', 'Kondisi cahaya memengaruhi confidence — perbaiki cahaya dulu', 'Tidak penting'], 'c' => 3, 'e' => 'Evaluasi jujur: kondisi pengambilan mengubah hasil, bukan cuma modelnya.'],
+                ['q' => 'Ambang confidence 70% artinya...?', 'o' => ['Hanya temuan dengan keyakinan ≥70% yang ditampilkan', 'Model berjalan 70% lebih cepat', 'Terdeteksi 70 benda', 'Baterai hemat 70%', 'Kamera zoom 70%'], 'c' => 0, 'e' => 'Ambang = filter: sembunyikan temuan yang kurang meyakinkan.'],
             ],
             'bias-data' => [
                 ['q' => 'Bias data artinya...', 'o' => ['Dataset tidak mewakili semua kelompok', 'Data terlalu besar', 'Data terlalu cepat', 'Komputer rusak', 'Data yang disimpan di awan'], 'c' => 0, 'e' => 'Bias = kemiringan. Dataset bias membuat model hanya pintar untuk kelompok tertentu.'],
@@ -94,7 +98,7 @@ class DatabaseSeeder extends Seeder
                 ['q' => 'Mengapa akurasi total 95% bisa menipu?', 'o' => ['Matematika salah', 'Bisa jadi 100% di kelompok besar tapi 50% di kelompok kecil', 'Angka 95 selalu benar', 'Tidak mungkin', 'Angka 95 tidak boleh dipakai'], 'c' => 1, 'e' => 'Rata-rata menyembunyikan kegagalan minoritas. Selalu bedah akurasi per kelompok.'],
                 ['q' => 'Evaluasi yang adil dilakukan dengan...', 'o' => ['Sekali uji cukup', 'Menguji model per kelompok, bukan cuma rata-rata', 'Tidak perlu diuji', 'Tanya teman', 'Menilai sekali lalu pulang'], 'c' => 1, 'e' => 'Uji terpisah per kelompok (disaggregated evaluation) adalah standar praktik AI yang adil.'],
                 ['q' => 'Siapa yang bertanggung jawab atas bias model?', 'o' => ['Komputernya sendiri', 'Manusia pembuat & penggunanya', 'Tidak ada', 'Listriknya', 'Tukang listrik sekolah'], 'c' => 1, 'e' => 'AI tidak punya niat; bias berasal dari pilihan data dan desain manusia.'],
-                ['q' => 'Apa hubungan jumlah contoh dan keadilan?', 'o' => ['Tidak ada hubungan', 'Kelompok dengan contoh sedikit cenderung dikenali buruk', 'Sedikit contoh lebih adil', 'Banyak contoh tidak adil', 'Contoh sedikit membuat model cepat'], 'c' => 1, 'e' => 'Model butuh cukup contoh tiap kelompok — persis seperti latihan KNN di Modul 2.'],
+                ['q' => 'Apa hubungan jumlah contoh dan keadilan?', 'o' => ['Tidak ada hubungan', 'Kelompok dengan contoh sedikit cenderung dikenali buruk', 'Sedikit contoh lebih adil', 'Banyak contoh tidak adil', 'Contoh sedikit membuat model cepat'], 'c' => 1, 'e' => 'Model butuh cukup contoh tiap kelompok — dataset timpang melahirkan bias.'],
                 ['q' => 'Langkah pertama memperbaiki dataset timpang?', 'o' => ['Hapus semua data', 'Kenali kelompok mana yang kurang lalu tambah datanya', 'Sembunyikan masalah', 'Ganti nama file', 'Mengganti judul laporannya'], 'c' => 1, 'e' => 'Audit dulu komposisi datamu, baru lengkapi yang kurang. Jangan menutup-nutupi.'],
                 ['q' => 'Mengapa transparansi data penting?', 'o' => ['Agar keren', 'Agar orang bisa memeriksa dan memperbaiki ketidakadilan', 'Agar mahal', 'Tidak penting', 'Agar datanya terlihat mahal'], 'c' => 1, 'e' => 'Dataset yang terbuka komposisinya bisa diaudit publik dan diperbaiki bersama.'],
                 ['q' => 'Contoh nyata bias AI di wajah?', 'o' => ['AI yang terlalu sopan', 'Sistem absensi yang gagal mengenali sebagian siswa', 'AI yang suka musik', 'AI yang cepat', 'AI yang bisa bernyanyi'], 'c' => 1, 'e' => 'Sistem yang dilatih minim variasi wajah gagal di dunia nyata yang beragam.'],
@@ -138,7 +142,58 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Tempel 4 modul default (posisi 1-4) ke kelas yang belum punya susunan.
+        // 30 soal Python (15 per modul) — jawaban benar disebar acak A–E.
+        $quizzesPython = [
+            'python-dasar-ai' => [
+                ['q' => 'Apa keluaran dari print("Halo AI")?', 'o' => ['HaloAI (tanpa spasi)', '"Halo AI" lengkap dengan tanda kutip', 'Halo AI', 'Error karena huruf kapital', 'Baris kosong'], 'c' => 2, 'e' => 'print menampilkan isi tanda kutip tanpa tanda kutipnya: Halo AI.'],
+                ['q' => 'Cara benar menyimpan nama di variabel?', 'o' => ['nama = "Sinta"', '"Sinta" = nama', 'nama == "Sinta"', 'var nama = Sinta', 'nama: Sinta;'], 'c' => 0, 'e' => 'Variabel memakai satu tanda sama dengan: nama = "Sinta". Dua sama dengan (==) itu pembanding.'],
+                ['q' => 'type(17) menghasilkan...', 'o' => ['str', 'float', 'bool', 'int', 'list'], 'c' => 3, 'e' => '17 tanpa koma desimal bertipe int (bilangan bulat).'],
+                ['q' => 'buah = ["apel", "mangga", "pisang"]. Nilai buah[1]?', 'o' => ['apel', 'mangga', 'pisang', 'buah', 'Error'], 'c' => 1, 'e' => 'Indeks list mulai dari 0, jadi indeks 1 adalah "mangga".'],
+                ['q' => 'Fungsi len(["a", "b", "c"]) mengembalikan...', 'o' => ['"abc"', 'a', '2', '"3"', '3'], 'c' => 4, 'e' => 'len menghitung jumlah isi list: 3 (bertipe int, bukan teks "3").'],
+                ['q' => 'for i in range(3): print(i) mencetak...', 'o' => ['0 1 2', '1 2 3', '0 1 2 3', '3 2 1', '0 0 0'], 'c' => 0, 'e' => 'range(3) menghasilkan 0, 1, 2 — berhenti sebelum angka 3.'],
+                ['q' => 'Tanda bahwa sebuah blok fungsi dimulai?', 'o' => ['Kurung kurawal { }', 'Baris def ... diakhiri titik dua lalu baris menjorok', 'Kata end di akhir fungsi', 'Titik koma di tiap baris', 'Huruf kapital di awal baris'], 'c' => 1, 'e' => 'Python memakai titik dua + indentasi (jorokan) untuk menandai isi fungsi.'],
+                ['q' => 'siswa = {"nama": "Budi", "nilai": 85}. Cara mengambil angka 85?', 'o' => ['siswa[0]', 'siswa(nilai)', 'siswa.nilai', 'nilai["Budi"]', 'siswa["nilai"]'], 'c' => 4, 'e' => 'Dict diakses dengan kuncinya dalam kurung siku: siswa["nilai"].'],
+                ['q' => 'f"Halo, {nama}!" dengan nama = "Ayu" menghasilkan...', 'o' => ['Halo, nama!', 'Halo, Ayu!', '"Halo, {nama}!"', 'Halo, {Ayu}!', 'Error'], 'c' => 1, 'e' => 'f-string mengganti {nama} dengan isi variabel: Halo, Ayu!'],
+                ['q' => 'x = 75. if x >= 80: ... else: ... Cabang mana yang berjalan?', 'o' => ['Cabang if', 'Error karena >=', 'Kedua cabang', 'Cabang else', 'Program berhenti total'], 'c' => 3, 'e' => '75 tidak memenuhi syarat >= 80, jadi cabang else yang dijalankan.'],
+                ['q' => 'nilai = [70, 80]. Perintah menambah 90 ke akhir list?', 'o' => ['nilai + 90', 'nilai.add(90)', 'nilai.append(90)', 'append(nilai, 90)', 'nilai[3] = 90'], 'c' => 2, 'e' => 'Metode append menambah satu unsur ke akhir list.'],
+                ['q' => 'Perulangan while perlu ... agar tidak jalan selamanya?', 'o' => ['Komentar penjelas', 'Kondisi yang lama-lama menjadi salah (mis. penghitung bertambah)', 'Huruf kapital di awal', 'Koneksi internet', 'Dua variabel cadangan'], 'c' => 1, 'e' => 'while berhenti saat kondisinya salah; tanpa perubahan kondisi ia abadi (infinite loop).'],
+                ['q' => 'Tanda pagar (#) di Python berarti...', 'o' => ['Awal bagian error', 'Akhir program', 'Simbol perkalian', 'Kode rahasia', 'Komentar: teks diabaikan komputer'], 'c' => 4, 'e' => 'Teks setelah # adalah komentar untuk manusia; Python melewatinya.'],
+                ['q' => 'type("85") menghasilkan...', 'o' => ['str', 'int', 'float', 'bool', 'list'], 'c' => 0, 'e' => 'Tanda kutip membuat 85 menjadi teks (str), walau isinya angka.'],
+                ['q' => 'Bedanya print dan return dalam fungsi?', 'o' => ['Sama persis', 'return menghapus fungsi', 'print mengirim nilai ke pemanggil, return hanya menampilkan', 'return mengirim nilai ke pemanggil, print hanya menampilkan', 'Keduanya wajib dipakai bersama'], 'c' => 3, 'e' => 'print hanya menampilkan ke layar; return mengembalikan nilai agar bisa dipakai kode lain.'],
+            ],
+            'data-logika-ai' => [
+                ['q' => 'nilai = [70, 80, 90]. Cara menghitung rata-rata di Python?', 'o' => ['(70+80+90)/2', 'sum(nilai) / len(nilai)', 'nilai / 3', 'rata(nilai)', 'sum(nilai) + len(nilai)'], 'c' => 1, 'e' => 'Jumlahkan semua lalu bagi banyaknya data: sum(nilai) / len(nilai) = 80.'],
+                ['q' => 'Ingin hanya siswa umur 17 tahun ke atas. Syarat filternya?', 'o' => ['umur = 17', 'umur > 17 saja', 'umur < 17', 'umur >= 17', 'umur != 17'], 'c' => 3, 'e' => '"17 tahun ke atas" termasuk angka 17, jadi syaratnya umur >= 17.'],
+                ['q' => 'Aturan: jika nilai >= 80 maka "lulus", selain itu "remidi". Nilai 85 hasilnya?', 'o' => ['lulus', 'remidi', 'error', 'tidak dapat ditentukan', 'keduanya'], 'c' => 0, 'e' => '85 memenuhi syarat >= 80, jadi labelnya "lulus". Inilah classifier berbasis aturan paling sederhana.'],
+                ['q' => 'Tinggi badan [150, 165, 158]. Nilai terbesar?', 'o' => ['150', '158', 'jumlah semuanya', 'rata-ratanya', '165'], 'c' => 4, 'e' => 'Fungsi max() mengambil yang terbesar: 165.'],
+                ['q' => 'sum([]) / len([]) menghasilkan...', 'o' => ['0', '-1', 'Error (pembagian dengan nol)', '[]', 'None otomatis'], 'c' => 2, 'e' => 'len([]) = 0 dan pembagian dengan nol itu error. Data kosong wajib ditangani dulu — seperti bias data di Modul 3.'],
+                ['q' => 'Data kota ["Jakarta", "BANDUNG"] ingin diseragamkan ke huruf kecil. Caranya?', 'o' => ['kota.upper()', 'hapus datanya', 'kota[0]', 'tambah spasi', '[k.lower() for k in kota]'], 'c' => 4, 'e' => 'lower() menyeragamkan kapitalisasi — langkah pembersihan data sebelum dianalisis.'],
+                ['q' => 'Syarat "lulus jika nilai >= 80 DAN kehadiran >= 75%" memakai operator...', 'o' => ['or', 'and', 'not', 'xor', '+'], 'c' => 1, 'e' => 'Operator and berarti kedua syarat wajib benar sekaligus.'],
+                ['q' => 'Nilai [50, 55, 100] rata-ratanya 68. Mengapa angka ini menipu?', 'o' => ['Salah hitung komputer', 'Rata-rata selalu 68', 'Data terlalu sedikit pasti salah', 'Satu nilai ekstrem (100) menarik rata-rata ke atas', 'Komputer sedang lelah'], 'c' => 3, 'e' => 'Nilai ekstrem (outlier) menarik rata-rata; analisis jujur melihat sebaran, bukan cuma rata-rata.'],
+                ['q' => 'data = ["kucing", "anjing", "kucing"]. Cara menghitung kemunculan "kucing"?', 'o' => ['data.count("kucing") menghasilkan 2', 'len(data) menghasilkan 2', 'data[0] menghasilkan 2', 'sum(data) menghasilkan 2', 'data + "kucing" menghasilkan 2'], 'c' => 0, 'e' => 'Metode count menghitung kemunculan sebuah label — dasar statistik kategori.'],
+                ['q' => 'Classifier "spam jika ada kata gratis" disebut berbasis aturan karena...', 'o' => ['Memakai jaringan saraf tiruan', 'Butuh kamera untuk bekerja', 'Keputusan mengikuti if/else buatan manusia, bukan belajar dari data', 'Tidak pernah salah', 'Berjalan di komputasi awan'], 'c' => 2, 'e' => 'Aturannya ditulis manusia; ML sejati (Modul 2) menemukan aturannya sendiri dari data.'],
+                ['q' => 'Aturan buatan manusia paling tepat diganti machine learning saat...', 'o' => ['Datanya hanya 3 baris', 'Komputer lambat', 'Tidak ada internet', 'Polanya terlalu rumit ditulis manual tetapi contohnya banyak', 'Malas mengetik aturan'], 'c' => 3, 'e' => 'Inilah jembatan ke ML: aturan manual tidak sanggup (mis. kenali wajah), tetapi ratusan contoh bisa melatih model.'],
+                ['q' => '[x for x in nilai if x >= 80] disebut...', 'o' => ['list comprehension: membuat sekaligus menyaring list dalam sebaris', 'perulangan yang rusak', 'dict rahasia', 'fungsi anonim', 'komentar yang panjang'], 'c' => 0, 'e' => 'List comprehension membangun list baru yang sudah tersaring dalam satu baris.'],
+                ['q' => 'sorted([90, 70, 80]) menghasilkan...', 'o' => ['[90, 70, 80]', '90', '[70, 80, 90]', '[80, 70, 90]', '70'], 'c' => 2, 'e' => 'Fungsi sorted mengurutkan menaik: [70, 80, 90].'],
+                ['q' => 'Dari 10 tebakan aturan, 7 benar. Akurasinya?', 'o' => ['17%', '10%', '7%', 'Tidak bisa dihitung', '70%'], 'c' => 4, 'e' => 'Akurasi = jumlah benar dibagi total = 7/10 = 70%.'],
+                ['q' => 'Dataset latihan hanya berisi satu kelompok (ingat Modul 3). Akibatnya?', 'o' => ['Model berjalan lebih cepat', 'Model bias: gagal di kelompok yang minim data', 'Model menjadi adil', 'Model menjadi gratis', 'Tidak ada akibat apa pun'], 'c' => 1, 'e' => 'Persis pelajaran Modul 3: ketidakseimbangan data melahirkan bias, walau kodenya ditulis dengan Python.'],
+            ],
+        ];
+
+        foreach ($quizzesPython as $slug => $items) {
+            $module = Module::where('slug', $slug)->first();
+            if (! $module) {
+                continue;
+            }
+            foreach ($items as $item) {
+                Quiz::firstOrCreate(
+                    ['module_id' => $module->id, 'teacher_id' => null, 'question' => $item['q']],
+                    ['options' => $item['o'], 'correct_index' => $item['c'], 'points' => 20, 'explanation' => $item['e']]
+                );
+            }
+        }
+
+        // Tempel 6 modul default (posisi 1-6) ke kelas yang belum punya susunan.
         $defaults = Module::whereNull('teacher_id')->orderBy('order')->get();
         foreach (\App\Models\Classroom::whereDoesntHave('modules')->get() as $kelas) {
             $pos = 1;

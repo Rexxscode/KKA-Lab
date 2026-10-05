@@ -13,7 +13,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="antialiased" style="background:#FAFAFA" x-data="{ SidebarTerbuka: false }">
+<body class="antialiased" style="background:var(--color-page)" x-data="{ SidebarTerbuka: false }">
+<a href="#konten-utama" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-orange-500 focus:text-white focus:font-bold">Lewati ke konten utama</a>
 <div class="min-h-screen lg:flex">
 
     <!-- Overlay HP -->
@@ -26,7 +27,7 @@
             <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-orange-500 text-white font-extrabold">K</span>
             <span>
                 <span class="block font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></span>
-                <span class="block text-[11px] text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
+                <span class="block text-[11px] text-slate-500 mt-0.5">Koding & Kecerdasan Artifisial</span>
             </span>
         </a>
 
@@ -39,24 +40,25 @@
         <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
             @if(auth()->user()->isSiswa())
                 <div>
-                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">UTAMA</p>
+                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500">UTAMA</p>
                     <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.dashboard')" icon="home">Dashboard</x-side-link>
                 </div>
                 <div>
-                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">BELAJAR</p>
+                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500">BELAJAR</p>
                     <div class="space-y-1">
                         <x-side-link :href="route('siswa.bahan.index')" :active="request()->routeIs('siswa.bahan.*')" icon="book">Bahan Belajar</x-side-link>
                         <x-side-link :href="route('siswa.kuis.index')" :active="request()->routeIs('siswa.kuis.*')" icon="quiz">Kuis</x-side-link>
+                        <x-side-link :href="route('siswa.raporku')" :active="request()->routeIs('siswa.raporku')" icon="award">Raporku</x-side-link>
                         <x-side-link :href="route('siswa.sertifikat')" :active="request()->routeIs('siswa.sertifikat')" icon="award">Sertifikat</x-side-link>
                     </div>
                 </div>
             @elseif(auth()->user()->isGuru())
                 <div>
-                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">UTAMA</p>
+                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500">UTAMA</p>
                     <x-side-link :href="route('guru.dashboard')" :active="request()->routeIs('guru.dashboard')" icon="home">Dashboard</x-side-link>
                 </div>
                 <div>
-                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">MENGAJAR</p>
+                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500">MENGAJAR</p>
                     <div class="space-y-1">
                         <x-side-link :href="route('guru.kelas.index')" :active="request()->routeIs('guru.kelas.*')" icon="users">Kelas Saya</x-side-link>
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Saya</x-side-link>
@@ -65,11 +67,11 @@
                 </div>
             @else
                 <div>
-                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">UTAMA</p>
+                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500">UTAMA</p>
                     <x-side-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" icon="home">Dashboard</x-side-link>
                 </div>
                 <div>
-                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">KELOLA</p>
+                    <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500">KELOLA</p>
                     <div class="space-y-1">
                         <x-side-link :href="route('guru.kelas.index')" :active="request()->routeIs('guru.kelas.*')" icon="users">Kelas</x-side-link>
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Default</x-side-link>
@@ -79,7 +81,7 @@
                 </div>
             @endif
             <div>
-                <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-400">AKUN</p>
+                <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500">AKUN</p>
                 <div class="space-y-1">
                     <x-side-link :href="route('profile.edit')" :active="request()->routeIs('profile.*')" icon="user">Profil</x-side-link>
                 </div>
@@ -91,7 +93,7 @@
                 <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 text-orange-700 font-extrabold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-bold text-slate-800 truncate">{{ auth()->user()->name }}</p>
-                    <p class="text-xs text-slate-400 truncate">{{ auth()->user()->email }}</p>
+                    <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}">
@@ -107,13 +109,13 @@
     <!-- KONTEN -->
     <div class="flex-1 min-w-0 flex flex-col min-h-screen">
         <header class="lg:hidden sticky top-0 z-30 h-16 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4">
-            <button @click="SidebarTerbuka = true" class="p-2 -ml-1 rounded-xl text-slate-500 hover:bg-slate-100">
+            <button @click="SidebarTerbuka = true" aria-label="Buka menu navigasi" class="p-2 -ml-1 rounded-xl text-slate-500 hover:bg-slate-100">
                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <span class="font-extrabold text-slate-900">KKA <span class="text-orange-500">Lab</span></span>
         </header>
 
-        <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-24 lg:pb-10">
+        <main id="konten-utama" tabindex="-1" class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-24 lg:pb-10">
             <x-toast />
             @isset($header)
                 <div class="mb-6">{{ $header }}</div>

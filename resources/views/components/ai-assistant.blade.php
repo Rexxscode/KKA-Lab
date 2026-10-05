@@ -1,27 +1,27 @@
 @props(['module' => null])
 
 <div x-data="kkaAiAssistant()" class="no-print">
-    <button @click="open = !open"
+    <button @click="open = !open" :aria-expanded="open.toString()" aria-controls="panel-asisten-ai" aria-label="Buka atau tutup Tutor AI"
         class="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 px-3.5 sm:px-4 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg transition active:scale-95">
-        <span class="text-lg">🤖</span><span class="hidden sm:inline" x-text="open ? 'Tutup' : 'Tanya AI'"></span>
+        <x-icon name="chat" class="w-5 h-5" /><span class="hidden sm:inline" x-text="open ? 'Tutup' : 'Tanya AI'"></span>
     </button>
 
-    <div x-show="open" x-transition class="fixed bottom-20 right-5 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] kka-card !p-0 overflow-hidden" style="display: none">
-        <div class="px-4 py-3 bg-gradient-to-r from-orange-500 to-emerald-500 text-white">
+    <div x-show="open" x-transition id="panel-asisten-ai" role="dialog" aria-label="Tutor AI KKA Lab" class="fixed bottom-20 right-5 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] kka-card !p-0 overflow-hidden" style="display: none">
+        <div class="px-4 py-3 bg-orange-700 text-white">
             <p class="font-extrabold text-sm">Tutor AI KKA Lab</p>
-            <p class="text-xs text-white/85">Tanya soal AI, KNN, bias data, atau etika. Bukan kunci jawaban kuis ya!</p>
+            <p class="text-xs text-white/90">Tanya soal AI, deteksi objek, bias data, atau etika. Bukan kunci jawaban kuis ya!</p>
         </div>
-        <div class="h-64 overflow-y-auto p-3 space-y-2 bg-[#FAFAFA]" x-ref="box">
+        <div class="h-64 overflow-y-auto p-3 space-y-2 bg-[var(--color-page)]" x-ref="box" aria-live="polite" aria-label="Riwayat percakapan">
             <template x-for="(m, i) in messages" :key="i">
                 <div :class="m.role === 'user' ? 'ml-8 bg-orange-500 text-white' : 'mr-8 bg-white border border-slate-200 text-slate-700'"
                      class="px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap" x-text="m.text"></div>
             </template>
-            <p x-show="loading" class="text-xs text-slate-400">AI sedang mengetik...</p>
+            <p x-show="loading" class="text-xs text-slate-500">AI sedang mengetik...</p>
         </div>
         <form @submit.prevent="send()" class="flex gap-2 p-3 border-t border-slate-200 bg-white">
-            <input x-model="draft" placeholder="Tulis pertanyaan..." maxlength="2000"
+            <input x-model="draft" placeholder="Tulis pertanyaan..." maxlength="2000" aria-label="Tulis pertanyaan untuk Tutor AI"
                    class="flex-1 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
-            <button :disabled="loading || !draft.trim()" class="kka-btn-primary !px-3 !py-2 text-sm disabled:opacity-50">➤</button>
+            <button :disabled="loading || !draft.trim()" aria-label="Kirim pertanyaan" class="kka-btn-primary !px-3 !py-2 text-sm disabled:opacity-50"><x-icon name="send" class="w-4 h-4" /></button>
         </form>
     </div>
 

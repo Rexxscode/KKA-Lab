@@ -18,9 +18,9 @@
                 <p class="text-2xl font-extrabold text-orange-500">{{ auth()->user()->name }}</p>
                 <p class="mt-3 text-sm text-slate-600 max-w-xl mx-auto">Telah menyelesaikan {{ $modules->count() }} modul wajib ({{ $modules->pluck('title')->join(', ') }}) dengan skor minimal 80 per modul.</p>
                 <div class="mt-5 flex items-center justify-center gap-6 text-sm">
-                    <div><p class="text-slate-400 text-xs">Total XP</p><p class="font-extrabold text-emerald-600 text-xl">{{ $totalXp }}</p></div>
-                    <div><p class="text-slate-400 text-xs">Kode Sertifikat</p><p class="font-bold">{{ $code }}</p></div>
-                    <div><p class="text-slate-400 text-xs">Tanggal</p><p class="font-bold">{{ now()->format('d M Y') }}</p></div>
+                    <div><p class="text-slate-500 text-xs">Total XP</p><p class="font-extrabold text-emerald-600 text-xl">{{ $totalXp }}</p></div>
+                    <div><p class="text-slate-500 text-xs">Kode Sertifikat</p><p class="font-bold">{{ $code }}</p></div>
+                    <div><p class="text-slate-500 text-xs">Tanggal</p><p class="font-bold">{{ now()->format('d M Y') }}</p></div>
                 </div>
                 <div class="mt-8 flex justify-between text-xs text-slate-500">
                     <div><p class="border-t border-slate-300 pt-2 px-8">Guru Pembimbing</p></div>
@@ -37,9 +37,9 @@
                             @if($p && $p->is_completed)
                                 <span class="font-bold text-emerald-600">✓ Selesai ({{ $p->quiz_score }})</span>
                             @elseif($p)
-                                <span class="font-bold text-orange-500">⏳ Dikerjakan (skor {{ $p->quiz_score }})</span>
+                                <span class="kka-status-warn">Dikerjakan (skor {{ $p->quiz_score }})</span>
                             @else
-                                <span class="font-bold text-slate-400 whitespace-nowrap">Belum mulai</span>
+                                <span class="kka-status-idle">Belum mulai</span>
                             @endif
                         </div>
                     @endforeach

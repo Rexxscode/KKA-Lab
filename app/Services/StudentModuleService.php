@@ -19,6 +19,11 @@ use App\Models\User;
  */
 class StudentModuleService
 {
+    /**
+     * Jumlah soal tampil per percobaan. Bank boleh > ini (mis. 25),
+     * yang keluar 15 acak tiap percobaan agar nilai 100 membuktikan paham.
+     */
+    public const SOAL_PERCOBAAN = 15;
     public function kelasAktif(User $user): ?Classroom
     {
         return $user->classrooms()->orderByDesc('classroom_user.id')->first();
@@ -94,5 +99,56 @@ class StudentModuleService
     public function modulDefault()
     {
         return Module::whereNull('teacher_id')->orderBy('order')->get();
+    }
+
+    /**
+     * Susun paket acak untuk satu percobaan kuis: urutan soal diacak,
+     * opsi tiap soal diacak, maksimal SOAL_PERCOBAAN soal.
+     *
+     * @return array<int, array{id: int, order: array<int, int>}>
+     *   `order` = daftar indeks lama dalam urutan tampil baru.
+     */
+    public function paketAcak($quizzes): array
+    {
+        $acak = $quizzes->shuffle()->take(self::SOAL_PERCOBAAN)->values();
+        $paket = [];
+        foreach ($acak as $quiz) {
+            $n = count($quiz->options ?? []);
+            $order = $n > 0 ? collect(range(0, $n - 1))->shuffle()->all() : [];
+            $paket[] = ['id' => $quiz->id, 'order' => array_values($order)];
+        }
+
+        return $paket;
+    }
+
+    /**
+     * Uraikan paket session menjadi data siap tampil & dinilai.
+     *
+     * @return array<int, array{quiz: \App\Models\Quiz, options: array, correct: int}>
+     */
+    public function uraikanPaket(array $paket): array
+    {
+        $hasil = [];
+        foreach ($paket as $baris) {
+            $quiz = \App\Models\Quiz::find($baris['id'] ?? null);
+            if (! $quiz) {
+                continue;
+            }
+            $opsiLama = $quiz->options ?? [];
+            $order = $baris['order'] ?? range(0, count($opsiLama) - 1);
+            $opsiBaru = [];
+            foreach ($order as $idxLama) {
+                $opsiBaru[] = $opsiLama[$idxLama] ?? '';
+            }
+            $correctBaru = array_search((int) $quiz->correct_index, $order, true);
+            $hasil[] = [
+                'quiz' => $quiz,
+                'options' => $opsiBaru,
+                'correct' => $correctBaru === false ? 0 : (int) $correctBaru,
+                'order' => array_values($order),
+            ];
+        }
+
+        return $hasil;
     }
 }

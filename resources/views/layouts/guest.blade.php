@@ -14,14 +14,14 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased" style="background:#FAFAFA">
+    <body class="font-sans text-gray-900 antialiased" style="background:var(--color-page)">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div>
                 <a href="/" class="flex items-center gap-2.5">
                     <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
                     <span class="text-left">
                         <span class="block font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></span>
-                        <span class="block text-[11px] text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
+                        <span class="block text-[11px] text-slate-500 mt-0.5">Koding & Kecerdasan Artifisial</span>
                     </span>
                 </a>
             </div>
