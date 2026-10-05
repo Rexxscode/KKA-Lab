@@ -264,6 +264,25 @@ class Ronde2Test extends TestCase
         ])->assertNotFound();
     }
 
+    public function test_halaman_bahan_materi_punya_varian_dark(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        foreach (['apa-itu-ai', 'latih-ai-mu', 'bias-data', 'etika-hoaks-ai', 'python-dasar-ai', 'data-logika-ai'] as $slug) {
+            $this->actingAs($siswa)->get(route('siswa.bahan.show', $slug))
+                ->assertOk()
+                ->assertSee('dark:text-white', false)
+                ->assertSee('dark:bg-emerald-500/10', false);
+            // Luluskan agar modul berikutnya terbuka.
+            $m = Module::where('slug', $slug)->firstOrFail();
+            StudentProgress::updateOrCreate(
+                ['student_id' => $siswa->id, 'module_id' => $m->id],
+                ['quiz_score' => 90, 'xp_earned' => $m->xp_reward, 'is_completed' => true, 'reading_done' => true]
+            );
+        }
+    }
+
     public function test_password_lemah_ditolak_saat_register(): void
     {
         $this->post('/register', [
