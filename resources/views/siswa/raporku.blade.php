@@ -11,11 +11,12 @@
     </x-slot>
 
     <div class="grid lg:grid-cols-2 gap-3 sm:gap-4">
-        <x-card title="Grafik Skor per Modul" subtitle="Skor kuis terakhir tiap modul (lulus ≥80).">
+        <x-card title="Grafik Skor per Modul" subtitle="Skor kuis terakhir tiap modul.">
             <div class="relative h-64">
                 <canvas id="grafik-rapor" aria-label="Grafik skor per modul" role="img"></canvas>
                 <p id="grafik-gagal" class="hidden absolute inset-0 flex items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 px-6">Grafik tidak bisa dimuat (CDN Chart.js tidak terjangkau). Daftarmu tetap tampil lengkap di bawah.</p>
             </div>
+            <p class="mt-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Lulus per modul minimal skor 80.</p>
             <div class="mt-3 space-y-2">
                 @foreach($daftar as $d)
                     @php $p = $d['progress']; @endphp
@@ -95,7 +96,6 @@
             kosong: token('--color-border', '#e2e8f0'),
             teks: token('--color-muted', '#64748b'),
             grid: token('--color-border', '#e2e8f0'),
-            garis: token('--color-primary-strong', '#ea580c'),
         };
     };
     const warnaBar = () => {
@@ -134,16 +134,6 @@
                     borderSkipped: 'start',
                     maxBarThickness: 54,
                 },
-                {
-                    type: 'line',
-                    label: 'Batas lulus (80)',
-                    data: data.map(() => BATAS),
-                    borderColor: bacaToken().garis,
-                    borderDash: [7, 5],
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 0,
-                },
             ],
         },
         options: {
@@ -151,18 +141,11 @@
             maintainAspectRatio: false,
             layout: { padding: { top: 22 } },
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    align: 'end',
-                    labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8, padding: 14, font: { family: FONT, size: 11 } },
-                },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
                         title: (items) => labelPenuh[items[0].dataIndex] ?? '',
-                        label: (item) => item.datasetIndex === 0
-                            ? ' Skor: ' + data[item.dataIndex].nilai + ' — ' + statusSkor(data[item.dataIndex].nilai)
-                            : ' Batas lulus: ' + BATAS,
+                        label: (item) => ' Skor: ' + data[item.dataIndex].nilai + ' — ' + statusSkor(data[item.dataIndex].nilai),
                     },
                 },
             },
@@ -183,12 +166,10 @@
     const terapkanTema = () => {
         const C = bacaToken();
         chart.data.datasets[0].backgroundColor = warnaBar();
-        chart.data.datasets[1].borderColor = C.garis;
         chart.options.scales.x.ticks = { maxRotation: 0, color: C.teks, font: { family: FONT, size: 11, weight: 'bold' } };
         chart.options.scales.y.ticks = { color: C.teks, stepSize: 20, font: { family: FONT, size: 11 } };
         chart.options.scales.x.grid = { display: false };
         chart.options.scales.y.grid = { color: C.grid };
-        chart.options.plugins.legend.labels.color = C.teks;
         chart.update();
     };
     terapkanTema();
