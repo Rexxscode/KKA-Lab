@@ -4,7 +4,7 @@
         <p class="text-sm text-slate-500 dark:text-slate-400">Terbit otomatis jika {{ $modules->count() }} modul wajib lulus (skor ≥80).</p>
     </x-slot>
 
-    <div class="py-8 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-8">
         @if($eligible)
             <div class="no-print flex gap-2 mb-4">
                 <button onclick="window.print()" class="kka-btn-primary">Cetak / Simpan PDF</button>
@@ -29,24 +29,39 @@
                 </div>
             </div>
         @else
-            <x-card title="Belum memenuhi syarat" subtitle="Selesaikan semua modul wajib dengan skor ≥80. Modul buatan guru bersifat bonus.">
-                <div class="space-y-2">
-                    @foreach($modules as $m)
-                        @php $p = $progress->get($m->id); @endphp
-                        <div class="flex items-center justify-between text-sm border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2">
-                            <span>{{ $m->title }}</span>
-                            @if($p && $p->is_completed)
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400">✓ Selesai ({{ $p->quiz_score }})</span>
-                            @elseif($p)
-                                <span class="kka-status-warn">Dikerjakan (skor {{ $p->quiz_score }})</span>
-                            @else
-                                <span class="kka-status-idle">Belum mulai</span>
-                            @endif
+            <div class="grid lg:grid-cols-3 gap-4 items-start">
+                <x-card title="Belum memenuhi syarat" subtitle="Selesaikan semua modul wajib dengan skor ≥80. Modul buatan guru bersifat bonus." class="lg:col-span-2">
+                    <div class="space-y-2">
+                        @foreach($modules as $m)
+                            @php $p = $progress->get($m->id); @endphp
+                            <div class="flex items-center justify-between gap-3 text-sm sm:text-[15px] border border-slate-200 dark:border-slate-700 rounded-2xl px-4 sm:px-5 py-3">
+                                <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $m->title }}</span>
+                                @if($p && $p->is_completed)
+                                    <span class="font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">✓ Selesai ({{ $p->quiz_score }})</span>
+                                @elseif($p)
+                                    <span class="kka-status-warn whitespace-nowrap">Dikerjakan (skor {{ $p->quiz_score }})</span>
+                                @else
+                                    <span class="kka-status-idle whitespace-nowrap">Belum mulai</span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </x-card>
+                <x-card title="Progres Sertifikat" subtitle="Semangat, sedikit lagi!">
+                    <p class="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400">{{ $lulus }}<span class="text-xl text-slate-400">/{{ $modules->count() }}</span></p>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">modul lulus dengan skor ≥80</p>
+                    <div class="mt-3 h-2.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="{{ $modules->count() }}" aria-valuenow="{{ $lulus }}">
+                        <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $modules->count() ? round($lulus / $modules->count() * 100) : 0 }}%"></div>
+                    </div>
+                    <div class="mt-4 space-y-2 text-sm">
+                        <div class="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-4 py-2.5">
+                            <span class="font-semibold text-slate-600 dark:text-slate-300">Total XP-mu</span>
+                            <span class="font-extrabold text-orange-500">{{ $totalXp }} XP</span>
                         </div>
-                    @endforeach
-                </div>
-                <a href="{{ route('siswa.dashboard') }}" class="kka-btn-primary mt-4">Lanjut Belajar</a>
-            </x-card>
+                    </div>
+                    <a href="{{ route('siswa.dashboard') }}" class="kka-btn-primary mt-4 !py-2 text-sm">Lanjut Belajar</a>
+                </x-card>
+            </div>
         @endif
     </div>
 </x-sidebar-layout>

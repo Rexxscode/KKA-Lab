@@ -23,6 +23,7 @@ class CertificateController extends Controller
         });
 
         $totalXp = $user->totalXp();
+        $lulus = $modules->filter(fn ($m) => isset($progress[$m->id]) && $progress[$m->id]->is_completed && $progress[$m->id]->quiz_score >= StudentProgress::PASS_SCORE)->count();
 
         // Kode acak tersimpan: stabil tiap kunjungan & bisa diverifikasi publik.
         $certificate = $eligible
@@ -32,7 +33,7 @@ class CertificateController extends Controller
             )
             : null;
 
-        return view('siswa.sertifikat', compact('modules', 'progress', 'eligible', 'totalXp', 'certificate'));
+        return view('siswa.sertifikat', compact('modules', 'progress', 'eligible', 'totalXp', 'certificate', 'lulus'));
     }
 
     private function kodeUnik(): string
