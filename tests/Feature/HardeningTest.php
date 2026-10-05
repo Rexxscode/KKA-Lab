@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Ai\Agents\TutorAgent;
 use App\Models\AiChat;
 use App\Models\Classroom;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -107,11 +107,7 @@ class HardeningTest extends TestCase
 
     public function test_ai_chat_dicatat_dan_kuota_harian_ditegakkan(): void
     {
-        Http::fake([
-            'generativelanguage.googleapis.com/*' => Http::response([
-                'candidates' => [['content' => ['parts' => [['text' => 'Halo! Ini jawaban AI.']]]]],
-            ]),
-        ]);
+        TutorAgent::fake(['Halo! Ini jawaban AI.']);
         $siswa = User::factory()->create(['role' => 'siswa']);
 
         $this->actingAs($siswa)->postJson(route('ai.chat'), ['message' => 'apa itu AI?'])
