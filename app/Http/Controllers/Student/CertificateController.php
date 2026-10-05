@@ -25,6 +25,9 @@ class CertificateController extends Controller
         $totalXp = $user->totalXp();
         $lulus = $modules->filter(fn ($m) => isset($progress[$m->id]) && $progress[$m->id]->is_completed && $progress[$m->id]->quiz_score >= StudentProgress::PASS_SCORE)->count();
 
+        // Modul wajib pertama yang belum lulus (tugas berikutnya).
+        $berikutnya = $modules->first(fn ($m) => ! isset($progress[$m->id]) || ! $progress[$m->id]->is_completed);
+
         // Kode acak tersimpan: stabil tiap kunjungan & bisa diverifikasi publik.
         $certificate = $eligible
             ? Certificate::firstOrCreate(
@@ -33,7 +36,7 @@ class CertificateController extends Controller
             )
             : null;
 
-        return view('siswa.sertifikat', compact('modules', 'progress', 'eligible', 'totalXp', 'certificate', 'lulus'));
+        return view('siswa.sertifikat', compact('modules', 'progress', 'eligible', 'totalXp', 'certificate', 'lulus', 'berikutnya'));
     }
 
     private function kodeUnik(): string
