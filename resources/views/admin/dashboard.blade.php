@@ -89,7 +89,7 @@
                                 </td>
                                 <td class="py-3 pr-3 text-xs text-slate-500 dark:text-slate-400">
                                     @if($u->isGuru()) {{ $u->taughtClassrooms->count() }} kelas • {{ $u->taughtClassrooms->sum('students_count') }} siswa
-                                    @elseif($u->isSiswa()) {{ $u->totalXp() }} XP • {{ $u->progress()->where('is_completed', true)->count() }}/{{ $modules->count() }} lulus
+                                    @elseif($u->isSiswa()) {{ $u->totalXp() }} XP • {{ $u->lulus_count }}/{{ $modules->count() }} lulus
                                     @else — @endif
                                 </td>
                                 <td class="py-3">

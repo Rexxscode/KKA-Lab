@@ -30,7 +30,9 @@ class DashboardController extends Controller
                   ->orWhere('email', 'like', '%' . $request->q . '%');
             });
         }
-        $users = $query->with(['taughtClassrooms' => fn ($q) => $q->withCount('students')])->paginate(15)->withQueryString();
+        $users = $query->with(['taughtClassrooms' => fn ($q) => $q->withCount('students'), 'progress'])
+            ->withCount(['progress as lulus_count' => fn ($q) => $q->where('is_completed', true)])
+            ->paginate(15)->withQueryString();
         $classrooms = Classroom::with(['teacher'])->withCount('students')->latest()->take(10)->get();
         $modules = Module::orderBy('order')->withCount('quizzes')->get();
 

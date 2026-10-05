@@ -69,6 +69,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function totalXp(): int
     {
+        // Pakai relasi yang sudah di-eager-load bila ada (hindari N+1 di tabel admin).
+        if ($this->relationLoaded('progress')) {
+            return (int) $this->progress->sum('xp_earned');
+        }
+
         return (int) $this->progress()->sum('xp_earned');
     }
 

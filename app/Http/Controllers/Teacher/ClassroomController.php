@@ -42,9 +42,9 @@ class ClassroomController extends Controller
         // Blok "Perlu Perhatian": per kelas, siapa belum mulai & siapa gagal/tertinggal,
         // agar guru tidak perlu membuka tiap kelas satu per satu.
         $perhatian = [];
-        $daftarKelas = (clone $kelasQuery)->with(['students.progress.module'])->withCount('students')->latest()->take(10)->get();
+        $daftarKelas = (clone $kelasQuery)->with(['students.progress.module', 'modules'])->withCount('students')->latest()->take(10)->get();
         foreach ($daftarKelas as $kelas) {
-            $modulIds = $kelas->modules()->pluck('modules.id')->all();
+            $modulIds = $kelas->modules->pluck('id')->all();
             if (empty($modulIds)) {
                 continue;
             }
