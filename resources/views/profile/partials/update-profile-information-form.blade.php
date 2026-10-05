@@ -1,19 +1,9 @@
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-slate-900 dark:text-white">
-            {{ __('Informasi Profil') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            {{ __("Perbarui informasi profil dan alamat email akunmu.") }}
-        </p>
-    </header>
-
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-5">
         @csrf
         @method('patch')
 
@@ -43,17 +33,19 @@
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-slate-800 dark:text-slate-100">
+                <div class="rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 p-4">
+                    <p class="text-sm font-bold text-orange-700 dark:text-orange-300">
                         {{ __('Alamat emailmu belum terverifikasi.') }}
-
-                        <button form="send-verification" class="underline text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Klik di sini untuk kirim ulang email verifikasi.') }}
+                    </p>
+                    <p class="text-sm mt-1 text-slate-600 dark:text-slate-300">
+                        {{ __('Verifikasi email agar bisa menerima sertifikat & pemulihan akun.') }}
+                        <button form="send-verification" class="underline font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700">
+                            {{ __('Kirim ulang email verifikasi.') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
+                        <p class="mt-2 font-medium text-sm text-emerald-600 dark:text-emerald-400">
                             {{ __('Tautan verifikasi baru sudah dikirim ke emailmu.') }}
                         </p>
                     @endif

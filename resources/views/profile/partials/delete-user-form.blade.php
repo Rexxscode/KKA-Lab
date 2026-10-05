@@ -1,13 +1,7 @@
-<section class="space-y-6">
-    <header>
-        <h2 class="text-lg font-medium text-slate-900 dark:text-white">
-            {{ __('Hapus Akun') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            {{ __('Setelah akun dihapus, semua datanya akan hilang permanen. Unduh dulu data yang ingin kamu simpan.') }}
-        </p>
-    </header>
+<section class="space-y-4">
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+        {{ __('Setelah akun dihapus, nilai kuis, XP, progres modul, dan sertifikatmu hilang permanen dan tidak bisa dipulihkan.') }}
+    </p>
 
     <x-danger-button
         x-data=""
