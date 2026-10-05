@@ -74,7 +74,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[720px]">
                     <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-200">
-                        <th class="py-2 pr-3">Nama</th><th class="py-2 pr-3">Peran</th><th class="py-2 pr-3">Info</th><th class="py-2 text-right">Aksi</th>
+                        <th scope="col" class="py-2 pr-3">Nama</th><th scope="col" class="py-2 pr-3">Peran</th><th scope="col" class="py-2 pr-3">Info</th><th scope="col" class="py-2 text-right">Aksi</th>
                     </tr></thead>
                     <tbody>
                         @foreach($users as $u)
@@ -126,12 +126,12 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[860px]">
                     <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-200">
-                        <th class="py-2 pr-3">Siswa</th>
-                        <th class="py-2 pr-3">Kelas</th>
-                        <th class="py-2 pr-3">XP</th>
-                        <th class="py-2 pr-3">Badge</th>
+                        <th scope="col" class="py-2 pr-3">Siswa</th>
+                        <th scope="col" class="py-2 pr-3">Kelas</th>
+                        <th scope="col" class="py-2 pr-3">XP</th>
+                        <th scope="col" class="py-2 pr-3">Badge</th>
                         @foreach($modules as $m)
-                            <th class="py-2 pr-3">{{ $m->title }}</th>
+                            <th scope="col" class="py-2 pr-3">{{ $m->title }}</th>
                         @endforeach
                     </tr></thead>
                     <tbody>

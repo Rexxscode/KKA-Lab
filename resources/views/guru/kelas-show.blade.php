@@ -19,11 +19,11 @@
                 <table class="w-full text-sm min-w-[720px]">
                     <thead>
                         <tr class="text-left text-xs text-slate-400 border-b border-slate-200">
-                            <th class="py-2 pr-3">Siswa</th>
+                            <th scope="col" class="py-2 pr-3">Siswa</th>
                             @foreach($modules as $m)
-                                <th class="py-2 pr-3">{{ $m->title }}</th>
+                                <th scope="col" class="py-2 pr-3">{{ $m->title }}</th>
                             @endforeach
-                            <th class="py-2">Total XP</th>
+                            <th scope="col" class="py-2">Total XP</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -84,6 +84,10 @@ summary:focus-visible,
 }
 @media (prefers-reduced-motion: reduce) {
     .kka-skeleton::after { animation: none; }
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 @media print {

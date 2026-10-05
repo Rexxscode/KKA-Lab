@@ -14,6 +14,7 @@
     @stack('head')
 </head>
 <body class="antialiased" style="background:var(--color-page)" x-data="{ SidebarTerbuka: false }">
+<a href="#konten-utama" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-orange-500 focus:text-white focus:font-bold">Lewati ke konten utama</a>
 <div class="min-h-screen lg:flex">
 
     <!-- Overlay HP -->
@@ -108,13 +109,13 @@
     <!-- KONTEN -->
     <div class="flex-1 min-w-0 flex flex-col min-h-screen">
         <header class="lg:hidden sticky top-0 z-30 h-16 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4">
-            <button @click="SidebarTerbuka = true" class="p-2 -ml-1 rounded-xl text-slate-500 hover:bg-slate-100">
+            <button @click="SidebarTerbuka = true" aria-label="Buka menu navigasi" class="p-2 -ml-1 rounded-xl text-slate-500 hover:bg-slate-100">
                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <span class="font-extrabold text-slate-900">KKA <span class="text-orange-500">Lab</span></span>
         </header>
 
-        <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-24 lg:pb-10">
+        <main id="konten-utama" tabindex="-1" class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-24 lg:pb-10">
             <x-toast />
             @isset($header)
                 <div class="mb-6">{{ $header }}</div>
