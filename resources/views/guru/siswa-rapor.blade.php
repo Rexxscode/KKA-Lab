@@ -36,5 +36,28 @@
                 @endforelse
             </div>
         </x-card>
+
+        <x-card title="Umpan Balik untuk {{ $siswa->name }}" subtitle="Satu catatan per modul, bisa dibaca siswa di rapornya.">
+            <form method="POST" action="{{ route('guru.kelas.siswa.feedback', [$classroom, $siswa]) }}" class="space-y-2">
+                @csrf
+                <select name="module_id" required class="w-full rounded-xl border-slate-200 text-sm">
+                    @foreach($daftar as $d)
+                        <option value="{{ $d['module']->id }}">{{ $d['posisi'] }}. {{ $d['module']->title }}</option>
+                    @endforeach
+                </select>
+                <textarea name="body" required maxlength="2000" rows="3" placeholder="Tulis catatan: apa yang sudah bagus + 1 hal yang perlu ditingkatkan..." class="w-full rounded-xl border-slate-200 text-sm"></textarea>
+                <x-button type="submit">Simpan Catatan</x-button>
+            </form>
+            <div class="mt-3 space-y-2">
+                @forelse($feedbacks as $f)
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm">
+                        <p class="font-bold text-slate-800">{{ $f->module->title }} <span class="font-normal text-slate-400">• {{ $f->updated_at->format('d M Y') }}</span></p>
+                        <p class="mt-1 text-slate-600">{{ $f->body }}</p>
+                    </div>
+                @empty
+                    <p class="text-sm text-slate-400">Belum ada catatan.</p>
+                @endforelse
+            </div>
+        </x-card>
     </div>
 </x-sidebar-layout>

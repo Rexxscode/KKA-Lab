@@ -19,6 +19,14 @@
                     @if(! $m->isDefault())
                         <span class="kka-badge">Kelas</span>
                     @endif
+                    @if(isset($m->pivot) && $m->pivot->due_at)
+                        @php $tenggat = \Illuminate\Support\Carbon::parse($m->pivot->due_at); @endphp
+                        @if(! ($p && $p->is_completed) && $tenggat->isPast())
+                            <span class="kka-badge !bg-red-100 !text-red-700 !border-red-300">Terlambat {{ $tenggat->format('d M') }}</span>
+                        @else
+                            <span class="kka-badge">Tenggat {{ $tenggat->format('d M Y') }}</span>
+                        @endif
+                    @endif
                 </div>
                 @if($d['terkunci'])
                     <span class="kka-btn-secondary w-full mt-3 !py-2 text-sm text-center gap-1.5 opacity-40 inline-flex items-center justify-center"><x-icon name="lock" class="w-4 h-4" />Terkunci</span>

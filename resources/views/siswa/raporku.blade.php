@@ -28,6 +28,9 @@
                             <span class="font-bold text-slate-400">—</span>
                         @endif
                     </div>
+                    @if(($terbaik[$d['module']->id] ?? 0) > 0)
+                        <p class="text-xs text-slate-400 -mt-1 px-1">Terbaik: {{ $terbaik[$d['module']->id] }}</p>
+                    @endif
                 @endforeach
             </div>
         </x-card>
@@ -46,6 +49,19 @@
             </div>
         </x-card>
     </div>
+
+    @if($umpanBalik->count())
+        <x-card title="Catatan dari Gurumu" subtitle="Dibaca baik-baik ya!" class="mt-3 sm:mt-4">
+            <div class="space-y-2">
+                @foreach($umpanBalik as $fb)
+                    <div class="rounded-2xl border border-orange-200 bg-orange-50/60 p-4 text-sm">
+                        <p class="font-bold text-slate-800">{{ $fb->module->title ?? 'Umum' }} <span class="font-normal text-slate-400">• {{ $fb->classroom->name ?? '' }}</span></p>
+                        <p class="mt-1 text-slate-600">{{ $fb->body }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </x-card>
+    @endif
 
 @push('head')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>

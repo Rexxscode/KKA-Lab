@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Badge;
 use App\Models\Module;
+use App\Models\QuizAttempt;
 use App\Models\StudentProgress;
 use App\Services\StudentModuleService;
 use Illuminate\Http\Request;
@@ -112,6 +113,15 @@ class ProgressController extends Controller
         $score = $totalPoints > 0 ? (int) round($earned / $totalPoints * 100) : 0;
         $passed = $score >= StudentProgress::PASS_SCORE;
         $xp = $passed ? $module->xp_reward + (int) round($score / 10) : (int) round($score / 10);
+
+        // Jejak tiap percobaan (skor terakhir boleh ditimpa, histori tidak).
+        QuizAttempt::create([
+            'student_id' => $request->user()->id,
+            'module_id' => $module->id,
+            'score' => $score,
+            'answers' => array_values($answers),
+            'passed' => $passed,
+        ]);
 
         $progress = StudentProgress::updateOrCreate(
             ['student_id' => $request->user()->id, 'module_id' => $module->id],

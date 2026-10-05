@@ -87,6 +87,19 @@
                 @endforelse
             </div>
         </x-card>
+
+        <x-card title="Riwayat Kuis" subtitle="5 percobaan terakhir">
+            <div class="space-y-2">
+                @forelse($riwayat as $r)
+                    <div class="flex items-center justify-between text-sm border border-slate-200 rounded-xl px-3 py-2">
+                        <span class="font-semibold text-slate-700 truncate">{{ $r->module->title ?? '—' }}</span>
+                        <span class="font-extrabold {{ $r->passed ? 'text-emerald-700' : 'text-orange-600' }}">{{ $r->score }}</span>
+                    </div>
+                @empty
+                    <p class="text-sm text-slate-500">Belum ada percobaan. Kerjakan kuismu!</p>
+                @endforelse
+            </div>
+        </x-card>
     </div>
 
     <h3 class="mt-6 mb-3 font-extrabold text-slate-900">Modul Belajar (berurutan)</h3>

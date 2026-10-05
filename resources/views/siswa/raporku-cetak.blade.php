@@ -54,5 +54,15 @@
             </ul>
         </div>
     @endif
+    @if($umpanBalik->count())
+        <div class="saran">
+            <strong>Catatan guru:</strong>
+            <ul>
+                @foreach($umpanBalik as $fb)
+                    <li><strong>{{ $fb->module->title ?? 'Umum' }}:</strong> {{ $fb->body }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 </body>
 </html>

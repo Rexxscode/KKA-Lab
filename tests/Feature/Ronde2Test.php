@@ -7,6 +7,7 @@ use App\Models\Classroom;
 use App\Models\Module;
 use App\Models\StudentProgress;
 use App\Models\User;
+use App\Services\StudentModuleService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -191,5 +192,75 @@ class Ronde2Test extends TestCase
         $this->actingAs($guru)->patch(route('guru.kelas.arsip', $kelas))->assertRedirect();
         $this->actingAs($pendaftar)->post(route('siswa.join'), ['code' => '123456'])->assertRedirect();
         $this->assertDatabaseHas('classroom_user', ['classroom_id' => $kelas->id, 'student_id' => $pendaftar->id]);
+    }
+
+    public function test_percobaan_kuis_tercatat_dan_tampil_di_riwayat(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))->assertRedirect();
+        $this->actingAs($siswa)->get(route('siswa.kuis.show', 'apa-itu-ai'))->assertOk();
+        $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $paket = session('kuis_paket_' . $module->id);
+        $tampil = (new StudentModuleService)->uraikanPaket($paket);
+        $answers = [];
+        foreach ($tampil as $i => $t) {
+            $answers[$i] = $t['correct'];
+        }
+        $this->actingAs($siswa)->post(route('siswa.kuis.submit', 'apa-itu-ai'), ['answers' => $answers])
+            ->assertRedirect(route('siswa.dashboard'));
+
+        $this->assertDatabaseHas('quiz_attempts', ['student_id' => $siswa->id, 'module_id' => $module->id, 'score' => 100, 'passed' => true]);
+        $this->actingAs($siswa)->get(route('siswa.dashboard'))->assertSee('Riwayat Kuis');
+        $this->actingAs($siswa)->get(route('siswa.raporku'))->assertSee('Terbaik: 100');
+    }
+
+    public function test_tenggat_tampil_dan_terlambat_ditandai(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
+        $kelas->students()->attach($siswa->id);
+        $m1 = Module::where('slug', 'apa-itu-ai')->firstOrFail();
+        $m2 = Module::where('slug', 'latih-ai-mu')->firstOrFail();
+        $kelas->modules()->attach($m1->id, ['position' => 1, 'due_at' => now()->subDay()]);
+        $kelas->modules()->attach($m2->id, ['position' => 2, 'due_at' => now()->addWeek()]);
+
+        // Guru ubah tenggat via endpoint.
+        $this->actingAs($guru)->patch(route('guru.kelas.modul.tenggat', [$kelas, $m1]), ['due_at' => now()->addDays(2)->format('Y-m-d')])
+            ->assertRedirect();
+        $this->assertNotNull($kelas->modules()->where('modules.id', $m1->id)->first()->pivot->due_at);
+
+        // Set lagi ke masa lalu agar Terlambat muncul.
+        $kelas->modules()->updateExistingPivot($m1->id, ['due_at' => now()->subDay()]);
+        $this->actingAs($siswa)->get(route('siswa.bahan.index'))
+            ->assertOk()->assertSee('Terlambat')->assertSee('Tenggat');
+    }
+
+    public function test_umpan_balik_guru_tampil_di_rapor_siswa(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $luar = User::factory()->create(['role' => 'siswa']);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
+        $kelas->students()->attach($siswa->id);
+        $modul = Module::firstOrCreate(['slug' => 'modul-tes'], ['title' => 'Modul Tes', 'order' => 99, 'xp_reward' => 10]);
+        $kelas->modules()->attach($modul->id, ['position' => 1]);
+
+        $this->actingAs($guru)->post(route('guru.kelas.siswa.feedback', [$kelas, $siswa]), [
+            'module_id' => $modul->id,
+            'body' => 'Bagus! Tingkatkan kecepatan.',
+        ])->assertRedirect();
+        $this->assertDatabaseHas('feedbacks', ['student_id' => $siswa->id, 'body' => 'Bagus! Tingkatkan kecepatan.']);
+
+        $this->actingAs($siswa)->get(route('siswa.raporku'))->assertSee('Bagus! Tingkatkan kecepatan.');
+
+        // Bukan anggota: 404.
+        $this->actingAs($guru)->post(route('guru.kelas.siswa.feedback', [$kelas, $luar]), [
+            'module_id' => $modul->id,
+            'body' => 'x',
+        ])->assertNotFound();
     }
 }
