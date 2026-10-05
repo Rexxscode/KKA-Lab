@@ -33,8 +33,8 @@ class ModuleController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:150',
-            'description' => 'nullable|string',
-            'materi' => 'required|string',
+            'description' => 'nullable|string|max:2000',
+            'materi' => 'required|string|max:50000',
             'xp_reward' => 'nullable|integer|min:0|max:1000',
         ]);
 
@@ -70,8 +70,8 @@ class ModuleController extends Controller
 
         $data = $request->validate([
             'title' => 'required|string|max:150',
-            'description' => 'nullable|string',
-            'materi' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
+            'materi' => 'nullable|string|max:50000',
             'xp_reward' => 'nullable|integer|min:0|max:1000',
         ]);
 

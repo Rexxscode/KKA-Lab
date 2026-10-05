@@ -14,7 +14,7 @@ class AiChatController extends Controller
             'history' => 'nullable|array|max:20',
             'history.*.role' => 'nullable|in:user,model',
             'history.*.text' => 'nullable|string|max:2000',
-            'module' => 'nullable|string|max:100',
+            'module' => 'nullable|string|exists:modules,slug',
         ]);
 
         $reply = $gemini->tutorChat(

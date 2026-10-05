@@ -103,13 +103,20 @@ class ProgressController extends Controller
      * Dipanggil OTOMATIS oleh JS setiap Uji kamera meyakinkan (bukan tombol manual).
      * Anti-farm: XP +20 hanya diberikan SEKALI saat hitungan mencapai 2.
      */
-    public function completeHandsOn(Request $request, string $slug)
+    public function completeHandsOn(Request $request, string $slug, StudentModuleService $modul)
     {
         $data = $request->validate([
             'confidence' => 'nullable|integer|min:0|max:100',
         ]);
 
         $module = Module::where('slug', $slug)->firstOrFail();
+
+        // Guard sama seperti kuis: modul harus milik siswa & tidak terkunci.
+        $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
+        abort_unless($item, 404);
+        if ($item['terkunci']) {
+            return response()->json(['message' => 'Selesaikan modul sebelumnya dulu sesuai urutan!'], 403);
+        }
 
         $progress = StudentProgress::firstOrCreate(
             ['student_id' => $request->user()->id, 'module_id' => $module->id],
@@ -118,7 +125,17 @@ class ProgressController extends Controller
 
         // Hanya Uji meyakinkan (keyakinan >= 50) yang dihitung.
         if (($data['confidence'] ?? 0) >= 50) {
+            // Anti-farm: jeda minimal 10 detik antar Uji yang dihitung.
+            if ($progress->hands_on_last_at && $progress->hands_on_last_at->gt(now()->subSeconds(10))) {
+                return response()->json([
+                    'count' => $progress->hands_on_count,
+                    'awarded' => (bool) $progress->hands_on_xp_awarded,
+                    'xp_earned' => $progress->xp_earned,
+                    'message' => 'Terlalu cepat! Tunggu sebentar sebelum Uji berikutnya.',
+                ], 429);
+            }
             $progress->increment('hands_on_count');
+            $progress->update(['hands_on_last_at' => now()]);
             $progress->refresh();
         }
 

@@ -109,7 +109,7 @@ class QuizController extends Controller
         $options = $this->bersihkanOpsi($request);
 
         $data = $request->validate([
-            'question' => 'required|string',
+            'question' => 'required|string|max:5000',
             'options' => 'required|array|min:5|max:5',
             'options.*' => 'required|string|max:255',
             'correct_letter' => 'required|in:A,B,C,D,E',
@@ -151,7 +151,7 @@ class QuizController extends Controller
         $options = $this->bersihkanOpsi($request);
 
         $data = $request->validate([
-            'question' => 'required|string',
+            'question' => 'required|string|max:5000',
             'options' => 'required|array|min:5|max:5',
             'options.*' => 'required|string|max:255',
             'correct_letter' => 'required|in:A,B,C,D,E',

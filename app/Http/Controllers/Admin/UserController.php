@@ -37,6 +37,7 @@ class UserController extends Controller
         ]);
 
         abort_if($user->id === $request->user()->id, 403, 'Tidak bisa reset password sendiri dari sini.');
+        abort_if($user->isAdmin(), 403, 'Akun admin tidak bisa di-reset dari sini.');
 
         $user->update(['password' => Hash::make($data['password'])]);
 
@@ -46,6 +47,7 @@ class UserController extends Controller
     public function destroy(Request $request, User $user)
     {
         abort_if($user->id === $request->user()->id, 403, 'Tidak bisa menghapus akun sendiri.');
+        abort_if($user->isAdmin(), 403, 'Akun admin tidak bisa dihapus dari sini.');
 
         $email = $user->email;
         if ($user->bukti_npk_path) {
