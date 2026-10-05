@@ -22,17 +22,17 @@
     <x-card title="Template Blok Praktik" subtitle="Klik untuk menempelkan kerangka siap isi ke kolom bahan ajar di atas. Penanda: ## judul, [PRAKTIK], [TUGAS], - [ ] checklist." class="mt-4">
         <div class="grid sm:grid-cols-3 gap-2" x-data="kkaTemplate()">
             <div class="rounded-2xl border border-slate-200 p-3">
-                <p class="font-extrabold text-sm text-slate-800">🧪 Praktik Langkah</p>
+                <p class="font-extrabold text-sm text-slate-800 flex items-center gap-1.5"><x-icon name="flask" class="w-4 h-4 text-orange-500" />Praktik Langkah</p>
                 <p class="text-xs text-slate-500 mt-1">Langkah bernomor + kotak praktik.</p>
                 <button type="button" @click="tempel('praktik')" class="kka-btn-secondary !py-1.5 text-xs mt-2 w-full">Tempel Template</button>
             </div>
             <div class="rounded-2xl border border-slate-200 p-3">
-                <p class="font-extrabold text-sm text-slate-800">✅ Tugas + Checklist</p>
+                <p class="font-extrabold text-sm text-slate-800 flex items-center gap-1.5"><x-icon name="check" class="w-4 h-4 text-emerald-600" />Tugas + Checklist</p>
                 <p class="text-xs text-slate-500 mt-1">Tugas mandiri + daftar periksa.</p>
                 <button type="button" @click="tempel('tugas')" class="kka-btn-secondary !py-1.5 text-xs mt-2 w-full">Tempel Template</button>
             </div>
             <div class="rounded-2xl border border-slate-200 p-3">
-                <p class="font-extrabold text-sm text-slate-800">💬 Diskusi + Refleksi</p>
+                <p class="font-extrabold text-sm text-slate-800 flex items-center gap-1.5"><x-icon name="chat" class="w-4 h-4 text-orange-500" />Diskusi + Refleksi</p>
                 <p class="text-xs text-slate-500 mt-1">Pertanyaan diskusi + refleksi diri.</p>
                 <button type="button" @click="tempel('diskusi')" class="kka-btn-secondary !py-1.5 text-xs mt-2 w-full">Tempel Template</button>
             </div>
@@ -70,7 +70,7 @@
             <x-card :title="$m->title" :subtitle="$m->soal . ' soal • +' . $m->xp_reward . ' XP'">
                 <p class="text-xs text-slate-500 line-clamp-2">{{ $m->description }}</p>
                 <div class="flex flex-wrap gap-2 mt-3">
-                    <a href="{{ route('guru.quiz.module', $m) }}" class="kka-btn-primary !py-1.5 text-xs">📝 Kelola Soal</a>
+                    <a href="{{ route('guru.quiz.module', $m) }}" class="kka-btn-primary !py-1.5 text-xs inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" />Kelola Soal</a>
                     <details class="relative">
                         <summary class="kka-btn-secondary !py-1.5 text-xs cursor-pointer list-none">Ubah</summary>
                         <form method="POST" action="{{ route('guru.modul.update', $m) }}" class="mt-2 rounded-2xl border border-slate-200 p-3 space-y-2">

@@ -21,7 +21,7 @@
                     <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-orange-500 text-white font-extrabold text-xl">K</span>
                     <span class="text-left">
                         <span class="block font-extrabold text-slate-900 leading-none">KKA <span class="text-orange-500">Lab</span></span>
-                        <span class="block text-[11px] text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
+                        <span class="block text-[11px] text-slate-500 mt-0.5">Koding & Kecerdasan Artifisial</span>
                     </span>
                 </a>
             </div>

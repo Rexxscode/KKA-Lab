@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h2 class="font-extrabold text-xl text-slate-900">Halo {{ auth()->user()->name }}! 👋</h2>
+                <h2 class="font-extrabold text-xl text-slate-900">Halo {{ auth()->user()->name }}!</h2>
                 <p class="text-sm text-slate-500">
                     @if($kelasAktif)
                         Kelas aktif: <b class="text-orange-600">{{ $kelasAktif->name }}</b> — kerjakan modul berurutan ya!
@@ -17,8 +17,8 @@
 
     @php $selesai = collect($daftar)->where(fn ($d) => $d['progress'] && $d['progress']->is_completed)->count(); @endphp
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <x-card title="Total XP" subtitle="dari kuis & praktik"><p class="text-3xl font-extrabold text-orange-500">⚡ {{ $totalXp }}</p></x-card>
-        <x-card title="Badge" subtitle="dikumpulkan"><p class="text-3xl font-extrabold text-emerald-500">🏅 {{ $badges->count() }}</p></x-card>
+        <x-card title="Total XP" subtitle="dari kuis & praktik"><p class="kka-stat text-orange-600 flex items-center gap-2"><x-icon name="bolt" class="w-7 h-7" />{{ $totalXp }}</p></x-card>
+        <x-card title="Badge" subtitle="dikumpulkan"><p class="kka-stat text-emerald-600 flex items-center gap-2"><x-icon name="cap" class="w-7 h-7" />{{ $badges->count() }}</p></x-card>
         <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900">{{ $selesai }}/{{ count($daftar) }}</p></x-card>
         <div class="kka-card p-6">
             <p class="text-sm text-slate-500">Progres Belajar</p>
@@ -47,10 +47,10 @@
                 @forelse(collect($daftar)->filter(fn ($d) => $d['progress'] && $d['progress']->is_completed) as $d)
                     <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2 text-sm">
                         <span class="font-semibold text-slate-700">{{ $d['module']->title }}</span>
-                        <span class="font-extrabold text-emerald-600">{{ $d['progress']->quiz_score }}</span>
+                        <span class="font-extrabold text-emerald-700">{{ $d['progress']->quiz_score }}</span>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-400">Belum ada. Luluskan kuis dengan skor ≥80!</p>
+                    <p class="text-sm text-slate-500">Belum ada. Luluskan kuis dengan skor ≥80!</p>
                 @endforelse
             </div>
         </x-card>
@@ -68,14 +68,14 @@
                         <span class="kka-badge {{ $kelasAktif && $c->id === $kelasAktif->id ? '!bg-orange-100 !text-orange-700 !border-orange-300' : '' }}">{{ $c->name }} • {{ $c->code }}</span>
                     @endforeach
                 </div>
-                <p class="mt-2 text-[11px] text-slate-400">Kelas aktif (oranye) menentukan urutan modul & soalmu.</p>
+                <p class="kka-note">Kelas aktif (oranye) menentukan urutan modul & soalmu.</p>
             @endif
         </x-card>
 
         <x-card title="Badge Koleksi" subtitle="{{ $badges->count() }} badge didapat">
             <div class="flex flex-wrap gap-2">
                 @forelse($badges as $b)
-                    <span class="kka-badge">🏅 {{ $b->name }}</span>
+                    <span class="kka-badge"><x-icon name="cap" class="w-3.5 h-3.5" />{{ $b->name }}</span>
                 @empty
                     <p class="text-sm text-slate-500">Lulus kuis ≥80 untuk dapat badge!</p>
                 @endforelse
@@ -91,13 +91,13 @@
                 <div class="flex items-center justify-between text-xs gap-2">
                     <span class="kka-badge">+{{ $m->xp_reward }} XP</span>
                     @if($d['terkunci'])
-                        <span class="font-bold text-slate-400 whitespace-nowrap">🔒 Terkunci</span>
+                        <span class="kka-status-idle inline-flex items-center gap-1"><x-icon name="lock" class="w-3.5 h-3.5" />Terkunci</span>
                     @elseif($p && $p->is_completed)
-                        <span class="font-bold text-emerald-600 whitespace-nowrap">✓ Selesai • {{ $p->quiz_score }}</span>
+                        <span class="kka-status-ok">✓ Selesai • {{ $p->quiz_score }}</span>
                     @elseif($p && ($p->quiz_score > 0 || $p->reading_done))
-                        <span class="font-bold text-orange-500 whitespace-nowrap">⏳ Dikerjakan{{ $p->quiz_score ? ' • ' . $p->quiz_score : '' }}</span>
+                        <span class="kka-status-warn inline-flex items-center gap-1"><x-icon name="clock" class="w-3.5 h-3.5" />Dikerjakan{{ $p->quiz_score ? ' • ' . $p->quiz_score : '' }}</span>
                     @else
-                        <span class="font-bold text-slate-400 whitespace-nowrap">Belum mulai</span>
+                        <span class="kka-status-idle">Belum mulai</span>
                     @endif
                 </div>
                 <div class="grid grid-cols-2 gap-2 mt-3">

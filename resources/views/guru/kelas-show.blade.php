@@ -74,7 +74,7 @@
                         </form>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-400">Belum ada modul di kelas ini.</p>
+                    <p class="text-sm text-slate-500">Belum ada modul di kelas ini.</p>
                 @endforelse
             </div>
             @if($modulTersedia->count())

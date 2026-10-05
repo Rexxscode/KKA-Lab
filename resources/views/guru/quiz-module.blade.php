@@ -7,7 +7,7 @@
 
     <x-card title="Tambah Soal Baru" subtitle="Untuk modul ini saja.">
         @if($module->isDefault() && ! auth()->user()->isAdmin())
-            <p class="text-xs rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 p-2.5 mb-3">🔒 Ini soal default admin. Silakan edit langsung — perubahan otomatis tersimpan sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
+            <p class="text-xs rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 p-2.5 mb-3">Ini soal default admin. Silakan edit langsung — perubahan otomatis tersimpan sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
         @endif
         <form method="POST" action="{{ route('guru.quiz.module.store', $module) }}" class="space-y-2.5">
             @csrf
@@ -45,7 +45,7 @@
                         </p>
                     @endforeach
                     @if($q->explanation)
-                        <p class="text-xs text-slate-500 rounded-xl bg-slate-50 border border-slate-200 p-2">💡 {{ $q->explanation }}</p>
+                        <p class="text-xs text-slate-500 rounded-xl bg-slate-50 border border-slate-200 p-2"><b>Pembahasan:</b> {{ $q->explanation }}</p>
                     @endif
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2">

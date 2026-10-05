@@ -24,11 +24,11 @@
                     <p class="text-xs text-slate-500"><span x-text="terjawabSemua()"></span>/{{ count($tampil) }} terjawab</p>
                 </div>
                 <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200" role="progressbar" aria-valuemin="0" aria-valuemax="{{ count($tampil) }}" :aria-valuenow="terjawabSemua()">
-                    <div class="h-full bg-gradient-to-r from-orange-500 to-emerald-500 transition-all" :style="'width: ' + Math.round(terjawabSemua() / {{ count($tampil) }} * 100) + '%'"></div>
+                    <div class="h-full bg-emerald-500 transition-all" :style="'width: ' + Math.round(terjawabSemua() / {{ count($tampil) }} * 100) + '%'"></div>
                 </div>
                 <nav aria-label="Navigasi soal" class="flex flex-wrap gap-1.5">
                     @foreach($tampil as $i => $t)
-                        <button type="button" @click="keSoal({{ $i }})" aria-label="Ke soal {{ $i + 1 }}" :aria-current="soalIdx === {{ $i }} ? 'true' : 'false'" class="w-8 h-8 rounded-lg text-xs font-bold border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
+                        <button type="button" @click="keSoal({{ $i }})" aria-label="Ke soal {{ $i + 1 }}" :aria-current="soalIdx === {{ $i }} ? 'true' : 'false'" class="w-10 h-10 rounded-xl text-xs font-bold border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
                             :class="soalIdx === {{ $i }} ? 'bg-orange-500 text-white border-orange-500' : (dijawab({{ $i }}) ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-500 border-slate-200')">{{ $i + 1 }}</button>
                     @endforeach
                 </nav>
@@ -61,7 +61,7 @@
                             @endforeach
                         </div>
                         @if($ulas && ($ulas['explanation'] ?? null))
-                            <p class="mt-2 text-xs rounded-xl bg-white/70 border border-slate-200 p-2 text-slate-600">💡 <b>Pembahasan:</b> {{ $ulas['explanation'] }}</p>
+                            <p class="mt-2 text-xs rounded-xl bg-white/70 border border-slate-200 p-2 text-slate-600"><b>Pembahasan:</b> {{ $ulas['explanation'] }}</p>
                         @endif
                     </fieldset>
                 @endforeach

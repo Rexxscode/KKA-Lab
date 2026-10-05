@@ -36,7 +36,7 @@
                         <a href="{{ $s['tautan'] }}" class="inline-block mt-2 text-xs font-extrabold text-orange-600 hover:text-orange-700">{{ $s['label_tautan'] }} →</a>
                     </div>
                 @empty
-                    <p class="text-sm text-emerald-700 font-semibold">Luar biasa! Semua modul lulus dengan skor ≥90. Pertahankan! 🎉</p>
+                    <p class="text-sm text-emerald-700 font-semibold">Luar biasa! Semua modul lulus dengan skor ≥90. Pertahankan!</p>
                 @endforelse
             </div>
         </x-card>

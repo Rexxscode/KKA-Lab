@@ -13,11 +13,11 @@
         @forelse($milik as $m)
             <div x-show="$el.dataset.judul.toLowerCase().includes(cari.toLowerCase())" data-judul="{{ strtolower($m->title) }}">
             <x-card :title="$m->title" :subtitle="$m->soal . ' soal'">
-                <a href="{{ route('guru.quiz.module', $m) }}" class="kka-btn-primary w-full mt-1 !py-2 text-sm text-center block">📝 Kelola Soal →</a>
+                <a href="{{ route('guru.quiz.module', $m) }}" class="kka-btn-primary w-full mt-1 !py-2 text-sm text-center gap-1.5 inline-flex items-center justify-center"><x-icon name="pencil" class="w-4 h-4" />Kelola Soal</a>
             </x-card>
             </div>
         @empty
-            <p class="text-sm text-slate-400 sm:col-span-2">Belum ada. Buat dulu di halaman <a href="{{ route('guru.modul.index') }}" class="font-bold text-orange-500">Modul Saya</a>.</p>
+            <p class="text-sm text-slate-500 sm:col-span-2">Belum ada. Buat dulu di halaman <a href="{{ route('guru.modul.index') }}" class="font-bold text-orange-500">Modul Saya</a>.</p>
         @endforelse
     </div>
 

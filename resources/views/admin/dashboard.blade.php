@@ -26,7 +26,7 @@
                         <p class="text-xs text-slate-500">{{ $p->email }} • daftar {{ $p->created_at->format('d M Y H:i') }}</p>
                     </div>
                     @if($p->bukti_npk_path)
-                        <a href="{{ route('admin.bukti.unduh', $p) }}" class="kka-btn-secondary !py-1.5 text-xs whitespace-nowrap">📄 Lihat NPK</a>
+                        <a href="{{ route('admin.bukti.unduh', $p) }}" class="kka-btn-secondary !py-1.5 text-xs whitespace-nowrap inline-flex items-center gap-1"><x-icon name="doc" class="w-4 h-4" />Lihat NPK</a>
                     @else
                         <span class="text-xs text-slate-400">Tanpa bukti</span>
                     @endif
@@ -40,7 +40,7 @@
                     </form>
                 </div>
             @empty
-                <p class="text-sm text-slate-400">Tidak ada pengajuan menunggu. Semua guru sudah terverifikasi. ✅</p>
+                <p class="text-sm text-slate-500">Tidak ada pengajuan menunggu. Semua guru sudah terverifikasi.</p>
             @endforelse
         </x-card>
 
@@ -82,9 +82,9 @@
                                 <td class="py-3 pr-3"><p class="font-bold text-slate-800">{{ $u->name }}</p><p class="text-xs text-slate-400">{{ $u->email }}</p></td>
                                 <td class="py-3 pr-3"><span class="kka-badge">{{ ucfirst($u->role) }}</span>
                                     @if($u->status === 'pending')
-                                        <span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 border border-orange-200">⏳ Pending</span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200"><x-icon name="clock" class="w-3 h-3" />Pending</span>
                                     @elseif($u->status === 'ditolak')
-                                        <span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-red-700 border border-red-200">Ditolak</span>
+                                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">Ditolak</span>
                                     @endif
                                 </td>
                                 <td class="py-3 pr-3 text-xs text-slate-500">
@@ -148,7 +148,7 @@
                                         @if($p && $p->is_completed)
                                             <span class="kka-badge">✓ {{ $p->quiz_score }}</span>
                                         @elseif($p && ($p->reading_done || $p->quiz_score > 0 || $p->hands_on_count > 0))
-                                            <span class="inline-flex px-2.5 py-0.5 rounded-full font-bold bg-orange-50 text-orange-700 border border-orange-200 whitespace-nowrap">⏳ {{ $p->quiz_score }}</span>
+                                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200 whitespace-nowrap">{{ $p->quiz_score }}</span>
                                         @else
                                             <span class="text-slate-300">—</span>
                                         @endif
@@ -172,7 +172,7 @@
                         <div><p class="font-bold">{{ $c->name }}</p><p class="text-xs text-slate-400">{{ $c->teacher->name ?? '-' }} • {{ $c->code }} • {{ $c->students_count }} siswa</p></div>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-400">Belum ada kelas.</p>
+                    <p class="text-sm text-slate-500">Belum ada kelas.</p>
                 @endforelse
             </x-card>
             <x-card title="Modul KKA" subtitle="Kelola soal lewat akun guru / bank soal.">

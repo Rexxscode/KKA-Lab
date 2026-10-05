@@ -72,7 +72,7 @@
                         <p class="text-xs font-semibold text-slate-500">Mengunduh Python (Pyodide ±10MB, sekali saja — butuh internet)...</p>
                     </div>
                     <pre x-show="keluaran !== ''" x-text="keluaran" class="rounded-2xl bg-slate-900 text-emerald-300 p-4 font-mono text-[13px] whitespace-pre-wrap min-h-16 overflow-x-auto" aria-label="Hasil program"></pre>
-                    <p class="text-[11px] text-slate-400">Tips: ubah contohnya lalu Jalankan lagi. Modul Python tidak memakai kamera. Kode berjalan lokal di perangkatmu.</p>
+                    <p class="kka-note">Tips: ubah contohnya lalu Jalankan lagi. Modul Python tidak memakai kamera. Kode berjalan lokal di perangkatmu.</p>
                 </div>
             </x-card>
         @endif
@@ -125,7 +125,7 @@
                         </div>
                         <p class="mt-2 text-sm text-slate-700 whitespace-pre-wrap" x-show="penjelasan" x-text="penjelasan"></p>
                     </div>
-                    <p class="text-[11px] text-slate-400">2x Uji meyakinkan (keyakinan ≥50%) otomatis +20 XP, sekali saja. Dataset contoh berlabel simulasi (pola garis vs lingkaran).</p>
+                    <p class="kka-note">2x Uji meyakinkan (keyakinan ≥50%) otomatis +20 XP, sekali saja. Dataset contoh berlabel simulasi (pola garis vs lingkaran).</p>
                 </div>
             </x-card>
         @endif

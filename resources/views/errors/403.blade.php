@@ -11,7 +11,7 @@
 <body style="background:#FAFAFA;font-family:'Plus Jakarta Sans',sans-serif">
 <div class="min-h-screen flex items-center justify-center px-4">
     <div class="kka-card p-8 max-w-md w-full text-center">
-        <p class="text-5xl">🔒</p>
+        <span class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-orange-100 text-orange-600"><x-icon name="shield" class="w-8 h-8" /></span>
         <h1 class="mt-3 text-2xl font-extrabold text-slate-900">Akses Ditolak (403)</h1>
         <p class="mt-2 text-sm text-slate-500">
             @auth

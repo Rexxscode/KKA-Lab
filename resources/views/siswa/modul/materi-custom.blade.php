@@ -24,11 +24,11 @@
         } elseif (str_starts_with($t, '[PRAKTIK]')) {
             if ($dalamDaftar) { $keluar .= '</ul>'; $dalamDaftar = false; }
             $isi = trim(substr($t, 9));
-            $keluar .= '<div class="rounded-2xl border border-orange-200 bg-orange-50 p-4"><p class="font-extrabold text-orange-800 text-sm">🧪 Praktik</p><p class="mt-1">' . e($isi) . '</p></div>';
+            $keluar .= '<div class="rounded-2xl border border-orange-200 bg-orange-50 p-4"><p class="font-extrabold text-orange-800 text-sm">Praktik</p><p class="mt-1">' . e($isi) . '</p></div>';
         } elseif (str_starts_with($t, '[TUGAS]')) {
             if ($dalamDaftar) { $keluar .= '</ul>'; $dalamDaftar = false; }
             $isi = trim(substr($t, 7));
-            $keluar .= '<div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><p class="font-extrabold text-emerald-800 text-sm">✅ Tugas</p><p class="mt-1">' . e($isi) . '</p></div>';
+            $keluar .= '<div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><p class="font-extrabold text-emerald-800 text-sm">Tugas</p><p class="mt-1">' . e($isi) . '</p></div>';
         } elseif (str_starts_with($t, '- [ ]')) {
             if (! $dalamDaftar) { $keluar .= '<ul class="space-y-1.5">'; $dalamDaftar = true; }
             $isi = trim(substr($t, 5));
