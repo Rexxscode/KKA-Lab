@@ -1,15 +1,5 @@
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-slate-900 dark:text-white">
-            {{ __('Ubah Kata Sandi') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            {{ __('Pastikan akunmu memakai kata sandi yang panjang dan acak agar tetap aman.') }}
-        </p>
-    </header>
-
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('password.update') }}" class="space-y-5">
         @csrf
         @method('put')
 
