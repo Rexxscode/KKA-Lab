@@ -19,7 +19,8 @@ class SetSecurityHeaders
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             // Inline script/style dipakai Blade + Alpine; CDN jsdelivr untuk Chart.js.
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net http://localhost:*",
+            // 'unsafe-eval' wajib: Alpine menilai ekspresi x-data/@click via AsyncFunction.
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net http://localhost:*",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             'font-src \'self\' https://fonts.gstatic.com',
             'img-src \'self\' data: blob:',
