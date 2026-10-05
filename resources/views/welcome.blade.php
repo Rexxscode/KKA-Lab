@@ -48,13 +48,13 @@
                 <x-button variant="secondary" href="{{ route('login') }}">Portal Guru</x-button>
             </div>
             <div class="mt-6 grid grid-cols-3 gap-3 text-center">
-                <div class="kka-card !p-4"><p class="kka-stat text-orange-600">6</p><p class="text-xs text-slate-500 dark:text-slate-400">Modul interaktif</p></div>
-                <div class="kka-card !p-4"><p class="kka-stat text-emerald-600">950</p><p class="text-xs text-slate-500 dark:text-slate-400">Total XP</p></div>
+                <div class="kka-card !p-4"><p class="kka-stat text-orange-600 dark:text-orange-400">6</p><p class="text-xs text-slate-500 dark:text-slate-400">Modul interaktif</p></div>
+                <div class="kka-card !p-4"><p class="kka-stat text-emerald-600 dark:text-emerald-400">950</p><p class="text-xs text-slate-500 dark:text-slate-400">Total XP</p></div>
                 <div class="kka-card !p-4"><p class="kka-stat text-slate-900 dark:text-white">90</p><p class="text-xs text-slate-500 dark:text-slate-400">Soal berpembahasan</p></div>
             </div>
         </div>
         <x-card title="Coba AI Langsung — Kamera Asli" subtitle="Aktifkan kamera, arahkan ke benda, klik Uji. AI menebak benda yang terlihat — 100% di browser.">
-            <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video flex items-center justify-center relative">
+            <div class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 aspect-video flex items-center justify-center relative">
                 <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
                 <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Klik “Aktifkan Kamera” lalu arahkan kamera ke benda di sekitarmu.</p></template>
                 <span class="absolute top-3 left-3 kka-badge" x-text="status"></span>

@@ -80,7 +80,7 @@
             <div class="space-y-2">
                 @forelse($modules as $i => $m)
                     <div class="flex items-center gap-2 sm:gap-3 rounded-xl border border-slate-200 dark:border-slate-700 px-3 sm:px-4 py-2">
-                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 text-orange-700 dark:text-orange-400 text-xs font-extrabold shrink-0">{{ $i + 1 }}</span>
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400 text-xs font-extrabold shrink-0">{{ $i + 1 }}</span>
                         <div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">{{ $m->title }}</p><p class="text-xs text-slate-400">{{ $m->isDefault() ? 'Default' : 'Modulmu' }}{{ $m->pivot->due_at ? ' • Tenggat ' . \Illuminate\Support\Carbon::parse($m->pivot->due_at)->format('d M Y') : '' }}</p></div>
                         <form method="POST" action="{{ route('guru.kelas.modul.tenggat', [$classroom, $m]) }}" class="flex items-center gap-1">
                             @csrf @method('PATCH')

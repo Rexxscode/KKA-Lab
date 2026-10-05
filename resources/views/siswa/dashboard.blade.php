@@ -65,7 +65,7 @@
             @if($classrooms->count())
                 <div class="mt-3 flex flex-wrap gap-2">
                     @foreach($classrooms as $c)
-                        <span class="kka-badge {{ $kelasAktif && $c->id === $kelasAktif->id ? '!bg-orange-100 !text-orange-700 !border-orange-300' : '' }}">{{ $c->name }} • {{ $c->code }}</span>
+                        <span class="kka-badge {{ $kelasAktif && $c->id === $kelasAktif->id ? '!bg-orange-100 dark:!bg-orange-500/15 !text-orange-700 dark:!text-orange-300 !border-orange-300 dark:!border-orange-500/40' : '' }}">{{ $c->name }} • {{ $c->code }}</span>
                     @endforeach
                 </div>
                 <p class="kka-note">Kelas aktif (oranye) menentukan urutan modul & soalmu.</p>

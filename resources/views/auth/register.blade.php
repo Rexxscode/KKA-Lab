@@ -48,7 +48,7 @@
 
         <div class="mt-4" x-show="peran === 'guru'" style="display: none;">
             <x-input-label for="bukti_npk" :value="__('Foto NPK (bukti guru)')" />
-            <input id="bukti_npk" type="file" name="bukti_npk" accept=".jpg,.jpeg,.png,.pdf" class="block mt-1 w-full text-sm text-slate-600 dark:text-slate-300 dark:border-slate-700 dark:bg-slate-900 file:mr-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-orange-100 dark:file:bg-orange-500/15 file:text-orange-700 dark:file:text-orange-400 file:font-bold hover:file:bg-orange-200" />
+            <input id="bukti_npk" type="file" name="bukti_npk" accept=".jpg,.jpeg,.png,.pdf" class="block mt-1 w-full text-sm text-slate-600 dark:text-slate-300 dark:border-slate-700 dark:bg-slate-900 file:mr-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-orange-100 dark:file:bg-orange-500/15 file:text-orange-700 dark:file:text-orange-400 file:font-bold hover:file:bg-orange-200 dark:hover:file:bg-orange-500/25" />
             <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Foto/scan kartu atau dokumen NPK (JPG/PNG/PDF, maks 2 MB). Akun diverifikasi admin 1–2 hari kerja.</p>
             <x-input-error :messages="$errors->get('bukti_npk')" class="mt-2" />
         </div>

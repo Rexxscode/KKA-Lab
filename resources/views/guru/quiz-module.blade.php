@@ -56,13 +56,13 @@
                             <input name="question" value="{{ $q->question }}" required class="w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm" />
                             @foreach($q->options as $oi => $opt)
                                 <label class="flex items-center gap-2.5 text-sm">
-                                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg {{ $oi == $q->correct_index ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }} font-extrabold">{{ chr(65 + $oi) }}</span>
+                                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg {{ $oi == $q->correct_index ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }} font-extrabold">{{ chr(65 + $oi) }}</span>
                                     <input name="options[]" value="{{ $opt }}" required class="flex-1 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm" />
                                 </label>
                             @endforeach
                             @for($k = count($q->options); $k < 5; $k++)
                                 <label class="flex items-center gap-2.5 text-sm">
-                                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-orange-100 text-orange-700 dark:text-orange-400 font-extrabold">{{ chr(65 + $k) }}</span>
+                                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400 font-extrabold">{{ chr(65 + $k) }}</span>
                                     <input name="options[]" value="" required placeholder="Opsi {{ chr(65 + $k) }} (wajib diisi)" class="flex-1 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm !border-orange-300" />
                                 </label>
                             @endfor
