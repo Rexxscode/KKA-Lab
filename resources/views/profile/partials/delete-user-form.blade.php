@@ -27,7 +27,7 @@
                 <x-password-input
                     id="password"
                     name="password"
-                    class="mt-1 block w-3/4 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    class="mt-1 block w-3/4 dark:border-white/10 dark:bg-[#0b1626] dark:text-slate-100"
                     placeholder="{{ __('Kata Sandi') }}"
                 />
 
