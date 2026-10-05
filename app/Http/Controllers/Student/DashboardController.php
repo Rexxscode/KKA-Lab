@@ -35,6 +35,14 @@ class DashboardController extends Controller
             ? $kelas->students()->withSum('progress as xp', 'xp_earned')->orderByDesc('xp')->take(20)->get()
             : collect();
 
-        return view('siswa.papan-peringkat', compact('kelas', 'papan'));
+        // Peringkat user di kelasnya (di luar 20 besar pun tetap ketahuan).
+        $peringkatSaya = null;
+        if ($kelas) {
+            $urutan = $kelas->students()->withSum('progress as xp', 'xp_earned')->orderByDesc('xp')->pluck('users.id');
+            $pos = $urutan->search($user->id);
+            $peringkatSaya = $pos === false ? null : $pos + 1;
+        }
+
+        return view('siswa.papan-peringkat', compact('kelas', 'papan', 'peringkatSaya'));
     }
 }
