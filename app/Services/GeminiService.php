@@ -17,7 +17,13 @@ class GeminiService
     /**
      * Kirim chat ke Gemini via Laravel AI SDK sebagai tutor KKA yang ramah siswa.
      *
+     * Melempar {@see AiGagalException} bila AI tak bisa menjawab (belum
+     * dikonfigurasi, respons kosong, atau jaringan gagal) — pemanggil
+     * wajib menampilkannya TANPA menyimpan ke riwayat/kuota.
+     *
      * @param  array  $history  [['role' => 'user'|'model', 'text' => string]]
+     *
+     * @throws AiGagalException
      */
     public function tutorChat(string $message, array $history = [], ?string $moduleContext = null, ?User $user = null): string
     {
@@ -25,7 +31,7 @@ class GeminiService
         $model = config('services.gemini.model', 'gemini-3.5-flash');
 
         if (! $key) {
-            return 'Asisten AI belum dikonfigurasi. Minta gurumu mengisi GEMINI_API_KEY di file .env ya! (ambil gratis di AI Studio)';
+            throw new AiGagalException('Asisten AI belum dikonfigurasi. Minta gurumu mengisi GEMINI_API_KEY di file .env ya! (ambil gratis di AI Studio)');
         }
 
         $messages = [];
@@ -46,14 +52,16 @@ class GeminiService
             $text = trim((string) ($response->text ?? ''));
 
             if (! $text) {
-                return 'Maaf, aku tidak mendapat jawaban. Coba tanya dengan kalimat lain ya!';
+                throw new AiGagalException('Maaf, aku tidak mendapat jawaban. Coba tanya dengan kalimat lain ya!');
             }
 
             return $this->bersihkanMarkdown($text);
+        } catch (AiGagalException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
-            return 'Ups, koneksi ke AI gagal. Periksa internet lalu coba lagi!';
+            throw new AiGagalException('Ups, koneksi ke AI gagal. Periksa internet lalu coba lagi!');
         }
     }
 

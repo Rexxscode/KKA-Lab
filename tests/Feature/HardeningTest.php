@@ -123,6 +123,17 @@ class HardeningTest extends TestCase
         $this->assertSame(30, AiChat::where('user_id', $siswa->id)->count());
     }
 
+    public function test_ai_gagal_tak_menyimpan_riwayat_dan_tak_makan_kuota(): void
+    {
+        config(['services.gemini.key' => null]);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($siswa)->postJson(route('ai.chat'), ['message' => 'halo?'])
+            ->assertOk()
+            ->assertJson(['reply' => 'Asisten AI belum dikonfigurasi. Minta gurumu mengisi GEMINI_API_KEY di file .env ya! (ambil gratis di AI Studio)']);
+        $this->assertSame(0, AiChat::where('user_id', $siswa->id)->count());
+    }
+
     public function test_siswa_bisa_keluar_kelas_aktif(): void
     {
         $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);

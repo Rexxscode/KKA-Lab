@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AiChat;
+use App\Services\AiGagalException;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class AiChatController extends Controller
 {
@@ -22,23 +24,43 @@ class AiChatController extends Controller
 
         $user = $request->user();
 
-        if (AiChat::where('user_id', $user->id)->whereDate('created_at', today())->count() >= self::KUOTA_HARIAN) {
-            return response()->json(['message' => 'Kuota AI harian habis (30/hari). Coba lagi besok ya!'], 429);
+        // Reservasi kuota atomik: cek + catat di dalam lock agar request
+        // paralel tak bisa lolos ganda melewati batas harian.
+        $kunci = 'ai:kuota:' . $user->id . ':' . today()->toDateString();
+        $lock = Cache::lock($kunci, 10);
+        if (! $lock->get()) {
+            return response()->json(['message' => 'Masih diproses, coba lagi sebentar!'], 429);
+        }
+        try {
+            if (AiChat::where('user_id', $user->id)->whereDate('created_at', today())->count() >= self::KUOTA_HARIAN) {
+                return response()->json(['message' => 'Kuota AI harian habis (30/hari). Coba lagi besok ya!'], 429);
+            }
+            $catatan = AiChat::create([
+                'user_id' => $user->id,
+                'module_slug' => $data['module'] ?? null,
+                'message' => $data['message'],
+                'reply' => '',
+            ]);
+        } finally {
+            $lock->release();
         }
 
-        $reply = $gemini->tutorChat(
-            $data['message'],
-            $data['history'] ?? [],
-            $data['module'] ?? null,
-            $user
-        );
+        try {
+            $reply = $gemini->tutorChat(
+                $data['message'],
+                $data['history'] ?? [],
+                $data['module'] ?? null,
+                $user
+            );
+        } catch (AiGagalException $e) {
+            // Gagal bukan jawaban: hapus reservasi agar tak tersimpan
+            // sebagai riwayat dan tak memakan kuota harian.
+            $catatan->delete();
 
-        AiChat::create([
-            'user_id' => $user->id,
-            'module_slug' => $data['module'] ?? null,
-            'message' => $data['message'],
-            'reply' => $reply,
-        ]);
+            return response()->json(['reply' => $e->getMessage()]);
+        }
+
+        $catatan->update(['reply' => $reply]);
 
         return response()->json(['reply' => $reply]);
     }
