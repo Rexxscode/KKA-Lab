@@ -3,5 +3,5 @@
   <rect x="8" y="8" width="80" height="80" rx="22" fill="#f97316"/>
   <rect x="27" y="24" width="11" height="48" rx="5.5" fill="#ffffff"/>
   <path d="M38 46 L63 25" stroke="#ffffff" stroke-width="11" stroke-linecap="round" fill="none"/>
-  <polyline points="38,46 52,60 45,60 60,73" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M38 46 L62 70" stroke="#ffffff" stroke-width="11" stroke-linecap="round" fill="none"/>
 </svg>
