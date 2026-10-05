@@ -144,6 +144,23 @@ class ClassroomController extends Controller
         return redirect()->route('guru.kelas.show', $classroom)->with('toast', ['type' => 'success', 'message' => "Kelas {$classroom->name} dibuat! Kode: {$code}"]);
     }
 
+    /**
+     * Regenerasi kode gabung (kode lama langsung hangus).
+     */
+    public function kodeBaru(Request $request, Classroom $classroom)
+    {
+        abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
+
+        do {
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        } while (Classroom::where('code', $code)->exists());
+
+        $classroom->update(['code' => $code]);
+        \Log::info('guru.kode_baru', ['actor' => $request->user()->id, 'kelas' => $classroom->id]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => "Kode baru {$classroom->name}: {$code}. Kode lama sudah hangus!"]);
+    }
+
     public function show(Request $request, Classroom $classroom)
     {
         abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);

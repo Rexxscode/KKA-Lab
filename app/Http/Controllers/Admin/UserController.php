@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
@@ -47,6 +48,7 @@ class UserController extends Controller
         if (Schema::hasTable('sessions')) {
             DB::table('sessions')->where('user_id', $user->id)->delete();
         }
+        Log::info('admin.reset_password', ['actor' => $request->user()->id, 'target' => $user->id]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Password {$user->email} berhasil di-reset. Sesi lain milik akun ini ikut dikeluarkan."]);
     }
@@ -61,29 +63,33 @@ class UserController extends Controller
             Storage::disk('local')->delete($user->bukti_npk_path);
         }
         $user->delete();
+        Log::info('admin.hapus_akun', ['actor' => $request->user()->id, 'target_email' => $email]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Akun {$email} dihapus."]);
     }
 
-    public function setujui(User $user)
+    public function setujui(Request $request, User $user)
     {
         abort_unless($user->isGuru() && $user->status === 'pending', 404);
         $user->update(['status' => 'aktif']);
+        Log::info('admin.setujui_guru', ['actor' => $request->user()->id, 'target' => $user->id]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Akun guru {$user->email} disetujui! Fitur gurunya sudah terbuka."]);
     }
 
-    public function tolak(User $user)
+    public function tolak(Request $request, User $user)
     {
         abort_unless($user->isGuru() && $user->status === 'pending', 404);
         $user->update(['status' => 'ditolak']);
+        Log::info('admin.tolak_guru', ['actor' => $request->user()->id, 'target' => $user->id]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Pengajuan {$user->email} ditolak. Ia tidak bisa masuk lagi."]);
     }
 
-    public function unduhBukti(User $user)
+    public function unduhBukti(Request $request, User $user)
     {
-        abort_unless($user->bukti_npk_path && Storage::disk('local')->exists($user->bukti_npk_path), 404);
+        abort_unless($user->isGuru() && $user->bukti_npk_path && Storage::disk('local')->exists($user->bukti_npk_path), 404);
+        Log::info('admin.unduh_bukti', ['actor' => $request->user()->id, 'target' => $user->id]);
 
         return Storage::disk('local')->download($user->bukti_npk_path, 'bukti-npk-' . $user->id . '.' . pathinfo($user->bukti_npk_path, PATHINFO_EXTENSION));
     }

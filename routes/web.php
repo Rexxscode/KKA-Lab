@@ -78,6 +78,7 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::post('/kelas', [GuruClassroomController::class, 'store'])->name('kelas.store');
         Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
         Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');
+        Route::patch('/kelas/{classroom}/kode-baru', [GuruClassroomController::class, 'kodeBaru'])->name('kelas.kode');
         Route::get('/kelas/{classroom}/siswa/{siswa}', [StudentReportController::class, 'show'])->name('kelas.siswa.show');
         Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
         Route::get('/quiz/modul/{module}', [QuizController::class, 'module'])->name('quiz.module');
@@ -102,7 +103,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::post('/pengajuan/{user}/setujui', [AdminUserController::class, 'setujui'])->name('pengajuan.setujui');
     Route::post('/pengajuan/{user}/tolak', [AdminUserController::class, 'tolak'])->name('pengajuan.tolak');
-    Route::get('/bukti/{user}', [AdminUserController::class, 'unduhBukti'])->name('bukti.unduh');
+    Route::get('/bukti/{user}', [AdminUserController::class, 'unduhBukti'])->middleware('throttle:10,1')->name('bukti.unduh');
 });
 
 Route::get('/verifikasi-sertifikat/{code}', [VerifyCertificateController::class, 'show'])

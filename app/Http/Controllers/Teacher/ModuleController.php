@@ -116,6 +116,7 @@ class ModuleController extends Controller
     public function lepas(Request $request, Classroom $classroom, Module $module)
     {
         $this->kelasMilik($request, $classroom);
+        $this->modulTerpasang($classroom, $module);
         $classroom->modules()->detach($module->id);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Modul \"{$module->title}\" dilepas dari {$classroom->name}."]);
@@ -134,6 +135,7 @@ class ModuleController extends Controller
     private function geser(Request $request, Classroom $classroom, Module $module, int $arah)
     {
         $this->kelasMilik($request, $classroom);
+        $this->modulTerpasang($classroom, $module);
 
         $daftar = $classroom->modules()->orderByPivot('position')->get();
         $idx = $daftar->search(fn ($m) => $m->id === $module->id);
@@ -166,6 +168,15 @@ class ModuleController extends Controller
         abort_unless(
             $classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(),
             403
+        );
+    }
+
+    private function modulTerpasang(Classroom $classroom, Module $module): void
+    {
+        abort_unless(
+            $classroom->modules()->where('modules.id', $module->id)->exists(),
+            404,
+            'Modul tidak terpasang di kelas ini.'
         );
     }
 }

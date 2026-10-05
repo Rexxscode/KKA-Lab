@@ -6,7 +6,13 @@
                 <h2 class="font-extrabold text-xl text-slate-900">{{ $classroom->name }}</h2>
                 <p class="text-sm text-slate-500">Kode kelas: <b class="text-orange-500 tracking-widest">{{ $classroom->code }}</b> • {{ $classroom->students->count() }} siswa</p>
             </div>
-            <a href="{{ route('guru.kelas.export', $classroom) }}" class="kka-btn-primary !py-2 text-sm">Ekspor CSV</a>
+            <div class="flex flex-wrap gap-2">
+                <form method="POST" action="{{ route('guru.kelas.kode', $classroom) }}" onsubmit="return confirm('Buat kode baru? Kode lama langsung hangus.')">
+                    @csrf @method('PATCH')
+                    <button class="kka-btn-secondary !py-2 text-sm">Kode Baru</button>
+                </form>
+                <a href="{{ route('guru.kelas.export', $classroom) }}" class="kka-btn-primary !py-2 text-sm">Ekspor CSV</a>
+            </div>
         </div>
     </x-slot>
 
