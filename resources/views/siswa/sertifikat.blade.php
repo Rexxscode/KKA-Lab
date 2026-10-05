@@ -47,27 +47,17 @@
                         @endforeach
                     </div>
                 </x-card>
-                <x-card title="Progres Sertifikat" subtitle="Semangat, sedikit lagi!">
-                    <p class="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400">{{ $lulus }}<span class="text-xl text-slate-400">/{{ $modules->count() }}</span></p>
+                <x-card title="Progres Sertifikat" subtitle="Semangat, sedikit lagi!" class="lg:sticky lg:top-6 self-start">
+                    <p class="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400">{{ $lulus }}<span class="text-4xl font-extrabold text-slate-400">/{{ $modules->count() }}</span></p>
                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">modul lulus dengan skor ≥80</p>
                     <div class="mt-3 h-2.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="{{ $modules->count() }}" aria-valuenow="{{ $lulus }}">
                         <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $modules->count() ? round($lulus / $modules->count() * 100) : 0 }}%"></div>
                     </div>
-                    @if($berikutnya)
-                        <div class="mt-4 rounded-2xl border border-orange-200 dark:border-orange-500/30 bg-orange-50/60 dark:bg-orange-500/10 p-4">
-                            <p class="text-xs font-bold tracking-wide text-orange-700 dark:text-orange-300">SELANJUTNYA</p>
-                            <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{{ $berikutnya->title }}</p>
-                            <a href="{{ route('siswa.bahan.show', $berikutnya->slug) }}" class="inline-block mt-2 text-xs font-extrabold text-orange-600 dark:text-orange-400 hover:text-orange-700">Kerjakan sekarang →</a>
+                    <div class="mt-4 space-y-2 text-sm">
+                        <div class="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-4 py-2.5">
+                            <span class="font-semibold text-slate-600 dark:text-slate-300">Total XP-mu</span>
+                            <span class="font-extrabold text-orange-500">{{ $totalXp }} XP</span>
                         </div>
-                    @endif
-                    <ul class="mt-4 space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
-                        <li class="flex items-center gap-2"><span class="font-extrabold text-emerald-600 dark:text-emerald-400">✓</span> Skor minimal 80 per modul</li>
-                        <li class="flex items-center gap-2"><span class="font-extrabold text-emerald-600 dark:text-emerald-400">✓</span> {{ $modules->count() }} modul wajib</li>
-                        <li class="flex items-center gap-2"><span class="font-extrabold text-emerald-600 dark:text-emerald-400">✓</span> Terbit otomatis + bisa diverifikasi</li>
-                    </ul>
-                    <div class="mt-4 flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-sm">
-                        <span class="font-semibold text-slate-600 dark:text-slate-300">Total XP-mu</span>
-                        <span class="font-extrabold text-orange-500">{{ $totalXp }} XP</span>
                     </div>
                     <a href="{{ route('siswa.dashboard') }}" class="kka-btn-primary mt-4 !py-2 text-sm">Lanjut Belajar</a>
                 </x-card>
