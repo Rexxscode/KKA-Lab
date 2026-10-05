@@ -33,8 +33,8 @@ class ModuleController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:150',
-            'description' => 'nullable|string',
-            'materi' => 'required|string',
+            'description' => 'nullable|string|max:2000',
+            'materi' => 'required|string|max:50000',
             'xp_reward' => 'nullable|integer|min:0|max:1000',
         ]);
 
@@ -70,8 +70,8 @@ class ModuleController extends Controller
 
         $data = $request->validate([
             'title' => 'required|string|max:150',
-            'description' => 'nullable|string',
-            'materi' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
+            'materi' => 'nullable|string|max:50000',
             'xp_reward' => 'nullable|integer|min:0|max:1000',
         ]);
 
@@ -88,6 +88,49 @@ class ModuleController extends Controller
         $module->delete();
 
         return redirect()->route('guru.modul.index')->with('toast', ['type' => 'success', 'message' => "Modul \"{$judul}\" beserta soalnya dihapus."]);
+    }
+
+    /**
+     * Duplikat modul + soalnya. Default milik admin ikut ter-fork jadi milik guru.
+     */
+    public function duplikat(Request $request, Module $module)
+    {
+        $user = $request->user();
+
+        if ($user->isAdmin()) {
+            abort_unless($module->isDefault(), 403);
+            $pemilik = null;
+        } else {
+            abort_unless($module->isDefault() || $module->teacher_id === $user->id, 403);
+            $pemilik = $user->id;
+        }
+
+        $salin = $module->replicate();
+        $salin->teacher_id = $pemilik;
+        $salin->title = $module->title . ' (salinan)';
+        $salin->slug = Str::slug($module->title) . '-salin-' . substr(md5(uniqid((string) rand(), true)), 0, 6);
+        $salin->order = (int) (Module::where('teacher_id', $pemilik)->max('order') ?? 0) + 1;
+        $salin->save();
+
+        $sumberSoal = $module->quizzes();
+        if (! $user->isAdmin()) {
+            $sumberSoal->where(fn ($q) => $q->where('teacher_id', $pemilik)->orWhereNull('teacher_id'));
+        }
+        foreach ($sumberSoal->get() as $soal) {
+            $salinSoal = $soal->replicate();
+            $salinSoal->module_id = $salin->id;
+            $salinSoal->teacher_id = $pemilik;
+            $salinSoal->save();
+        }
+
+        if (! $user->isAdmin()) {
+            foreach ($user->taughtClassrooms as $kelas) {
+                $pos = (int) ($kelas->modules()->max('classroom_module.position') ?? 0) + 1;
+                $kelas->modules()->attach($salin->id, ['position' => $pos]);
+            }
+        }
+
+        return back()->with('toast', ['type' => 'success', 'message' => "Modul \"{$module->title}\" diduplikat beserta soalnya!"]);
     }
 
     /**
@@ -116,6 +159,7 @@ class ModuleController extends Controller
     public function lepas(Request $request, Classroom $classroom, Module $module)
     {
         $this->kelasMilik($request, $classroom);
+        $this->modulTerpasang($classroom, $module);
         $classroom->modules()->detach($module->id);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Modul \"{$module->title}\" dilepas dari {$classroom->name}."]);
@@ -134,6 +178,7 @@ class ModuleController extends Controller
     private function geser(Request $request, Classroom $classroom, Module $module, int $arah)
     {
         $this->kelasMilik($request, $classroom);
+        $this->modulTerpasang($classroom, $module);
 
         $daftar = $classroom->modules()->orderByPivot('position')->get();
         $idx = $daftar->search(fn ($m) => $m->id === $module->id);
@@ -166,6 +211,15 @@ class ModuleController extends Controller
         abort_unless(
             $classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(),
             403
+        );
+    }
+
+    private function modulTerpasang(Classroom $classroom, Module $module): void
+    {
+        abort_unless(
+            $classroom->modules()->where('modules.id', $module->id)->exists(),
+            404,
+            'Modul tidak terpasang di kelas ini.'
         );
     }
 }

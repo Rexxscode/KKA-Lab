@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Classroom extends Model
 {
-    protected $fillable = ['teacher_id', 'name', 'code'];
+    protected $fillable = ['teacher_id', 'name', 'code', 'status'];
 
     public function teacher()
     {
@@ -20,6 +20,6 @@ class Classroom extends Model
 
     public function modules()
     {
-        return $this->belongsToMany(Module::class, 'classroom_module')->withPivot('position')->withTimestamps()->orderByPivot('position');
+        return $this->belongsToMany(Module::class, 'classroom_module')->withPivot(['position', 'due_at'])->withTimestamps()->orderByPivot('position');
     }
 }

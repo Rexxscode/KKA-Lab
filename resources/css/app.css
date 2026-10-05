@@ -2,6 +2,9 @@
 @plugin "@tailwindcss/forms";
 @import "./design-tokens.css";
 
+/* Dark mode Tailwind v4 berbasis class .dark di <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 
 @theme {
@@ -14,7 +17,7 @@ body {
 }
 
 .kka-card {
-    @apply bg-white border border-slate-200 rounded-2xl shadow-sm;
+    @apply bg-white border border-slate-200 rounded-2xl shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:shadow-none;
 }
 
 /* Angka statistik: cukup gelap untuk teks besar (≥3:1). */
@@ -24,18 +27,18 @@ body {
 
 /* Status kecil: kontras ≥4.5:1 di atas putih. */
 .kka-status-ok {
-    @apply font-bold text-emerald-700 whitespace-nowrap;
+    @apply font-bold text-emerald-700 whitespace-nowrap dark:text-emerald-400;
 }
 .kka-status-warn {
-    @apply font-bold text-orange-700 whitespace-nowrap;
+    @apply font-bold text-orange-700 whitespace-nowrap dark:text-orange-400;
 }
 .kka-status-idle {
-    @apply font-bold text-slate-500 whitespace-nowrap;
+    @apply font-bold text-slate-500 whitespace-nowrap dark:text-slate-400;
 }
 
 /* Catatan kaki mikro: minimal 12px, abu cukup gelap. */
 .kka-note {
-    @apply text-xs text-slate-500;
+    @apply text-xs text-slate-500 dark:text-slate-400;
 }
 
 .kka-btn-primary {
@@ -43,11 +46,11 @@ body {
 }
 
 .kka-btn-secondary {
-    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-orange-300 hover:text-orange-600 font-semibold text-slate-700 transition;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-orange-300 hover:text-orange-600 font-semibold text-slate-700 transition dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:border-orange-500 dark:hover:text-orange-400;
 }
 
 .kka-badge {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200;
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30;
 }
 
 /* Fokus keyboard yang jelas di semua kontrol interaktif. */
@@ -91,6 +94,16 @@ summary:focus-visible,
 }
 
 @media print {
+    /* Cetakan selalu terang walau tema gelap aktif. */
+    :root, .dark {
+        --color-page: #fafafa;
+        --color-surface: #ffffff;
+        --color-border: #e2e8f0;
+        --color-muted: #64748b;
+        --color-ink: #0f172a;
+        --color-ink-soft: #334155;
+        color-scheme: light;
+    }
     @page {
         size: A4 landscape;
         margin: 12mm;

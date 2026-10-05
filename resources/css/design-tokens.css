@@ -1,5 +1,5 @@
 /* Design Tokens - Auto-generated */
-/* Do not edit directly - modify tokens.json instead */
+/* Do not edit directly - modify tokens.json instead (lihat meta.dark untuk tema gelap) */
 
 /* === PRIMITIVES === */
 :root {
@@ -63,6 +63,28 @@
   --motion-fast: 150ms;
   --motion-base: 200ms;
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+html {
+  color-scheme: light;
+}
+
+/* === TEMA GELAP (aktif via class .dark di <html>) === */
+.dark {
+  --color-page: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  --color-muted: #94a3b8;
+  --color-ink: #f1f5f9;
+  --color-ink-soft: #cbd5e1;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --badge-bg: rgb(16 185 129 / 0.12);
+  --badge-fg: #6ee7b7;
+  --badge-border: rgb(16 185 129 / 0.3);
+  --progress-track: #334155;
+  --skeleton-base: #334155;
+  color-scheme: dark;
 }
 
 /* === COMPONENTS === */

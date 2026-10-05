@@ -1,7 +1,7 @@
 <x-sidebar-layout>
     <x-slot name="header">
-        <h2 class="font-extrabold text-xl text-slate-900">Bahan Belajar</h2>
-        <p class="text-sm text-slate-500">Baca berurutan dari nomor 1. Modul terkunci terbuka setelah sebelumnya selesai.</p>
+        <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Bahan Belajar</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Baca berurutan dari nomor 1. Modul terkunci terbuka setelah sebelumnya selesai.</p>
     </x-slot>
 
     <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
@@ -18,6 +18,14 @@
                     @endif
                     @if(! $m->isDefault())
                         <span class="kka-badge">Kelas</span>
+                    @endif
+                    @if(isset($m->pivot) && $m->pivot->due_at)
+                        @php $tenggat = \Illuminate\Support\Carbon::parse($m->pivot->due_at); @endphp
+                        @if(! ($p && $p->is_completed) && $tenggat->isPast())
+                            <span class="kka-badge !bg-red-100 !text-red-700 !border-red-300">Terlambat {{ $tenggat->format('d M') }}</span>
+                        @else
+                            <span class="kka-badge">Tenggat {{ $tenggat->format('d M Y') }}</span>
+                        @endif
                     @endif
                 </div>
                 @if($d['terkunci'])

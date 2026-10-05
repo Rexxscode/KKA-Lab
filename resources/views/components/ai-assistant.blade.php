@@ -13,14 +13,14 @@
         </div>
         <div class="h-64 overflow-y-auto p-3 space-y-2 bg-[var(--color-page)]" x-ref="box" aria-live="polite" aria-label="Riwayat percakapan">
             <template x-for="(m, i) in messages" :key="i">
-                <div :class="m.role === 'user' ? 'ml-8 bg-orange-500 text-white' : 'mr-8 bg-white border border-slate-200 text-slate-700'"
+                <div :class="m.role === 'user' ? 'ml-8 bg-orange-500 text-white' : 'mr-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'"
                      class="px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap" x-text="m.text"></div>
             </template>
-            <p x-show="loading" class="text-xs text-slate-500">AI sedang mengetik...</p>
+            <p x-show="loading" class="text-xs text-slate-500 dark:text-slate-400">AI sedang mengetik...</p>
         </div>
-        <form @submit.prevent="send()" class="flex gap-2 p-3 border-t border-slate-200 bg-white">
+        <form @submit.prevent="send()" class="flex gap-2 p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
             <input x-model="draft" placeholder="Tulis pertanyaan..." maxlength="2000" aria-label="Tulis pertanyaan untuk Tutor AI"
-                   class="flex-1 rounded-xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                   class="flex-1 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
             <button :disabled="loading || !draft.trim()" aria-label="Kirim pertanyaan" class="kka-btn-primary !px-3 !py-2 text-sm disabled:opacity-50"><x-icon name="send" class="w-4 h-4" /></button>
         </form>
     </div>

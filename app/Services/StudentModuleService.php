@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Classroom;
 use App\Models\Module;
+use App\Models\Quiz;
 use App\Models\User;
 
 /**
@@ -26,7 +27,7 @@ class StudentModuleService
     public const SOAL_PERCOBAAN = 15;
     public function kelasAktif(User $user): ?Classroom
     {
-        return $user->classrooms()->orderByDesc('classroom_user.id')->first();
+        return $user->classrooms()->where('classrooms.status', 'buka')->orderByDesc('classroom_user.id')->first();
     }
 
     public function guruKelasAktif(User $user): ?int
@@ -54,6 +55,15 @@ class StudentModuleService
         $progress = $user->progress()->get()->keyBy('module_id');
         $guruId = $this->guruKelasAktif($user);
 
+        // Hitung soal per modul sekaligus (2 query) agar tidak N+1.
+        $ids = $modules->pluck('id');
+        $milik = $guruId
+            ? Quiz::whereIn('module_id', $ids)->where('teacher_id', $guruId)
+                ->selectRaw('module_id, COUNT(*) AS n')->groupBy('module_id')->pluck('n', 'module_id')
+            : collect();
+        $default = Quiz::whereIn('module_id', $ids)->whereNull('teacher_id')
+            ->selectRaw('module_id, COUNT(*) AS n')->groupBy('module_id')->pluck('n', 'module_id');
+
         $hasil = [];
         $sebelumSelesai = true;
         foreach ($modules->values() as $i => $m) {
@@ -64,7 +74,7 @@ class StudentModuleService
                 'progress' => $p,
                 'terkunci' => $terkunci,
                 'posisi' => $i + 1,
-                'jumlah_soal' => $this->jumlahSoalEfektif($m, $guruId),
+                'jumlah_soal' => (int) ($milik->get($m->id) ?? $default->get($m->id, 0)),
             ];
             $sebelumSelesai = $p && $p->is_completed;
         }
@@ -128,9 +138,12 @@ class StudentModuleService
      */
     public function uraikanPaket(array $paket): array
     {
+        $ids = collect($paket)->map(fn ($b) => $b['id'] ?? null)->filter()->all();
+        $map = Quiz::whereIn('id', $ids)->get()->keyBy('id');
+
         $hasil = [];
         foreach ($paket as $baris) {
-            $quiz = \App\Models\Quiz::find($baris['id'] ?? null);
+            $quiz = $map->get($baris['id'] ?? null);
             if (! $quiz) {
                 continue;
             }

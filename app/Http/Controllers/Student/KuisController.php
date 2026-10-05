@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Student\ProgressController;
 use App\Models\Module;
 use App\Services\StudentModuleService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class KuisController extends Controller
 {
@@ -36,21 +38,31 @@ class KuisController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk membuka kuis ini!']);
         }
 
-        // Paket acak baru tiap kunjungan (urutan soal + opsi diacak,
+        // Paket acak baru tiap percobaan (urutan soal + opsi diacak,
         // maksimal 15 soal bila bank lebih besar). Disimpan di sesi
         // agar penilaian POST memakai susunan yang sama persis.
-        // Pengecualian: sehabis submit gagal (ada quiz_result), pakai
-        // paket yang sama agar pembahasan sejajar dengan jawaban.
+        // - Sehabis submit gagal (ada quiz_result): pakai paket yang sama
+        //   agar pembahasan sejajar, waktu diperpanjang dari sekarang.
+        // - Refresh dalam jendela waktu: pakai paket yang sama (anti
+        //   farming: refresh tak bisa berburu soal mudah).
         $kunciPaket = 'kuis_paket_' . $module->id;
+        $kunciMulai = 'kuis_mulai_' . $module->id;
         if (session()->has('quiz_result') && session()->has($kunciPaket)) {
+            $paket = session($kunciPaket);
+            session([$kunciMulai => now()->toIso8601String()]);
+        } elseif (
+            session()->has($kunciPaket) && session()->has($kunciMulai)
+            && now()->diffInMinutes(Carbon::parse(session($kunciMulai))) < ProgressController::DURASI_KUIS_MENIT
+        ) {
             $paket = session($kunciPaket);
         } else {
             $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
             $paket = $modul->paketAcak($quizzes);
-            session([$kunciPaket => $paket]);
+            session([$kunciPaket => $paket, $kunciMulai => now()->toIso8601String()]);
         }
         $tampil = $modul->uraikanPaket($paket);
+        $sisaDetik = (int) max(0, ProgressController::DURASI_KUIS_MENIT * 60 - now()->diffInSeconds(Carbon::parse(session($kunciMulai))));
 
-        return view('siswa.kuis-show', compact('module', 'progress', 'tampil'));
+        return view('siswa.kuis-show', compact('module', 'progress', 'tampil', 'sisaDetik'));
     }
 }

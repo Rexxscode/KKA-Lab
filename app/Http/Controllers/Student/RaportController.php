@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Feedback;
+use App\Models\QuizAttempt;
 use App\Models\StudentProgress;
+use App\Models\User;
 use App\Services\StudentModuleService;
 use Illuminate\Http\Request;
 
@@ -24,6 +27,25 @@ class RaportController extends Controller
     public function index(Request $request, StudentModuleService $modul)
     {
         $user = $request->user();
+
+        return view('siswa.raporku', $this->ringkasan($user, $modul));
+    }
+
+    /**
+     * Versi cetak: tabel ringkas tanpa sidebar, siap print/Simpan PDF.
+     */
+    public function cetak(Request $request, StudentModuleService $modul)
+    {
+        $user = $request->user();
+
+        return view('siswa.raporku-cetak', $this->ringkasan($user, $modul) + ['siswa' => $user]);
+    }
+
+    /**
+     * Bangun data rapor agar bisa dipakai ulang (web, cetak, guru).
+     */
+    public function ringkasan(User $user, StudentModuleService $modul): array
+    {
         $daftar = $modul->denganStatus($user);
 
         $skor = [];
@@ -65,7 +87,15 @@ class RaportController extends Controller
         $totalXp = $user->totalXp();
         $lulus = collect($daftar)->filter(fn ($d) => $d['progress'] && $d['progress']->is_completed)->count();
 
-        return view('siswa.raporku', compact('daftar', 'skor', 'saran', 'totalXp', 'lulus'));
+        // Skor terbaik tiap modul dari histori percobaan.
+        $terbaik = QuizAttempt::where('student_id', $user->id)
+            ->selectRaw('module_id, MAX(score) AS s')->groupBy('module_id')->pluck('s', 'module_id');
+
+        // Catatan guru terbaru tiap modul (dari kelas mana pun).
+        $umpanBalik = Feedback::with(['classroom', 'module'])->where('student_id', $user->id)
+            ->latest()->get()->unique('module_id')->keyBy('module_id');
+
+        return compact('daftar', 'skor', 'saran', 'totalXp', 'lulus', 'terbaik', 'umpanBalik');
     }
 
     /**

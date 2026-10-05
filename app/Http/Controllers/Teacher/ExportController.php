@@ -21,7 +21,7 @@ class ExportController extends Controller
 
         return response()->streamDownload(function () use ($classroom, $modules) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, array_merge(['Nama', 'Email', 'Total XP'], $modules->map(fn ($m) => $m->title . ' (skor)')->all(), ['Status']));
+            fputcsv($out, array_map($this->sel(...), array_merge(['Nama', 'Email', 'Total XP'], $modules->map(fn ($m) => $m->title . ' (skor)')->all(), ['Status'])));
 
             foreach ($classroom->students as $s) {
                 $byModule = $s->progress->keyBy('module_id');
@@ -35,10 +35,23 @@ class ExportController extends Controller
                     }
                 }
                 $row[] = $allPass ? 'Lulus' : 'Belum';
-                fputcsv($out, $row);
+                fputcsv($out, array_map($this->sel(...), $row));
             }
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Cegah formula injection: sel teks berawalan = + - @ diberi
+     * tanda kutip tunggal agar spreadsheet membacanya sebagai teks.
+     */
+    private function sel(mixed $value): mixed
+    {
+        if (is_string($value) && preg_match('/^\s*[=+\-@]/', $value)) {
+            return "'" . $value;
+        }
+
+        return $value;
     }
 }
