@@ -14,6 +14,7 @@
         <x-card title="Grafik Skor per Modul" subtitle="Skor kuis terakhir tiap modul (lulus ≥80).">
             <div class="relative h-64">
                 <canvas id="grafik-rapor" aria-label="Grafik skor per modul" role="img"></canvas>
+                <p id="grafik-gagal" class="hidden absolute inset-0 flex items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400 px-6">Grafik tidak bisa dimuat (CDN Chart.js tidak terjangkau). Daftarmu tetap tampil lengkap di bawah.</p>
             </div>
             <div class="mt-3 space-y-2">
                 @foreach($daftar as $d)
@@ -70,7 +71,12 @@
 <script>
 (function () {
     const el = document.getElementById('grafik-rapor');
-    if (!el || typeof Chart === 'undefined') return;
+    if (!el || typeof Chart === 'undefined') {
+        const gagal = document.getElementById('grafik-gagal');
+        if (el) el.classList.add('hidden');
+        if (gagal) gagal.classList.remove('hidden');
+        return;
+    }
     const data = @js($skor);
     const bacaToken = () => {
         const css = getComputedStyle(document.documentElement);
