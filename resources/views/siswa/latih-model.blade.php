@@ -69,6 +69,25 @@
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Beruntun benar: <b x-text="streak"></b>/5</p>
         </x-card>
 
+        <x-card title="Mode Lanjutan — Training Beneran (beta)" subtitle="Latih head neural network dari contohmu (gradient descent, 10 epoch). Butuh minimal 5 contoh per label. HP kentang: tutup aplikasi lain dulu.">
+            <div class="flex flex-wrap gap-2">
+                <button type="button" @click="latihLanjutan()" :disabled="!bisaLatihLanjutan()" class="kka-btn-primary !py-2 text-sm disabled:opacity-40" x-text="melatih ? 'Melatih...' : 'Latih Lanjutan'"></button>
+                <button type="button" @click="hentikanLatih()" :disabled="!melatih" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40">Hentikan</button>
+                <button type="button" @click="unduhBobot()" :disabled="!headSiap" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40">Unduh Bobot</button>
+            </div>
+            <div x-show="melatih || epochInfo.total" class="mt-3">
+                <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <div class="h-full bg-orange-500 transition-all" :style="'width: ' + (epochInfo.total ? Math.round(epochInfo.jalan / epochInfo.total * 100) : 0) + '%'"></div>
+                </div>
+                <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400" x-text="pesanLatih" role="status"></p>
+            </div>
+            <label class="mt-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <input type="checkbox" x-model="pakaiHead" :disabled="!headSiap" class="rounded accent-orange-500 w-4 h-4" />
+                Uji pakai model lanjutan (bukan KNN)
+            </label>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Bobot yang diunduh (model.json + weights.bin) bisa dibuka di <span class="font-mono">teachablemachine.withgoogle.com</span> bagian Advanced bila formatnya cocok, atau dinilai gurumu sebagai artefak.</p>
+        </x-card>
+
         <x-card title="Langkah 4 — Kirim ke Guru" subtitle="Gurumu memeriksa dulu; yang disetujui tayang sebagai Model Global untuk semua.">
             <ul class="space-y-1 text-sm">
                 <template x-for="s in syaratList" :key="s.teks">
@@ -96,6 +115,8 @@
             cameraOn: false, modelSiap: false, statusModel: 'Memuat backbone MobileNet...',
             ujiLabel: 0, hasilUji: '', streak: 0, pesanDraf: '', pesanOk: false,
             namaModel: '', mengirim: false, memindai: false,
+            melatih: false, headSiap: false, pakaiHead: false,
+            epochInfo: { jalan: 0, total: 0 }, pesanLatih: '',
             daftarBox: [], boxPilih: null, pesanPindai: 'Klik Pindai Objek, lalu klik salah satu kotak untuk melatih benda itu. Bila tak terdeteksi, contoh diambil dari tengah frame.',
             pelatih: null, kunciDraf: 'kka-draf-{{ auth()->id() }}',
             async boot() {
@@ -134,6 +155,8 @@
                 this.labels.splice(i, 1);
                 this.pelatih.reset();
                 this.streak = 0;
+                this.headSiap = false;
+                this.pakaiHead = false;
                 this.segarkanJumlah();
             },
             segarkanJumlah() {
@@ -213,18 +236,69 @@
             async uji() {
                 if (!this.bisaLatih()) { this.hasilUji = 'Aktifkan kamera dan pastikan minimal 2 label.'; return; }
                 const nama = this.labels[this.ujiLabel];
-                if ((this.jumlah[this.ujiLabel] || 0) === 0) { this.hasilUji = 'Label "' + nama + '" belum punya contoh.'; return; }
+                if ((this.jumlah[this.ujiLabel] || 0) === 0 && !this.pakaiHead) { this.hasilUji = 'Label "' + nama + '" belum punya contoh.'; return; }
                 try {
-                    const hasil = await this.pelatih.uji(this.$refs.video);
-                    if (!hasil) { this.hasilUji = 'Belum ada data latih.'; return; }
-                    if (Number(hasil.label) === this.ujiLabel) {
+                    let benar = false, info = '';
+                    if (this.pakaiHead && this.headSiap) {
+                        const hasil = await this.pelatih.ujiHead(this.$refs.video);
+                        if (!hasil) { this.hasilUji = 'Model lanjutan belum siap.'; return; }
+                        benar = Number(hasil.label) === this.ujiLabel;
+                        info = ' (model lanjutan, ' + Math.round((hasil.confidence || 0) * 100) + '%)';
+                    } else {
+                        const hasil = await this.pelatih.uji(this.$refs.video);
+                        if (!hasil) { this.hasilUji = 'Belum ada data latih.'; return; }
+                        benar = Number(hasil.label) === this.ujiLabel;
+                        info = ' (terdeteksi "' + (this.labels[Number(hasil.label)] || '?') + '")';
+                    }
+                    if (benar) {
                         this.streak++;
-                        this.hasilUji = 'Benar! "' + nama + '" dikenali. (' + this.streak + '/5)';
+                        this.hasilUji = 'Benar! "' + nama + '" dikenali. (' + this.streak + '/5)' + info;
                     } else {
                         this.streak = 0;
-                        this.hasilUji = 'Kurang tepat — terdeteksi "' + (this.labels[Number(hasil.label)] || '?') + '". Tambah contoh ' + nama + ' yang bervariasi!';
+                        this.hasilUji = 'Kurang tepat — coba tambah contoh ' + nama + ' yang bervariasi!' + info;
                     }
                 } catch (e) { this.hasilUji = 'Gagal menguji. Coba lagi.'; }
+            },
+            bisaLatihLanjutan() {
+                if (!this.modelSiap || this.melatih || this.labels.length < 2) return false;
+                const lib = window.KkaTrainer;
+                const jumlahNama = {};
+                this.labels.forEach((nama, i) => { jumlahNama[nama] = this.jumlah[i] || 0; });
+                return lib.validasiLatih(jumlahNama).ok;
+            },
+            async latihLanjutan() {
+                if (!this.bisaLatihLanjutan()) return;
+                this.melatih = true;
+                this.headSiap = false;
+                this.epochInfo = { jalan: 0, total: 10 };
+                this.pesanLatih = 'Menyiapkan data...';
+                try {
+                    const hasil = await this.pelatih.latihLanjutan({
+                        epochs: 10, batchSize: 5,
+                        onEpoch: (epoch, logs) => {
+                            this.epochInfo = { jalan: epoch + 1, total: 10 };
+                            const loss = logs.loss !== undefined ? Number(logs.loss).toFixed(3) : '?';
+                            const acc = logs.acc !== undefined ? Math.round(Number(logs.acc) * 100) : (logs.accuracy !== undefined ? Math.round(Number(logs.accuracy) * 100) : '?');
+                            this.pesanLatih = 'Epoch ' + (epoch + 1) + '/10 — loss ' + loss + ', akurasi ' + acc + '%';
+                        },
+                    });
+                    this.headSiap = true;
+                    const acc = hasil.acc !== null && hasil.acc !== undefined ? Math.round(Number(hasil.acc) * 100) + '%' : '?';
+                    this.pesanLatih = 'Selesai! Akurasi latih ' + acc + '. Aktifkan "Uji pakai model lanjutan" untuk mencoba.';
+                } catch (e) {
+                    this.pesanLatih = 'Gagal melatih: ' + (String((e && e.message) || e).includes('contoh-kurang') ? 'contoh tiap label minimal 5.' : 'coba kurangi contoh atau muat ulang halaman.');
+                }
+                this.melatih = false;
+            },
+            hentikanLatih() {
+                this.pelatih.hentikanLatih();
+                this.pesanLatih = 'Dihentikan. Bobot terakhir yang selesai epoch tetap bisa dipakai.';
+            },
+            async unduhBobot() {
+                try {
+                    await this.pelatih.unduhBobot('model-' + this.labels.join('-').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30));
+                    this.pesanLatih = 'Bobot diunduh (model.json + weights.bin).';
+                } catch (e) { this.pesanLatih = 'Gagal mengunduh bobot.'; }
             },
             get syaratList() {
                 const lib = window.KkaTrainer;
@@ -295,6 +369,7 @@
             resetSemua() {
                 if (!confirm('Hapus semua label, contoh, dan draf?')) return;
                 this.labels = []; this.jumlah = {}; this.streak = 0;
+                this.headSiap = false; this.pakaiHead = false; this.melatih = false;
                 this.pelatih.reset();
                 window.KkaTrainer.tulisDraf(this.kunciDraf, null).catch(() => {});
                 this.pesanDraf = 'Draf dihapus.';

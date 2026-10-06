@@ -8,6 +8,9 @@ export const MAX_LABEL = 5;
 export const MIN_SAMPEL = 20;
 export const STREAK_SYARAT = 5;
 export const MAKS_LABEL_PANJANG = 30;
+export const MIN_SAMPEL_LATIH = 5;
+export const MAKS_EPOCH = 20;
+export const MAKS_BATCH = 16;
 
 /** Validasi daftar label karya siswa. */
 export function validasiLabel(daftar) {
@@ -88,13 +91,38 @@ export function deserializeDataset(data) {
   return keluar;
 }
 
-/** Estimasi ukuran dataset (byte) untuk validasi batas upload. */
+/**
+ * Estimasi ukuran dataset (byte) untuk validasi batas upload.
+ */
 export function ukuranDataset(data) {
   let n = 0;
   for (const label of data.labels || []) {
     for (const b64 of (data.contoh || {})[label] || []) n += Math.ceil((b64.length * 3) / 4);
   }
   return n;
+}
+
+/**
+ * Syarat mode Latih Lanjutan (transfer learning): minimal 2 label
+ * dengan minimal MIN_SAMPEL_LATIH contoh tiap label.
+ */
+export function validasiLatih(jumlah) {
+  const labels = Object.keys(jumlah || {});
+  if (labels.length < MIN_LABEL) return { ok: false, galat: `Butuh minimal ${MIN_LABEL} label berisi contoh.` };
+  for (const label of labels) {
+    if ((jumlah[label] || 0) < MIN_SAMPEL_LATIH) {
+      return { ok: false, galat: `"${label}" baru ${jumlah[label] || 0}/${MIN_SAMPEL_LATIH} contoh untuk latih lanjutan.` };
+    }
+  }
+  return { ok: true, galat: '' };
+}
+
+/** Jepit hiperparameter ke batas aman HP (anti-OOM / anti-hang). */
+export function jepitHiperparam({ epochs = 10, batchSize = 5 } = {}) {
+  return {
+    epochs: Math.max(1, Math.min(Math.floor(epochs) || 10, MAKS_EPOCH)),
+    batchSize: Math.max(1, Math.min(Math.floor(batchSize) || 5, MAKS_BATCH)),
+  };
 }
 
 /**

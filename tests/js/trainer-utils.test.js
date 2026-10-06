@@ -5,15 +5,20 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  MAKS_BATCH,
+  MAKS_EPOCH,
   MIN_SAMPEL,
+  MIN_SAMPEL_LATIH,
   STREAK_SYARAT,
   cekSyarat,
   deserializeDataset,
+  jepitHiperparam,
   kotakKeCrop,
   petakanBox,
   serializeDataset,
   ukuranDataset,
   validasiLabel,
+  validasiLatih,
 } from '../../resources/js/ai/trainer-utils.js';
 
 describe('validasiLabel', () => {
@@ -108,5 +113,26 @@ describe('petakanBox', () => {
 
   it('menolak dimensi nol', () => {
     assert.equal(petakanBox([0, 0, 10, 10], 0, 100, 640, 480), null);
+  });
+});
+
+describe('validasiLatih', () => {
+  it('lolos bila tiap label cukup contoh', () => {
+    assert.equal(validasiLatih({ Botol: 8, Buku: 5 }).ok, true);
+    assert.equal(MIN_SAMPEL_LATIH, 5);
+  });
+
+  it('menolak label kurang contoh', () => {
+    const r = validasiLatih({ Botol: 8, Buku: 2 });
+    assert.equal(r.ok, false);
+    assert.ok(r.galat.includes('Buku'));
+  });
+});
+
+describe('jepitHiperparam', () => {
+  it('menjepit ke batas aman', () => {
+    assert.deepEqual(jepitHiperparam({ epochs: 100, batchSize: 64 }), { epochs: MAKS_EPOCH, batchSize: MAKS_BATCH });
+    assert.deepEqual(jepitHiperparam({ epochs: 0, batchSize: 0 }), { epochs: 10, batchSize: 5 });
+    assert.deepEqual(jepitHiperparam(), { epochs: 10, batchSize: 5 });
   });
 });

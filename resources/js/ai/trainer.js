@@ -9,7 +9,7 @@ import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
-import { deserializeDataset, kotakKeCrop, serializeDataset } from './trainer-utils.js';
+import { deserializeDataset, jepitHiperparam, kotakKeCrop, serializeDataset } from './trainer-utils.js';
 
 export async function defaultLoadBackbone() {
   await tf.ready();
@@ -173,6 +173,7 @@ export class Pelatih {
 
   setDataset(dataset) {
     this.knn.clearAllClasses();
+    this.buangHead();
     const tensors = {};
     for (const [k, arrs] of Object.entries(dataset || {})) {
       if (!arrs.length) continue;
@@ -205,6 +206,103 @@ export class Pelatih {
 
   reset() {
     this.knn.clearAllClasses();
+    this.buangHead();
+  }
+
+  /** Buang head transfer-learning bila ada (dipakai ulang tiap latih baru). */
+  buangHead() {
+    if (this.head) {
+      try { this.head.dispose(); } catch (e) { /* abaikan */ }
+      this.head = null;
+      this.headInfo = null;
+    }
+  }
+
+  /**
+   * Latih Lanjutan (transfer learning beneran): head dense kecil di atas
+   * embedding MobileNet beku, dilatih dari contoh KNN yang terkumpul.
+   * Mengembalikan {loss, acc} epoch terakhir. Lempar bila data kurang.
+   */
+  async latihLanjutan({ epochs = 10, batchSize = 5, units = 64, lr = 0.001, onEpoch } = {}) {
+    const { epochs: ep, batchSize: bs } = jepitHiperparam({ epochs, batchSize });
+    const mentah = this.knn.getClassifierDataset();
+    const kelas = Object.keys(mentah);
+    if (kelas.length < 2) throw new Error('butuh-2-kelas');
+    const dim = mentah[kelas[0]].shape[1];
+    const xsArr = [];
+    const ysArr = [];
+    kelas.forEach((k, ci) => {
+      const t = mentah[k];
+      const data = t.dataSync();
+      const perContoh = data.length / t.shape[0];
+      for (let i = 0; i < t.shape[0]; i++) {
+        xsArr.push(Array.from(data.slice(i * perContoh, (i + 1) * perContoh)));
+        ysArr.push(ci);
+      }
+    });
+    if (xsArr.length < kelas.length * 5) throw new Error('contoh-kurang');
+
+    this.buangHead();
+    const xs = tf.tensor2d(xsArr, [xsArr.length, dim]);
+    const ys = tf.oneHot(tf.tensor1d(ysArr, 'int32'), kelas.length);
+    const head = tf.sequential();
+    head.add(tf.layers.dense({ inputShape: [dim], units: Math.max(16, Math.min(units, 256)), activation: 'relu' }));
+    head.add(tf.layers.dense({ units: kelas.length, activation: 'softmax' }));
+    head.compile({ optimizer: tf.train.adam(lr), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
+    this.head = head;
+    this.headInfo = { kelas, dim, units, epochs: ep };
+    try {
+      const riwayat = await head.fit(xs, ys, {
+        shuffle: true,
+        batchSize: Math.min(bs, xsArr.length),
+        epochs: ep,
+        callbacks: {
+          onEpochEnd: (epoch, logs) => {
+            if (onEpoch) onEpoch(epoch, logs || {});
+          },
+        },
+      });
+      const loss = riwayat.history.loss || [];
+      const acc = riwayat.history.acc || riwayat.history.accuracy || [];
+      this.headInfo.hasil = {
+        loss: loss.length ? loss[loss.length - 1] : null,
+        acc: acc.length ? acc[acc.length - 1] : null,
+      };
+      return this.headInfo.hasil;
+    } finally {
+      xs.dispose();
+      ys.dispose();
+    }
+  }
+
+  hentikanLatih() {
+    if (this.head) this.head.stopTraining = true;
+  }
+
+  get adaHead() {
+    return this.head !== null && this.head !== undefined;
+  }
+
+  /** Prediksi memakai head hasil latih lanjutan -> {label, confidence} atau null. */
+  async ujiHead(video) {
+    if (!this.head || !this.headInfo) return null;
+    const aktivasi = this.backbone.infer(video, true);
+    try {
+      const keluar = this.head.predict(aktivasi);
+      const skor = Array.from(keluar.dataSync());
+      keluar.dispose();
+      let idx = 0;
+      skor.forEach((s, i) => { if (s > skor[idx]) idx = i; });
+      return { label: this.headInfo.kelas[idx], confidence: skor[idx] };
+    } finally {
+      aktivasi.dispose();
+    }
+  }
+
+  /** Unduh bobot head (model.json + weights.bin) sebagai artefak. */
+  async unduhBobot(nama = 'model-latihanku') {
+    if (!this.head) throw new Error('belum-latih');
+    await this.head.save('downloads://' + String(nama).replace(/[^a-z0-9-_]+/gi, '-').slice(0, 40));
   }
 
   dispose() {
