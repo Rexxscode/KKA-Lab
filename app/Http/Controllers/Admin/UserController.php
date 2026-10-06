@@ -99,4 +99,15 @@ class UserController extends Controller
 
         return Storage::disk('local')->download($user->bukti_npk_path, 'bukti-npk-' . $user->id . '.' . pathinfo($user->bukti_npk_path, PATHINFO_EXTENSION));
     }
+
+    /**
+     * Status tanda tangan penandatangan sertifikat (read-only).
+     */
+    public function tandaTangan()
+    {
+        $superAdmin = User::superAdmin();
+        $gurus = User::where('role', 'guru')->where('status', 'aktif')->orderBy('name')->get();
+
+        return view('admin.tanda-tangan', compact('superAdmin', 'gurus'));
+    }
 }

@@ -15,6 +15,14 @@
                     <p class="text-xs text-slate-500 dark:text-slate-400">Tanggal Terbit</p>
                     <p class="font-bold">{{ $certificate->issued_at->format('d M Y') }}</p>
                 </div>
+                <div class="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-4 py-3">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Super Admin</p>
+                    <p class="font-bold">{{ $certificate->super_admin_nama ?? '—' }}</p>
+                </div>
+                <div class="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-4 py-3">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Guru Pembimbing</p>
+                    <p class="font-bold">{{ $certificate->guru_nama ?? '—' }}</p>
+                </div>
             </div>
             <a href="{{ route('home') }}" class="kka-btn-primary mt-6">Ke Beranda KKA Lab</a>
         </div>

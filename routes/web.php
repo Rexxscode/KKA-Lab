@@ -47,6 +47,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/tanda-tangan', [ProfileController::class, 'tandaTangan'])->name('profile.ttd');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/ai/chat', [AiChatController::class, 'chat'])->middleware('throttle:30,1')->name('ai.chat');
 });
@@ -113,6 +114,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/pengajuan/{user}/setujui', [AdminUserController::class, 'setujui'])->name('pengajuan.setujui');
     Route::post('/pengajuan/{user}/tolak', [AdminUserController::class, 'tolak'])->name('pengajuan.tolak');
     Route::get('/bukti/{user}', [AdminUserController::class, 'unduhBukti'])->middleware('throttle:10,1')->name('bukti.unduh');
+    Route::get('/tanda-tangan', [AdminUserController::class, 'tandaTangan'])->name('tanda-tangan');
     Route::get('/ai-logs', [AiLogController::class, 'admin'])->name('ai.index');
 });
 

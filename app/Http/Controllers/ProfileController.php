@@ -108,6 +108,28 @@ class ProfileController extends Controller
     }
 
     /**
+     * Simpan gambar tanda tangan (canvas) untuk guru & super admin.
+     */
+    public function tandaTangan(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->isGuru() || $user->isSuperAdmin(), 403);
+
+        $data = $request->validate([
+            'tanda_tangan' => ['required', 'image', 'mimes:png,jpg,jpeg', 'max:1024'],
+        ]);
+
+        if ($user->signature_path) {
+            Storage::disk('public')->delete($user->signature_path);
+        }
+        $user->update(['signature_path' => $request->file('tanda_tangan')->storeAs(
+            'signatures', 'ttd-' . $user->id . '.' . $request->file('tanda_tangan')->extension(), 'public'
+        )]);
+
+        return Redirect::route('profile.edit')->with('status', 'ttd-updated');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

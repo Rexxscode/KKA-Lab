@@ -83,6 +83,7 @@
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Default</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
                         <x-side-link :href="route('admin.ai.index')" :active="request()->routeIs('admin.ai.*')" icon="chat">Log AI</x-side-link>
+                        <x-side-link :href="route('admin.tanda-tangan')" :active="request()->routeIs('admin.tanda-tangan')" icon="pencil">Tanda Tangan</x-side-link>
                         <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')" icon="award">Pratinjau Siswa</x-side-link>
                     </div>
                 </div>
