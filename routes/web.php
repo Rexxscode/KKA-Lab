@@ -10,6 +10,7 @@ use App\Http\Controllers\Student\CertificateController;
 use App\Http\Controllers\Student\ClassroomJoinController;
 use App\Http\Controllers\Student\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Student\KuisController;
+use App\Http\Controllers\Student\LatihController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RaportController;
 use App\Http\Controllers\Teacher\ClassroomController as GuruClassroomController;
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::get('/bahan/{slug}', [BahanController::class, 'show'])->name('bahan.show');
     Route::post('/bahan/{slug}/selesai', [BahanController::class, 'markRead'])->name('bahan.read');
     Route::get('/kuis', [KuisController::class, 'index'])->name('kuis.index');
+    Route::get('/latih-model', [LatihController::class, 'index'])->name('latih.index');
     Route::get('/kuis/{slug}', [KuisController::class, 'show'])->name('kuis.show');
     Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->middleware('throttle:10,1')->name('kuis.submit');
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->middleware('throttle:30,1')->name('modul.handson');
