@@ -29,6 +29,7 @@ class Ronde2Test extends TestCase
         // demo kamera landing + deteksi mati dengan "Failed to fetch").
         $csp = $res->headers->get('Content-Security-Policy');
         $this->assertStringContainsString('https://tfhub.dev', $csp);
+        $this->assertStringContainsString('https://www.kaggle.com', $csp);
         $this->assertStringContainsString('https://storage.googleapis.com', $csp);
         $this->assertStringContainsString('https://cdn.jsdelivr.net', $csp);
     }
