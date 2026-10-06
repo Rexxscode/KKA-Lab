@@ -45,7 +45,7 @@ class RaporSertifikatTest extends TestCase
 
         $this->actingAs($siswa)->get(route('siswa.sertifikat'))->assertOk()->assertSee('Kode Sertifikat');
         $cert = Certificate::where('user_id', $siswa->id)->firstOrFail();
-        $this->assertMatchesRegularExpression('/^KKA-[A-Z0-9]{8}$/', $cert->code);
+        $this->assertMatchesRegularExpression('/^KBT-[A-Z0-9]{8}$/', $cert->code);
 
         // Kode stabil: kunjungan ulang tidak membuat baris/kode baru.
         $this->actingAs($siswa)->get(route('siswa.sertifikat'))->assertOk();
@@ -54,7 +54,7 @@ class RaporSertifikatTest extends TestCase
         // Verifikasi publik tanpa login.
         $this->get(route('sertifikat.verifikasi', $cert->code))
             ->assertOk()->assertSee('Sertifikat Valid')->assertSee($siswa->name);
-        $this->get(route('sertifikat.verifikasi', 'KKA-TIDAKADA'))->assertNotFound();
+        $this->get(route('sertifikat.verifikasi', 'KBT-TIDAKADA'))->assertNotFound();
     }
 
     public function test_raporku_cetak_dan_rapor_guru_per_siswa(): void

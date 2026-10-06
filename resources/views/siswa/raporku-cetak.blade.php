@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rapor {{ $siswa->name }} — KKA Lab</title>
+    <title>Rapor {{ $siswa->name }} — KobotAI Lab</title>
+    <meta name="description" content="Rapor belajar {{ $siswa->name }} di KobotAI Lab." />
     <style>
         body { font-family: ui-sans-serif, system-ui, sans-serif; color: #0f172a; max-width: 720px; margin: 0 auto; padding: 32px 20px; }
         h1 { font-size: 22px; margin: 0; }
@@ -27,7 +28,7 @@
         <a href="{{ route('siswa.raporku') }}">Kembali</a>
     </div>
     <h1>Rapor Belajar — {{ $siswa->name }}</h1>
-    <p class="meta">KKA Lab • {{ $lulus }}/{{ count($daftar) }} modul lulus • Total {{ $totalXp }} XP • {{ now()->format('d M Y') }}</p>
+    <p class="meta">KobotAI Lab • {{ $lulus }}/{{ count($daftar) }} modul lulus • Total {{ $totalXp }} XP • {{ now()->format('d M Y') }}</p>
     <table>
         <thead>
             <tr><th>No</th><th>Modul</th><th>Skor</th><th>Status</th></tr>

@@ -12,7 +12,7 @@
             </div>
             <div class="print-area kka-card !p-10 text-center relative overflow-hidden">
                 <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-orange-500 to-emerald-500"></div>
-                <p class="text-xs font-bold tracking-widest text-emerald-600 dark:text-emerald-400">KKA LAB • LABORATORIUM KODING & KECERDASAN ARTIFISIAL</p>
+                <p class="text-xs font-bold tracking-widest text-emerald-600 dark:text-emerald-400">KOBOTAI LAB • LABORATORIUM KODING & KECERDASAN ARTIFISIAL</p>
                 <h1 class="mt-2 text-4xl font-extrabold text-slate-900 dark:text-white">Sertifikat Kelulusan</h1>
                 <p class="mt-4 text-slate-500 dark:text-slate-400 text-sm">Diberikan kepada</p>
                 <p class="text-2xl font-extrabold text-orange-500">{{ auth()->user()->name }}</p>
@@ -29,7 +29,7 @@
                             <img src="{{ Storage::url($certificate->super_admin_sign_path) }}" alt="Tanda tangan super admin" class="h-14 mx-auto mb-1 px-4" />
                         @endif
                         <p class="font-bold text-slate-800 dark:text-slate-100 text-sm">{{ $certificate->super_admin_nama ?? '—' }}</p>
-                        <p class="border-t border-slate-300 dark:border-slate-600 pt-2 px-8 mt-1">Super Admin KKA Lab</p>
+                        <p class="border-t border-slate-300 dark:border-slate-600 pt-2 px-8 mt-1">Super Admin KobotAI Lab</p>
                     </div>
                     <div class="text-center">
                         @if($certificate->guru_sign_path)

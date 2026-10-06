@@ -55,7 +55,7 @@ class CertificateController extends Controller
     private function kodeUnik(): string
     {
         do {
-            $code = 'KKA-' . Str::upper(Str::random(8));
+            $code = 'KBT-' . Str::upper(Str::random(8));
         } while (Certificate::where('code', $code)->exists());
 
         return $code;

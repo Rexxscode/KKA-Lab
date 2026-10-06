@@ -15,7 +15,7 @@
                 </p>
                 <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Profil &amp; Pengaturan Akun</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
-                    Kelola identitas, keamanan, dan pantau capaian belajarmu di KKA Lab.
+                    Kelola identitas, keamanan, dan pantau capaian belajarmu di KobotAI Lab.
                 </p>
             </div>
         </div>

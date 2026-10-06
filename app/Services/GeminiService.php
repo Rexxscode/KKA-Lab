@@ -15,7 +15,7 @@ class GeminiService
     }
 
     /**
-     * Kirim chat ke Gemini via Laravel AI SDK sebagai tutor KKA yang ramah siswa.
+     * Kirim chat ke Gemini via Laravel AI SDK sebagai tutor KobotAI yang ramah siswa.
      *
      * Melempar {@see AiGagalException} bila AI tak bisa menjawab (belum
      * dikonfigurasi, respons kosong, atau jaringan gagal) — pemanggil
