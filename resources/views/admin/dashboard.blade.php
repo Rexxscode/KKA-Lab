@@ -18,7 +18,17 @@
             <x-card title="Modul" subtitle="KKA"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $stats['modul'] }}</p></x-card>
         </div>
 
-        <x-card title="Pengajuan Akun Guru ({{ $pengajuan->count() }})" subtitle="Verifikasi foto NPK, lalu setujui atau tolak.">
+        @if(isset($global))
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <x-card title="Modul selesai" subtitle="semua siswa"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['modul_selesai'] }}</p></x-card>
+            <x-card title="Rata progres" subtitle="dari 6 default"><p class="text-3xl font-extrabold text-orange-500">{{ $global['rata_progress'] }}%</p></x-card>
+            <x-card title="Rata nilai" subtitle="kuis"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['rata_nilai'] }}</p></x-card>
+            <x-card title="Sertifikat" subtitle="diterbitkan"><p class="text-3xl font-extrabold text-emerald-500">{{ $global['sertifikat'] }}</p></x-card>
+            <x-card title="Aktif 7 hari" subtitle="siswa belajar"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['siswa_aktif'] }}</p></x-card>
+        </div>
+        @endif
+
+        <x-card title="Pengajuan Akun Guru ({{ $pengajuan->count() }})" subtitle="Arsip data lama. Pendaftaran guru baru dihentikan — guru baru hanya via Buat Akun di bawah (langsung aktif).">
             @forelse($pengajuan as $p)
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl border border-orange-200 dark:border-orange-500/30 bg-orange-50/60 dark:bg-orange-500/10 px-4 py-3 mb-2">
                     <div class="flex-1 min-w-0">
@@ -44,7 +54,7 @@
             @endforelse
         </x-card>
 
-        <x-card title="Buat Akun Guru / Admin" subtitle="Guru juga bisa daftar sendiri (wajib NPK, menunggu verifikasi). Akun di sini langsung aktif. Kata sandi minimal 8 karakter.">
+        <x-card title="Buat Akun Guru / Admin" subtitle="Guru baru HANYA via form ini (langsung aktif, tanpa NPK/pending). Kata sandi minimal 8 karakter.">
             <form method="POST" action="{{ route('admin.users.store') }}" class="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
                 @csrf
                 <input name="name" required maxlength="100" placeholder="Nama guru" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />

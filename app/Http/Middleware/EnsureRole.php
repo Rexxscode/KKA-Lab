@@ -16,7 +16,13 @@ class EnsureRole
     {
         $allowed = array_map('trim', $roles);
         $user = $request->user();
-        if (! $user || ! in_array($user->role, $allowed, true)) {
+        // Visitor (belum login) diarahkan ke login dengan pesan yang jelas.
+        if (! $user) {
+            return redirect()
+                ->guest(route('login'))
+                ->with('toast', ['type' => 'error', 'message' => 'Silakan login terlebih dahulu untuk mengakses fitur pembelajaran.']);
+        }
+        if (! in_array($user->role, $allowed, true)) {
             abort(403, 'Akses ditolak untuk peran ini.');
         }
 

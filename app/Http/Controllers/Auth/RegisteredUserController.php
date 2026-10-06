@@ -34,11 +34,14 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:siswa,guru'],
-            'bukti_npk' => ['required_if:role,guru', 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            // Registrasi publik HANYA siswa. Guru dibuatkan admin (lihat Admin\UserController@store).
+            'role' => ['nullable', 'in:siswa'],
         ]);
 
-        $isGuru = $request->role === 'guru';
+        // Tolak tegas bila ada yang memaksa role=guru via request manual.
+        if ($request->filled('role') && $request->role !== 'siswa') {
+            abort(403, 'Pendaftaran guru hanya melalui administrator.');
+        }
 
         $user = new User([
             'name' => $request->name,
@@ -46,12 +49,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
         // Hak akses diisi eksplisit (role/status tidak fillable).
-        $user->role = $request->role;
-        // Siswa langsung aktif; guru menunggu verifikasi NPK oleh admin.
-        $user->status = $isGuru ? 'pending' : 'aktif';
-        $user->bukti_npk_path = $isGuru && $request->hasFile('bukti_npk')
-            ? $request->file('bukti_npk')->store('bukti-npk', 'local')
-            : null;
+        $user->role = 'siswa';
+        $user->status = 'aktif';
         $user->save();
 
         event(new Registered($user));
@@ -59,11 +58,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         $request->session()->regenerate();
-
-        if ($isGuru) {
-            return redirect(route('guru.dashboard', absolute: false))
-                ->with('toast', ['type' => 'success', 'message' => 'Pendaftaran diterima! Akunmu menunggu verifikasi NPK oleh admin.']);
-        }
 
         return redirect(route('siswa.dashboard', absolute: false));
     }

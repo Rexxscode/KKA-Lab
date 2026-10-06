@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Student\ProgressController;
 use App\Models\Module;
 use App\Services\StudentModuleService;
+use App\Services\StudentProgressTracker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -18,7 +19,7 @@ class KuisController extends Controller
         return view('siswa.kuis-index', compact('daftar'));
     }
 
-    public function show(Request $request, string $slug, StudentModuleService $modul)
+    public function show(Request $request, string $slug, StudentModuleService $modul, StudentProgressTracker $tracker)
     {
         $module = Module::where('slug', $slug)->firstOrFail();
         $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
@@ -36,6 +37,10 @@ class KuisController extends Controller
             return redirect()
                 ->route('siswa.bahan.show', $module->slug)
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk membuka kuis ini!']);
+        }
+
+        if (! $request->user()->isAdmin()) {
+            $tracker->touchOpen($request->user(), $module);
         }
 
         // Paket acak baru tiap percobaan (urutan soal + opsi diacak,

@@ -8,11 +8,21 @@ class StudentProgress extends Model
 {
     protected $table = 'student_progress';
 
-    protected $fillable = ['student_id', 'module_id', 'is_completed', 'quiz_score', 'xp_earned', 'hands_on_count', 'hands_on_xp_awarded', 'hands_on_last_at', 'training_xp_awarded', 'reading_done'];
+    protected $fillable = ['student_id', 'module_id', 'is_completed', 'quiz_score', 'xp_earned', 'hands_on_count', 'hands_on_xp_awarded', 'hands_on_last_at', 'training_xp_awarded', 'reading_done', 'status', 'started_at', 'last_accessed_at', 'material_completed_at', 'completed_at', 'best_score', 'attempts'];
 
-    protected $casts = ['is_completed' => 'boolean', 'hands_on_xp_awarded' => 'boolean', 'training_xp_awarded' => 'boolean', 'reading_done' => 'boolean', 'hands_on_last_at' => 'datetime'];
+    protected $casts = ['is_completed' => 'boolean', 'hands_on_xp_awarded' => 'boolean', 'training_xp_awarded' => 'boolean', 'reading_done' => 'boolean', 'hands_on_last_at' => 'datetime', 'started_at' => 'datetime', 'last_accessed_at' => 'datetime', 'material_completed_at' => 'datetime', 'completed_at' => 'datetime'];
 
     public const PASS_SCORE = 80;
+
+    public const STATUS_LOCKED = 'locked';
+
+    public const STATUS_AVAILABLE = 'available';
+
+    public const STATUS_IN_PROGRESS = 'in_progress';
+
+    public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_PASSED = 'passed';
 
     public function student()
     {

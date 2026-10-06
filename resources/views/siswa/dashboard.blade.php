@@ -15,17 +15,38 @@
         </div>
     </x-slot>
 
-    @php $selesai = collect($daftar)->where(fn ($d) => $d['progress'] && $d['progress']->is_completed)->count(); @endphp
+    @php
+        $selesai = $selesai ?? collect($daftar)->where(fn ($d) => $d['progress'] && $d['progress']->is_completed)->count();
+        $totalModul = $totalModul ?? count($daftar);
+        $persen = $persen ?? ($totalModul ? round($selesai / $totalModul * 100) : 0);
+    @endphp
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <x-card title="Total XP" subtitle="dari kuis & praktik"><p class="kka-stat text-orange-600 dark:text-orange-400 flex items-center gap-2"><x-icon name="bolt" class="w-7 h-7" />{{ $totalXp }}</p></x-card>
         <x-card title="Badge" subtitle="dikumpulkan"><p class="kka-stat text-emerald-600 dark:text-emerald-400 flex items-center gap-2"><x-icon name="cap" class="w-7 h-7" />{{ $badges->count() }}</p></x-card>
-        <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $selesai }}/{{ count($daftar) }}</p></x-card>
+        <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $selesai }}/{{ $totalModul }}</p></x-card>
         <div class="kka-card p-6">
             <p class="text-sm text-slate-500 dark:text-slate-400">Progres Belajar</p>
-            <p class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{{ count($daftar) ? round($selesai / count($daftar) * 100) : 0 }}%</p>
-            <x-progress-bar :value="$selesai" :max="count($daftar) ?: 1" class="mt-2" />
+            <p class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{{ $persen }}%</p>
+            <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
         </div>
     </div>
+
+    @if(isset($lanjut) && $lanjut)
+        @php $lm = $lanjut['module']; $lp = $lanjut['progress']; @endphp
+        <x-card title="Lanjutkan Belajar" subtitle="modul yang sedang kamu kerjakan" class="mt-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex-1 min-w-0">
+                    <p class="font-extrabold text-slate-900 dark:text-white truncate">{{ $lanjut['posisi'] }}. {{ $lm->title }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Status: {{ $lp && $lp->is_completed ? 'Selesai' : ($lp && ($lp->reading_done || $lp->quiz_score > 0) ? 'Sedang dikerjakan' : 'Belum dimulai') }}
+                        @if($lp && $lp->quiz_score > 0) • Nilai terakhir: <b>{{ $lp->quiz_score }}</b>@endif
+                        @if($lp && $lp->last_accessed_at) • Terakhir dibuka: {{ $lp->last_accessed_at->format('d M Y H:i') }}@endif
+                    </p>
+                </div>
+                <a href="{{ route('siswa.bahan.show', $lm->slug) }}" class="kka-btn-primary !py-2 text-sm text-center shrink-0">Lanjut →</a>
+            </div>
+        </x-card>
+    @endif
 
     @if(isset($terakhir) && $terakhir && $terakhir->module)
         <div class="mt-4 rounded-2xl border {{ $terakhir->is_completed ? 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10' : 'border-orange-200 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10' }} px-4 py-3 flex flex-wrap items-center gap-2 text-sm" role="status">
@@ -99,6 +120,58 @@
                     <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada percobaan. Kerjakan kuismu!</p>
                 @endforelse
             </div>
+        </x-card>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-3 sm:gap-4 mt-4">
+        <x-card title="Report Belajar" subtitle="ringkasan dari database">
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500 dark:text-slate-400">Selesai</p><p class="text-xl font-extrabold">{{ $selesai }}/{{ $totalModul }}</p></div>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500 dark:text-slate-400">Total XP</p><p class="text-xl font-extrabold">{{ $totalXp }}</p></div>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500 dark:text-slate-400">Rata-rata</p><p class="text-xl font-extrabold">{{ $rataNilai ?? 0 }}</p></div>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500 dark:text-slate-400">Kuis</p><p class="text-xl font-extrabold">{{ $totalKuis ?? 0 }}×</p></div>
+            </div>
+            <div class="mt-3 overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead><tr class="text-left text-slate-500 dark:text-slate-400"><th class="py-1 pr-2">Modul</th><th class="py-1 pr-2">Status</th><th class="py-1 pr-2 text-right">Nilai</th><th class="py-1 text-right">XP</th></tr></thead>
+                    <tbody>
+                        @foreach($daftar as $d)
+                            @php $p = $d['progress']; @endphp
+                            <tr class="border-t border-slate-100 dark:border-slate-800">
+                                <td class="py-1.5 pr-2 font-semibold truncate max-w-32">{{ $d['module']->title }}</td>
+                                <td class="py-1.5 pr-2">@if($d['terkunci'])<span class="kka-status-idle">Terkunci</span>@elseif($p && $p->is_completed)<span class="kka-status-ok">Selesai</span>@elseif($p && ($p->reading_done || $p->quiz_score > 0))<span class="kka-status-warn">Berjalan</span>@else<span class="kka-status-idle">Belum</span>@endif</td>
+                                <td class="py-1.5 pr-2 text-right font-bold">{{ $p ? $p->quiz_score : '—' }}</td>
+                                <td class="py-1.5 text-right">{{ $p ? $p->xp_earned : 0 }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </x-card>
+
+        <x-card title="Raport Belajar" subtitle="sama dengan halaman raport">
+            <div class="text-sm space-y-1.5">
+                <p>Nama: <b>{{ auth()->user()->name }}</b>@if(isset($kelasAktif) && $kelasAktif) • Kelas: <b>{{ $kelasAktif->name }}</b>@endif</p>
+                <p>Modul: <b>{{ $selesai }}/{{ $totalModul }}</b> • Rata-rata: <b>{{ $rataNilai ?? 0 }}</b> • Tertinggi: <b>{{ $nilaiTerbaik ?? 0 }}</b></p>
+                <p>Total XP: <b>{{ $totalXp }}</b> • Badge: <b>{{ $badges->count() }}</b></p>
+                <p>Status: @if(($sertifikatAda ?? false) || ($sertifikatEligible ?? false))<span class="kka-status-ok">Sertifikat diperoleh</span>@else<span class="kka-status-warn">Belum lulus semua</span>@endif</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-3">
+                <a href="{{ route('siswa.raporku') }}" class="kka-btn-secondary !py-2 text-sm text-center">Lihat Raport Lengkap</a>
+                <a href="{{ route('siswa.raporku.cetak') }}" class="kka-btn-secondary !py-2 text-sm text-center">Cetak Raport</a>
+            </div>
+        </x-card>
+
+        <x-card title="Sertifikat" subtitle="6 modul default • nilai ≥80">
+            @if(($sertifikatAda ?? false) || ($sertifikatEligible ?? false))
+                <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Sertifikat Kamu Sudah Terbit 🎓</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Selesaikan 6/6 modul default — progresmu {{ $persen }}%.</p>
+                <a href="{{ route('siswa.sertifikat') }}" class="kka-btn-primary !py-2 text-sm text-center w-full mt-3">Lihat Sertifikat</a>
+            @else
+                <p class="text-sm text-slate-600 dark:text-slate-300">Selesaikan 6 modul untuk mendapatkan sertifikat.</p>
+                <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
+                <a href="{{ route('siswa.sertifikat') }}" class="kka-btn-secondary !py-2 text-sm text-center w-full mt-3">Progres Sertifikat ({{ $selesai }}/{{ $totalModul }})</a>
+            @endif
         </x-card>
     </div>
 
