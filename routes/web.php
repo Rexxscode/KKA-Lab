@@ -63,6 +63,7 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::post('/bahan/{slug}/selesai', [BahanController::class, 'markRead'])->name('bahan.read');
     Route::get('/kuis', [KuisController::class, 'index'])->name('kuis.index');
     Route::get('/latih-model', [LatihController::class, 'index'])->name('latih.index');
+    Route::post('/latih-model/publish', [LatihController::class, 'publish'])->middleware('throttle:10,1')->name('latih.publish');
     Route::get('/kuis/{slug}', [KuisController::class, 'show'])->name('kuis.show');
     Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->middleware('throttle:10,1')->name('kuis.submit');
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->middleware('throttle:30,1')->name('modul.handson');

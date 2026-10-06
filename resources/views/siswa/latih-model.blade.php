@@ -57,7 +57,7 @@
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Beruntun benar: <b x-text="streak"></b>/5</p>
         </x-card>
 
-        <x-card title="Langkah 4 — Simpan & Kirim" subtitle="Draf tersimpan otomatis di perangkat ini. Pengiriman ke guru dibuka tahap berikutnya.">
+        <x-card title="Langkah 4 — Kirim ke Guru" subtitle="Gurumu memeriksa dulu; yang disetujui tayang sebagai Model Global untuk semua.">
             <ul class="space-y-1 text-sm">
                 <template x-for="s in syaratList" :key="s.teks">
                     <li class="flex items-center gap-2" :class="s.ok ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'">
@@ -65,11 +65,15 @@
                     </li>
                 </template>
             </ul>
-            <div class="mt-3 flex flex-wrap gap-2">
+            <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                <input x-model="namaModel" maxlength="60" placeholder="Nama modelmu, mis. Deteksi Botol vs Buku" class="flex-1 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+            </div>
+            <div class="mt-2 flex flex-wrap gap-2">
+                <button type="button" @click="kirim()" :disabled="mengirim" class="kka-btn-primary !py-2 text-sm disabled:opacity-50" x-text="mengirim ? 'Mengirim...' : 'Kirim ke Guru'"></button>
                 <button type="button" @click="simpanDraf(true)" class="kka-btn-secondary !py-2 text-sm">Simpan Draf</button>
                 <button type="button" @click="resetSemua()" class="kka-btn-secondary !py-2 text-sm !text-red-600">Ulangi dari Nol</button>
             </div>
-            <p class="mt-2 text-xs font-semibold text-slate-500 dark:text-slate-400" x-text="pesanDraf" role="status"></p>
+            <p class="mt-2 text-xs font-semibold" :class="pesanOk ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'" x-text="pesanDraf" role="status"></p>
         </x-card>
     </div>
 
@@ -78,7 +82,8 @@
         return {
             labels: [], jumlah: {}, labelBaru: '', galatLabel: '',
             cameraOn: false, modelSiap: false, statusModel: 'Memuat backbone MobileNet...',
-            ujiLabel: 0, hasilUji: '', streak: 0, pesanDraf: '',
+            ujiLabel: 0, hasilUji: '', streak: 0, pesanDraf: '', pesanOk: false,
+            namaModel: '', mengirim: false,
             pelatih: null, kunciDraf: 'kka-draf-{{ auth()->id() }}',
             async boot() {
                 const lib = window.KkaTrainer;
@@ -190,6 +195,45 @@
                     });
                     this.pesanDraf = 'Draf tersimpan di perangkat ini.';
                 } catch (e) { this.pesanDraf = 'Gagal menyimpan draf di perangkat ini.'; }
+            },
+            async kirim() {
+                const lib = window.KkaTrainer;
+                if (this.mengirim) return;
+                if (!this.namaModel.trim()) { this.pesanOk = false; this.pesanDraf = 'Isi dulu nama modelmu!'; return; }
+                const jumlahNama = {};
+                this.labels.forEach((nama, i) => { jumlahNama[nama] = this.jumlah[i] || 0; });
+                const cek = lib.cekSyarat(jumlahNama, this.streak);
+                if (!cek.ok) { this.pesanOk = false; this.pesanDraf = 'Belum memenuhi syarat: ' + cek.alasan.join(' '); return; }
+                this.mengirim = true;
+                this.pesanOk = false;
+                this.pesanDraf = 'Mengirim dataset ke guru...';
+                try {
+                    const res = await fetch(@js(route('siswa.latih.publish')), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: this.namaModel.trim(),
+                            labels: this.labels,
+                            dataset: this.pelatih.serialize(this.labels),
+                        }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        const galat = data.errors ? Object.values(data.errors).flat().join(' ') : (data.message || 'Gagal mengirim.');
+                        throw new Error(galat);
+                    }
+                    this.pesanOk = true;
+                    this.pesanDraf = data.message;
+                    this.namaModel = '';
+                } catch (e) {
+                    this.pesanOk = false;
+                    this.pesanDraf = String((e && e.message) || e);
+                }
+                this.mengirim = false;
             },
             resetSemua() {
                 if (!confirm('Hapus semua label, contoh, dan draf?')) return;
