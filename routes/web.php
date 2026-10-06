@@ -16,6 +16,7 @@ use App\Http\Controllers\Student\RaportController;
 use App\Http\Controllers\Teacher\ClassroomController as GuruClassroomController;
 use App\Http\Controllers\Teacher\ExportController;
 use App\Http\Controllers\Teacher\ModuleController as GuruModuleController;
+use App\Http\Controllers\Teacher\ModelModerasiController;
 use App\Http\Controllers\Teacher\QuizController;
 use App\Http\Controllers\Teacher\StudentReportController;
 use App\Http\Controllers\VerifyCertificateController;
@@ -64,6 +65,7 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::get('/kuis', [KuisController::class, 'index'])->name('kuis.index');
     Route::get('/latih-model', [LatihController::class, 'index'])->name('latih.index');
     Route::post('/latih-model/publish', [LatihController::class, 'publish'])->middleware('throttle:10,1')->name('latih.publish');
+    Route::get('/model-global', [LatihController::class, 'global'])->name('model.global');
     Route::get('/kuis/{slug}', [KuisController::class, 'show'])->name('kuis.show');
     Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->middleware('throttle:10,1')->name('kuis.submit');
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->middleware('throttle:30,1')->name('modul.handson');
@@ -106,6 +108,9 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->name('quiz.update');
         Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->name('quiz.destroy');
         Route::get('/ai-logs', [AiLogController::class, 'guru'])->name('ai.index');
+        Route::get('/model-siswa', [ModelModerasiController::class, 'index'])->name('model.index');
+        Route::post('/model-siswa/{model}/setujui', [ModelModerasiController::class, 'setujui'])->name('model.setujui');
+        Route::post('/model-siswa/{model}/tolak', [ModelModerasiController::class, 'tolak'])->name('model.tolak');
     });
 });
 

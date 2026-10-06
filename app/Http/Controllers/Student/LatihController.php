@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\GlobalModel;
 use App\Models\Module;
 use App\Models\StudentModel;
 use App\Models\StudentProgress;
@@ -24,6 +25,14 @@ class LatihController extends Controller
         }
 
         return view('siswa.latih-model', ['module' => $module, 'progress' => $item['progress']]);
+    }
+
+    /**
+     * Coba model global aktif (hasil kurasi guru).
+     */
+    public function global(Request $request)
+    {
+        return view('siswa.model-global', ['global' => GlobalModel::aktif()]);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\GlobalModel;
 use App\Models\Module;
 use App\Models\StudentModel;
 use App\Models\StudentProgress;
@@ -90,8 +91,7 @@ class LatihModelTest extends TestCase
     }
 
     public function test_publish_dibatasi_lima_antrean(): void
-    {
-        $this->seed(DatabaseSeeder::class);
+    {        $this->seed(DatabaseSeeder::class);
         $siswa = User::factory()->create(['role' => 'siswa']);
         $this->bukaAkses($siswa);
 
@@ -110,5 +110,89 @@ class LatihModelTest extends TestCase
             'labels' => ['A', 'B'],
             'dataset' => $this->datasetValid(['A', 'B']),
         ])->assertStatus(429);
+    }
+
+    private function pendingModel(User $guru, User $siswa, string $nama = 'Model Bagus'): StudentModel
+    {
+        $kelas = \App\Models\Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
+        $kelas->students()->attach($siswa->id);
+
+        return StudentModel::create([
+            'student_id' => $siswa->id,
+            'name' => $nama,
+            'labels' => ['Botol', 'Buku'],
+            'dataset' => $this->datasetValid(),
+            'status' => StudentModel::STATUS_PENDING,
+        ]);
+    }
+
+    public function test_setujui_menayangkan_global_dan_memberi_xp_sekali(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $model = $this->pendingModel($guru, $siswa);
+
+        $this->actingAs($guru)->post(route('guru.model.setujui', $model), ['accuracy' => 92])
+            ->assertRedirect();
+
+        $this->assertSame(StudentModel::STATUS_APPROVED, $model->fresh()->status);
+        $global = GlobalModel::aktif();
+        $this->assertNotNull($global);
+        $this->assertSame('Model Bagus', $global->name);
+
+        $progress = StudentProgress::where('student_id', $siswa->id)->firstOrFail();
+        $this->assertTrue((bool) $progress->training_xp_awarded);
+        $this->assertSame(30, (int) $progress->xp_earned);
+
+        // Setujui ulang: XP tidak ganda.
+        $this->actingAs($guru)->post(route('guru.model.setujui', $model))->assertRedirect();
+        $this->assertSame(30, (int) $progress->fresh()->xp_earned);
+    }
+
+    public function test_guru_lain_tidak_bisa_moderasi(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $guruLain = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $model = $this->pendingModel($guru, $siswa);
+
+        $this->actingAs($guruLain)->post(route('guru.model.setujui', $model))->assertForbidden();
+        $this->actingAs($guruLain)->post(route('guru.model.tolak', $model), ['note' => 'x'])->assertForbidden();
+        $this->assertSame(StudentModel::STATUS_PENDING, $model->fresh()->status);
+    }
+
+    public function test_tolak_butuh_catatan_dan_tanpa_xp(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $model = $this->pendingModel($guru, $siswa);
+
+        $this->actingAs($guru)->post(route('guru.model.tolak', $model))->assertSessionHasErrors('note');
+
+        $this->actingAs($guru)->post(route('guru.model.tolak', $model), ['note' => 'Contoh kurang bervariasi.'])
+            ->assertRedirect();
+        $this->assertSame(StudentModel::STATUS_REJECTED, $model->fresh()->status);
+        $this->assertNull(GlobalModel::aktif());
+        $this->assertDatabaseMissing('student_progress', ['student_id' => $siswa->id]);
+    }
+
+    public function test_halaman_model_global(): void
+    {
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $this->actingAs($siswa)->get(route('siswa.model.global'))
+            ->assertOk()->assertSee('Belum ada model global');
+
+        GlobalModel::create([
+            'name' => 'Model Perdana',
+            'slug' => 'model-perdana',
+            'labels' => ['Botol', 'Buku'],
+            'dataset' => $this->datasetValid(),
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($siswa)->get(route('siswa.model.global'))
+            ->assertOk()->assertSee('Model Perdana', false);
     }
 }
