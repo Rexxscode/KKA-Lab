@@ -15,7 +15,7 @@
                 </p>
                 <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Profil &amp; Pengaturan Akun</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
-                    Kelola identitas, keamanan, dan pantau capaian belajarmu di KKA Lab.
+                    Kelola identitas, keamanan, dan pantau capaian belajarmu di KobotAI Lab.
                 </p>
             </div>
         </div>
@@ -108,6 +108,75 @@
                     </div>
                     @include('profile.partials.update-password-form')
                 </div>
+
+                @if($user->isGuru() || $user->isSuperAdmin())
+                    <div class="kka-card p-5 sm:p-7" id="tanda-tangan">
+                        <div class="flex items-center gap-2.5 mb-2">
+                            <span class="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-500 flex items-center justify-center"><x-icon name="pencil" class="w-4 h-4" /></span>
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white">Tanda Tangan Sertifikat</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Gambar sekali di kanvas — tampil di sertifikat siswa.</p>
+                            </div>
+                        </div>
+                        @if($user->signature_path)
+                            <img src="{{ Storage::url($user->signature_path) }}" alt="Tanda tangan tersimpan" class="h-20 rounded-xl border border-slate-200 dark:border-slate-700 bg-white px-4 py-2" />
+                        @endif
+                        @if(session('status') === 'ttd-updated')
+                            <p class="mt-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">Tersimpan!</p>
+                        @endif
+                        <form method="POST" action="{{ route('profile.ttd') }}" enctype="multipart/form-data" id="form-ttd" class="mt-3 space-y-2">
+                            @csrf
+                            <canvas id="kanvas-ttd" width="480" height="160" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white cursor-crosshair touch-none"></canvas>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" id="hapus-ttd" class="kka-btn-secondary !py-1.5 text-xs">Hapus & Ulangi</button>
+                                <button type="submit" class="kka-btn-primary !py-1.5 text-xs">Simpan Tanda Tangan</button>
+                            </div>
+                            <x-input-error :messages="$errors->get('tanda_tangan')" />
+                        </form>
+                        <script>
+                        (function () {
+                            const kanvas = document.getElementById('kanvas-ttd');
+                            const form = document.getElementById('form-ttd');
+                            if (!kanvas || !form) return;
+                            const ctx = kanvas.getContext('2d');
+                            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
+                            let jalan = false, ada = false;
+                            const pos = (e) => {
+                                const r = kanvas.getBoundingClientRect();
+                                const t = (e.touches && e.touches[0]) || e;
+                                return [(t.clientX - r.left) * (kanvas.width / r.width), (t.clientY - r.top) * (kanvas.height / r.height)];
+                            };
+                            const mulai = (e) => { e.preventDefault(); jalan = true; const [x, y] = pos(e); ctx.beginPath(); ctx.moveTo(x, y); };
+                            const gerak = (e) => { if (!jalan) return; e.preventDefault(); const [x, y] = pos(e); ctx.lineTo(x, y); ctx.stroke(); ada = true; };
+                            const selesai = () => { jalan = false; };
+                            kanvas.addEventListener('mousedown', mulai);
+                            kanvas.addEventListener('mousemove', gerak);
+                            kanvas.addEventListener('mouseup', selesai);
+                            kanvas.addEventListener('mouseleave', selesai);
+                            kanvas.addEventListener('touchstart', mulai, { passive: false });
+                            kanvas.addEventListener('touchmove', gerak, { passive: false });
+                            kanvas.addEventListener('touchend', selesai);
+                            document.getElementById('hapus-ttd').addEventListener('click', () => {
+                                ctx.clearRect(0, 0, kanvas.width, kanvas.height); ada = false;
+                            });
+                            form.addEventListener('submit', function (e) {
+                                if (!ada) { e.preventDefault(); alert('Gambar dulu tanda tanganmu di kanvas!'); return; }
+                                if (form.querySelector('input[type=file]')) return;
+                                e.preventDefault();
+                                kanvas.toBlob((blob) => {
+                                    const dt = new DataTransfer();
+                                    dt.items.add(new File([blob], 'ttd.png', { type: 'image/png' }));
+                                    const input = document.createElement('input');
+                                    input.type = 'file'; input.name = 'tanda_tangan'; input.files = dt.files;
+                                    input.style.display = 'none';
+                                    form.appendChild(input);
+                                    form.submit();
+                                });
+                            });
+                        })();
+                        </script>
+                    </div>
+                @endif
             </div>
 
             <div class="lg:col-span-5 space-y-6">

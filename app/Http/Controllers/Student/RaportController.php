@@ -17,7 +17,7 @@ class RaportController extends Controller
      */
     public const SARAN_BAGIAN = [
         'apa-itu-ai' => 'baca ulang bagian 3–4 (Machine Learning & Data Berlabel)',
-        'latih-ai-mu' => 'kumpulkan ulang ≥5 contoh tiap benda, latih ulang, lalu uji sampai yakin ≥50%',
+        'latih-ai-mu' => 'buka halaman Latih Model: buat 2-5 label, kumpulkan ≥20 contoh tiap label, uji 5× beruntun, lalu kirim ke gurumu untuk tayang global',
         'bias-data' => 'mainkan lagi slider simulasi sampai selisih kelompok kecil (adil)',
         'etika-hoaks-ai' => 'hafalkan lagi rumus CHECK (Cek sumber • Hindari judul bombastis • Eja tanggal • Cek gambar • Kroscek)',
         'python-dasar-ai' => 'jalankan ulang contoh print, list, dan fungsi sampai tanpa salah ketik',

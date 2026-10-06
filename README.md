@@ -1,6 +1,6 @@
 <div align="center">
 
-  # KKA Lab
+  # KobotAI Lab
   ### Laboratorium Koding & Kecerdasan Artifisial — Belajar AI Hands-On di Browser
 
   [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/Rexxscode/ITX)
@@ -38,7 +38,7 @@ Kemendikdasmen memperkuat pembelajaran mendalam lewat Koding & Kecerdasan Artifi
 
 ### Solusi yang Ditawarkan
 
-KKA Lab adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung di browser** (deteksi objek real-time via webcam dengan TensorFlow.js COCO-SSD — gambar tidak pernah keluar dari perangkat), mengerjakan bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
+KobotAI Lab adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung di browser** (deteksi objek real-time via webcam dengan TensorFlow.js COCO-SSD — gambar tidak pernah keluar dari perangkat), mengerjakan bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
 
 ### Tujuan Proyek
 
@@ -232,8 +232,10 @@ DB_USERNAME=root
 DB_PASSWORD=
 
 GEMINI_API_KEY=[isi_key_dari_aistudio]
-GEMINI_MODEL=gemini-3.8-flash
+GEMINI_MODEL=gemini-3.5-flash
 ```
+
+Chatbot memakai Laravel AI SDK (`laravel/ai`, agen `App\Ai\Agents\TutorAgent`, provider `gemini`). Riwayat chat tetap di tabel `ai_chats`; tabel `agent_conversations` bawaan SDK dicadangkan untuk memori percakapan persisten nanti.
 
 #### 4️⃣ Setup Database
 

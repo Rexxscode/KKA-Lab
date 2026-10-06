@@ -15,7 +15,7 @@ class User extends Authenticatable implements MustVerifyEmail
     // 'role' & 'status' SENGAJA tidak fillable: hak akses hanya boleh
     // diubah lewat assignment eksplisit di controller terpercaya
     // (register, admin), bukan via mass-assignment input user.
-    protected $fillable = ['name', 'email', 'password', 'bukti_npk_path', 'avatar_path'];
+    protected $fillable = ['name', 'email', 'password', 'bukti_npk_path', 'avatar_path', 'signature_path'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -83,5 +83,19 @@ class User extends Authenticatable implements MustVerifyEmail
     public function avatarUrl(): ?string
     {
         return $this->avatar_path ? Storage::url($this->avatar_path) : null;
+    }
+
+    /**
+     * Super admin penandatangan sertifikat (akun utama, fallback admin tertua).
+     */
+    public static function superAdmin(): ?self
+    {
+        return static::where('email', config('kka.super_admin_email'))->where('role', 'admin')->first()
+            ?? static::where('role', 'admin')->oldest('id')->first();
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->isAdmin() && static::superAdmin()?->is($this);
     }
 }

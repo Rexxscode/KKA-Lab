@@ -6,9 +6,9 @@
         <x-icon name="chat" class="w-5 h-5" /><span class="hidden sm:inline" x-text="open ? 'Tutup' : 'Tanya AI'"></span>
     </button>
 
-    <div x-show="open" x-transition id="panel-asisten-ai" role="dialog" aria-label="Tutor AI KKA Lab" class="fixed bottom-20 right-5 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] kka-card !p-0 overflow-hidden" style="display: none">
-        <div class="px-4 py-3 bg-orange-500 text-white">
-            <p class="font-extrabold text-sm">Tutor AI KKA Lab</p>
+    <div x-show="open" x-transition id="panel-asisten-ai" role="dialog" aria-label="Tutor AI KobotAI Lab" class="fixed bottom-20 right-5 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] kka-card !p-0 overflow-hidden" style="display: none">
+        <div class="px-4 py-3 bg-orange-700 text-white">
+            <p class="font-extrabold text-sm">Tutor AI KobotAI Lab</p>
             <p class="text-xs text-white/90">Tanya soal AI, deteksi objek, bias data, atau etika. Bukan kunci jawaban kuis ya!</p>
         </div>
         <div class="h-64 overflow-y-auto p-3 space-y-2 bg-[var(--color-page)]" x-ref="box" aria-live="polite" aria-label="Riwayat percakapan">
@@ -30,7 +30,7 @@
         return {
             open: false, loading: false, draft: '',
             module: @js($module),
-            messages: [{ role: 'model', text: 'Halo! Aku Tutor AI KKA Lab. Mau tanya apa soal AI hari ini?' }],
+            messages: [{ role: 'model', text: 'Halo! Aku Tutor AI KobotAI Lab. Mau tanya apa soal AI hari ini?' }],
             async send() {
                 const text = this.draft.trim();
                 if (!text || this.loading) return;

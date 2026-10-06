@@ -6,7 +6,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? config('app.name', 'KKA Lab') }}</title>
+    <meta name="description" content="KobotAI Lab: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK." />
+    <meta name="theme-color" content="#f97316" />
+    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}" />
+    <title>{{ $title ?? config('app.name', 'KobotAI Lab') }}</title>
     <x-favicon-links />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,9 +31,9 @@
     <aside :class="SidebarTerbuka ? 'translate-x-0' : '-translate-x-full'"
            class="fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-5 h-16 border-b border-slate-100 dark:border-slate-800">
-            <img src="{{ asset('logo.png') }}" alt="Logo KKA Lab" class="w-9 h-9 rounded-xl shrink-0" width="36" height="36" />
+                <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-9 h-9 rounded-xl shrink-0" width="36" height="36" />
             <span>
-                <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KKA <span class="text-orange-500">Lab</span></span>
+                <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KobotAI <span class="text-orange-500">Lab</span></span>
                 <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
             </span>
         </a>
@@ -52,6 +55,8 @@
                     <div class="space-y-1">
                         <x-side-link :href="route('siswa.bahan.index')" :active="request()->routeIs('siswa.bahan.*')" icon="book">Bahan Belajar</x-side-link>
                         <x-side-link :href="route('siswa.kuis.index')" :active="request()->routeIs('siswa.kuis.*')" icon="quiz">Kuis</x-side-link>
+                        <x-side-link :href="route('siswa.latih.index')" :active="request()->routeIs('siswa.latih.*')" icon="spark">Latih Model</x-side-link>
+                        <x-side-link :href="route('siswa.model.global')" :active="request()->routeIs('siswa.model.*')" icon="globe">Model Global</x-side-link>
                         <x-side-link :href="route('siswa.raporku')" :active="request()->routeIs('siswa.raporku')" icon="award">Raporku</x-side-link>
                         <x-side-link :href="route('siswa.leaderboard')" :active="request()->routeIs('siswa.leaderboard')" icon="trophy">Peringkat</x-side-link>
                         <x-side-link :href="route('siswa.sertifikat')" :active="request()->routeIs('siswa.sertifikat')" icon="award">Sertifikat</x-side-link>
@@ -69,6 +74,7 @@
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Saya</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
                         <x-side-link :href="route('guru.ai.index')" :active="request()->routeIs('guru.ai.*')" icon="chat">Log AI</x-side-link>
+                        <x-side-link :href="route('guru.model.index')" :active="request()->routeIs('guru.model.*')" icon="spark">Model Siswa</x-side-link>
                     </div>
                 </div>
             @else
@@ -83,6 +89,7 @@
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Default</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
                         <x-side-link :href="route('admin.ai.index')" :active="request()->routeIs('admin.ai.*')" icon="chat">Log AI</x-side-link>
+                        <x-side-link :href="route('admin.tanda-tangan')" :active="request()->routeIs('admin.tanda-tangan')" icon="pencil">Tanda Tangan</x-side-link>
                         <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')" icon="award">Pratinjau Siswa</x-side-link>
                     </div>
                 </div>
@@ -124,7 +131,7 @@
             <button @click="SidebarTerbuka = true" aria-label="Buka menu navigasi" class="p-2 -ml-1 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
-            <span class="font-extrabold text-slate-900 dark:text-white">KKA <span class="text-orange-500">Lab</span></span>
+            <span class="font-extrabold text-slate-900 dark:text-white">KobotAI <span class="text-orange-500">Lab</span></span>
             <span class="ml-auto"><x-theme-toggle /></span>
         </header>
 
