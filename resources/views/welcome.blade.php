@@ -89,21 +89,51 @@
     <section class="py-8">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ $modules->count() ?: 6 }} Modul KKA</h2>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Dari konsep → praktik kamera → data kritis → etika → Python untuk AI.</p>
-        <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
             @forelse($modules as $m)
                 <x-card :title="$m->title" :subtitle="$m->description">
-                    <div class="flex items-center justify-between">
-                        <span class="kka-badge">+{{ $m->xp_reward }} XP</span>
-                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600">Mulai →</a>
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+{{ $m->xp_reward }} XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
                     </div>
                 </x-card>
             @empty
-                <x-card title="Modul 1: Apa itu AI?" subtitle="Konsep dasar AI & ML dengan visual interaktif + kuis." />
-                <x-card title="Modul 2: Latih AI-mu" subtitle="Deteksi objek real-time via webcam (COCO-SSD pretrained) + bounding box." />
-                <x-card title="Modul 3: Bias Data" subtitle="Simulasi dataset tidak seimbang dengan Alpine.js." />
-                <x-card title="Modul 4: Etika & Hoaks AI" subtitle="Studi kasus deepfake & kuis literasi digital." />
-                <x-card title="Modul 5: Python Dasar untuk AI" subtitle="Python asli di browser: print, list, loop, fungsi, dict." />
-                <x-card title="Modul 6: Data & Logika AI" subtitle="Rata-rata, filter data, dan mini-classifier aturan." />
+                <x-card title="Modul 1: Apa itu AI?" subtitle="Konsep dasar AI & ML dengan visual interaktif + kuis.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+100 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 2: Latih AI-mu" subtitle="Deteksi objek real-time via webcam (COCO-SSD pretrained) + bounding box.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+200 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 3: Bias Data" subtitle="Simulasi dataset tidak seimbang dengan Alpine.js.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+150 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 4: Etika & Hoaks AI" subtitle="Studi kasus deepfake & kuis literasi digital.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+150 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 5: Python Dasar untuk AI" subtitle="Python asli di browser: print, list, loop, fungsi, dict.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+150 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 6: Data & Logika AI" subtitle="Rata-rata, filter data, dan mini-classifier aturan.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+200 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
             @endforelse
         </div>
     </section>
