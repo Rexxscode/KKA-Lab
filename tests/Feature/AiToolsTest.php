@@ -54,13 +54,24 @@ class AiToolsTest extends TestCase
     }
 
     public function test_agent_dengan_tools_bisa_difake(): void
-    {
-        $siswa = User::factory()->create(['role' => 'siswa']);
+    {        $siswa = User::factory()->create(['role' => 'siswa']);
         TutorAgent::fake(['Halo! Ini jawaban AI.']);
 
         $res = (new TutorAgent(user: $siswa))->prompt('apa itu AI?');
 
         $this->assertSame('Halo! Ini jawaban AI.', $res->text);
         TutorAgent::assertPromptedTimes(1);
+    }
+
+    public function test_instructions_tutor_aman_dan_berbahasa_indonesia(): void
+    {
+        $siswa = User::factory()->create(['role' => 'siswa']);
+
+        $instruksi = (string) (new TutorAgent(user: $siswa, moduleContext: 'latih-ai-mu'))->instructions();
+
+        $this->assertStringContainsString('Bahasa Indonesia', $instruksi);
+        $this->assertStringContainsString('latih-ai-mu', $instruksi);
+        $this->assertStringContainsString('DILARANG', $instruksi);
+        $this->assertStringContainsString('jawaban kuis', $instruksi);
     }
 }

@@ -232,8 +232,10 @@ DB_USERNAME=root
 DB_PASSWORD=
 
 GEMINI_API_KEY=[isi_key_dari_aistudio]
-GEMINI_MODEL=gemini-3.8-flash
+GEMINI_MODEL=gemini-3.5-flash
 ```
+
+Chatbot memakai Laravel AI SDK (`laravel/ai`, agen `App\Ai\Agents\TutorAgent`, provider `gemini`). Riwayat chat tetap di tabel `ai_chats`; tabel `agent_conversations` bawaan SDK dicadangkan untuk memori percakapan persisten nanti.
 
 #### 4️⃣ Setup Database
 
