@@ -19,7 +19,8 @@ class SetSecurityHeaders
         // Host CDN yang memang dipakai aplikasi (model COCO-SSD/MobileNet,
         // runtime Pyodide, Chart.js). Tanpa ini fetch bobot model diblokir
         // browser dan fitur deteksi/Python mati total.
-        $cdn = 'https://cdn.jsdelivr.net https://storage.googleapis.com';
+        // tfhub.dev: model MobileNet demo landing (redirect file ke storage.googleapis.com).
+        $cdn = 'https://cdn.jsdelivr.net https://storage.googleapis.com https://tfhub.dev';
 
         // Izin localhost (Vite HMR) hanya saat pengembangan lokal.
         $dev = app()->environment('local') || (bool) config('app.debug');
