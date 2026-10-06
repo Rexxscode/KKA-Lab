@@ -11,9 +11,12 @@ import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import { deserializeDataset, jepitHiperparam, kotakKeCrop, serializeDataset } from './trainer-utils.js';
 
+export const BACKBONE_NAMA = 'mobilenet-v1-0.25';
+
 export async function defaultLoadBackbone() {
   await tf.ready();
-  return mobilenet.load();
+  // Alpha 0.25: bobot <1MB (vs 16MB alpha 1.0) — muat cepat & ramah HP.
+  return mobilenet.load({ version: 1, alpha: 0.25 });
 }
 
 export async function defaultLoadDetektor() {
@@ -191,7 +194,8 @@ export class Pelatih {
     for (const [idx, nama] of Object.entries(labels || {})) {
       if (mentah[idx]) bernama[nama] = mentah[idx];
     }
-    return serializeDataset(bernama);
+    const s = serializeDataset(bernama, BACKBONE_NAMA);
+    return s;
   }
 
   restore(data, labels) {
