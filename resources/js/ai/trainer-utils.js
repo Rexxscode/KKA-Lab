@@ -96,3 +96,46 @@ export function ukuranDataset(data) {
   }
   return n;
 }
+
+/**
+ * Ubah bbox deteksi [x, y, w, h] (px video) menjadi kotak crop persegi
+ * {sx, sy, s} yang aman (terjepit dalam frame, dipad dari tengah).
+ * target hanya dokumentasi ukuran resize (default 224).
+ */
+export function kotakKeCrop(bbox, videoW, videoH) {
+  const [bx, by, bw, bh] = (bbox || []).map(Number);
+  if (![bx, by, bw, bh].every(Number.isFinite) || bw <= 0 || bh <= 0 || videoW <= 0 || videoH <= 0) {
+    return null;
+  }
+  const x = Math.max(0, Math.min(bx, videoW));
+  const y = Math.max(0, Math.min(by, videoH));
+  const w = Math.max(0, Math.min(bw, videoW - x));
+  const h = Math.max(0, Math.min(bh, videoH - y));
+  if (w <= 0 || h <= 0) return null;
+  const s = Math.max(w, h);
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  let sx = Math.round(cx - s / 2);
+  let sy = Math.round(cy - s / 2);
+  sx = Math.max(0, Math.min(sx, videoW - s));
+  sy = Math.max(0, Math.min(sy, videoH - s));
+  return { sx, sy, s: Math.round(Math.min(s, videoW, videoH)) };
+}
+
+/**
+ * Petakan bbox video ke koordinat tampilan untuk video object-cover.
+ * rectW/rectH = ukuran elemen tampil, videoW/H = resolusi asli.
+ */
+export function petakanBox(bbox, rectW, rectH, videoW, videoH) {
+  if (!bbox || rectW <= 0 || rectH <= 0 || videoW <= 0 || videoH <= 0) return null;
+  const skala = Math.max(rectW / videoW, rectH / videoH);
+  const offX = (rectW - videoW * skala) / 2;
+  const offY = (rectH - videoH * skala) / 2;
+  const [x, y, w, h] = bbox;
+  return {
+    left: Math.round(x * skala + offX),
+    top: Math.round(y * skala + offY),
+    width: Math.round(w * skala),
+    height: Math.round(h * skala),
+  };
+}

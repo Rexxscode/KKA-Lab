@@ -26,19 +26,31 @@
 
         <x-card title="Langkah 2 — Kumpulkan Contoh (min. 20 per label)" subtitle="Aktifkan kamera, arahkan ke benda, tekan +1 berulang (atau +10). Variasikan sudut & cahaya!">
             <p class="text-xs font-bold" :class="modelSiap ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'" x-text="statusModel" role="status"></p>
-            <div class="mt-3 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 aspect-video flex items-center justify-center relative">
+            <div class="mt-3 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 aspect-video flex items-center justify-center relative" x-ref="wadahVideo">
                 <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
                 <template x-if="!cameraOn"><p class="absolute text-white/80 text-sm px-6 text-center">Aktifkan kamera untuk mulai mengumpulkan contoh.</p></template>
+                <template x-for="(box, bi) in daftarBox" :key="bi">
+                    <button type="button" @click="boxPilih = boxPilih === bi ? null : bi"
+                        :aria-label="'Pilih objek ' + (box.class || '')"
+                        :style="'left:' + box.tampil.left + 'px;top:' + box.tampil.top + 'px;width:' + box.tampil.width + 'px;height:' + box.tampil.height + 'px;'"
+                        :class="boxPilih === bi ? 'border-emerald-400 bg-emerald-400/20' : 'border-orange-500 bg-orange-500/10 hover:bg-orange-500/25'"
+                        class="absolute border-[3px] rounded-lg transition">
+                        <span class="absolute -top-6 left-0 text-[11px] font-bold text-white bg-slate-900/80 rounded px-1.5 py-0.5 whitespace-nowrap" x-text="(box.class || 'objek') + ' ' + Math.round(box.score * 100) + '%'"></span>
+                    </button>
+                </template>
             </div>
             <div class="mt-3 flex flex-wrap gap-2">
                 <button type="button" @click="toggleKamera()" class="kka-btn-primary !py-2 text-sm" x-text="cameraOn ? 'Matikan Kamera' : 'Aktifkan Kamera'"></button>
+                <button type="button" @click="pindai()" :disabled="!bisaPindai()" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40" x-text="memindai ? 'Memindai...' : 'Pindai Objek'"></button>
             </div>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" x-text="pesanPindai"></p>
             <div class="mt-3 space-y-2">
                 <template x-for="(label, i) in labels" :key="'c-'+label">
                     <div class="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 px-4 py-2">
                         <span class="flex-1 text-sm font-bold text-slate-800 dark:text-slate-100" x-text="label + ' — ' + (jumlah[i] || 0) + '/20'"></span>
-                        <button type="button" @click="ambil(i, 1)" :disabled="!bisaLatih()" class="kka-btn-secondary !py-1.5 text-xs disabled:opacity-40">+1</button>
-                        <button type="button" @click="ambil(i, 10)" :disabled="!bisaLatih()" class="kka-btn-secondary !py-1.5 text-xs disabled:opacity-40">+10</button>
+                        <button type="button" @click="ambil(i, 1)" :disabled="!bisaLatih()" class="kka-btn-secondary !py-1.5 text-xs disabled:opacity-40" :title="boxPilih !== null ? 'Dari kotak terpilih' : 'Dari seluruh frame'">+1</button>
+                        <button type="button" @click="ambil(i, 10)" :disabled="!bisaLatih()" class="kka-btn-secondary !py-1.5 text-xs disabled:opacity-40" :title="boxPilih !== null ? 'Dari kotak terpilih' : 'Dari seluruh frame'">+10</button>
+                        <button type="button" @click="ambilTengah(i, 10)" :disabled="!bisaLatih()" title="Dari tengah frame" class="kka-btn-secondary !py-1.5 text-xs disabled:opacity-40">Tengah</button>
                     </div>
                 </template>
             </div>
@@ -83,7 +95,8 @@
             labels: [], jumlah: {}, labelBaru: '', galatLabel: '',
             cameraOn: false, modelSiap: false, statusModel: 'Memuat backbone MobileNet...',
             ujiLabel: 0, hasilUji: '', streak: 0, pesanDraf: '', pesanOk: false,
-            namaModel: '', mengirim: false,
+            namaModel: '', mengirim: false, memindai: false,
+            daftarBox: [], boxPilih: null, pesanPindai: 'Klik Pindai Objek, lalu klik salah satu kotak untuk melatih benda itu. Bila tak terdeteksi, contoh diambil dari tengah frame.',
             pelatih: null, kunciDraf: 'kka-draf-{{ auth()->id() }}',
             async boot() {
                 const lib = window.KkaTrainer;
@@ -134,6 +147,8 @@
                 if (this.cameraOn) {
                     this.pelatih.hentikanKamera(this.$refs.video);
                     this.cameraOn = false;
+                    this.daftarBox = [];
+                    this.boxPilih = null;
                     return;
                 }
                 try {
@@ -144,10 +159,52 @@
                 }
             },
             async ambil(i, n) {
+                const box = this.boxPilih !== null ? this.daftarBox[this.boxPilih] : null;
                 for (let k = 0; k < n; k++) {
-                    try { this.pelatih.tambahContoh(this.$refs.video, i); }
-                    catch (e) { this.statusModel = 'Gagal mengambil contoh. Coba lagi.'; break; }
+                    try {
+                        if (box) {
+                            if (!this.pelatih.tambahContohCrop(this.$refs.video, box.bbox, i)) break;
+                        } else {
+                            this.pelatih.tambahContoh(this.$refs.video, i);
+                        }
+                    } catch (e) { this.statusModel = 'Gagal mengambil contoh. Coba lagi.'; break; }
                     if (k % 5 === 4) await new Promise((r) => setTimeout(r, 120));
+                }
+                this.segarkanJumlah();
+                this.streak = 0;
+                this.simpanDraf(false);
+            },
+            bisaPindai() { return this.modelSiap && this.cameraOn && !this.memindai; },
+            async pindai() {
+                if (!this.bisaPindai()) return;
+                this.memindai = true;
+                this.pesanPindai = 'Memindai objek...';
+                try {
+                    const hasil = await this.pelatih.pindai(this.$refs.video);
+                    const rect = this.$refs.wadahVideo.getBoundingClientRect();
+                    const v = this.$refs.video;
+                    const lib = window.KkaTrainer;
+                    this.daftarBox = hasil.map((h) => ({
+                        ...h,
+                        tampil: lib.petakanBox(h.bbox, rect.width, rect.height, v.videoWidth, v.videoHeight),
+                    })).filter((h) => h.tampil);
+                    this.boxPilih = null;
+                    this.pesanPindai = this.daftarBox.length
+                        ? this.daftarBox.length + ' objek ditemukan — klik kotaknya untuk melatih benda itu.'
+                        : 'Tak ada objek terdeteksi. Dekatkan benda / perbaiki cahaya, atau contoh diambil dari tengah frame.';
+                } catch (e) {
+                    this.pesanPindai = 'Gagal memindai. Coba lagi.';
+                }
+                this.memindai = false;
+            },
+            ambilTengah(i, n) {
+                const v = this.$refs.video;
+                if (!v.videoWidth) return;
+                const s = Math.min(v.videoWidth, v.videoHeight) * 0.6;
+                const bbox = [v.videoWidth / 2 - s / 2, v.videoHeight / 2 - s / 2, s, s];
+                for (let k = 0; k < n; k++) {
+                    try { if (!this.pelatih.tambahContohCrop(v, bbox, i)) break; }
+                    catch (e) { break; }
                 }
                 this.segarkanJumlah();
                 this.streak = 0;

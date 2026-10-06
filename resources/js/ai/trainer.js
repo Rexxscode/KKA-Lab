@@ -8,11 +8,17 @@
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
-import { deserializeDataset, serializeDataset } from './trainer-utils.js';
+import * as cocoSsd from '@tensorflow-models/coco-ssd';
+import { deserializeDataset, kotakKeCrop, serializeDataset } from './trainer-utils.js';
 
 export async function defaultLoadBackbone() {
   await tf.ready();
   return mobilenet.load();
+}
+
+export async function defaultLoadDetektor() {
+  await tf.ready();
+  return cocoSsd.load({ base: 'lite_mobilenet_v2' });
 }
 
 function bukaDB() {
@@ -48,11 +54,14 @@ async function bacaDraf(kunci) {
 }
 
 export class Pelatih {
-  constructor({ loadBackbone = defaultLoadBackbone } = {}) {
+  constructor({ loadBackbone = defaultLoadBackbone, loadDetektor = defaultLoadDetektor } = {}) {
     this.loadBackbone = loadBackbone;
+    this.loadDetektor = loadDetektor;
     this.backbone = null;
+    this.detektor = null;
     this.knn = knnClassifier.create();
     this.stream = null;
+    this.kanvasCrop = null;
   }
 
   get siap() {
@@ -90,6 +99,44 @@ export class Pelatih {
     } finally {
       aktivasi.dispose();
     }
+  }
+
+  /**
+   * Ambil 1 contoh dari hasil crop bbox deteksi (selector objek).
+   * Mengembalikan true bila crop valid, false bila box di luar frame.
+   */
+  tambahContohCrop(video, bbox, labelIdx, target = 224) {
+    const potong = kotakKeCrop(bbox, video.videoWidth, video.videoHeight);
+    if (!potong) return false;
+    if (!this.kanvasCrop) this.kanvasCrop = document.createElement('canvas');
+    this.kanvasCrop.width = target;
+    this.kanvasCrop.height = target;
+    const ctx = this.kanvasCrop.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(video, potong.sx, potong.sy, potong.s, potong.s, 0, 0, target, target);
+    const piksel = tf.browser.fromPixels(this.kanvasCrop);
+    const aktivasi = this.backbone.infer(piksel, true);
+    try {
+      this.knn.addExample(aktivasi, labelIdx);
+    } finally {
+      piksel.dispose();
+      aktivasi.dispose();
+      ctx.clearRect(0, 0, target, target);
+    }
+    return true;
+  }
+
+  /** Muat detektor objek (malas: hanya saat user menekan Pindai). */
+  async loadPendeteksi() {
+    if (this.detektor) return this.detektor;
+    this.detektor = await this.loadDetektor();
+    return this.detektor;
+  }
+
+  /** Deteksi objek di frame saat ini -> [{bbox, class, score}] (maks 10, min 0.5). */
+  async pindai(video) {
+    const detektor = await this.loadPendeteksi();
+    const hasil = await detektor.detect(video, 10, 0.5);
+    return (hasil || []).map((d) => ({ bbox: d.bbox, class: d.class, score: d.score }));
   }
 
   /** Klasifikasi frame saat ini -> {label, keyakinan} atau null. */
@@ -164,7 +211,9 @@ export class Pelatih {
     this.hentikanKamera(null);
     this.knn.dispose();
     if (this.backbone && this.backbone.dispose) this.backbone.dispose();
+    if (this.detektor && this.detektor.dispose) this.detektor.dispose();
     this.backbone = null;
+    this.detektor = null;
   }
 }
 

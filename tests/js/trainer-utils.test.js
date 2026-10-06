@@ -9,6 +9,8 @@ import {
   STREAK_SYARAT,
   cekSyarat,
   deserializeDataset,
+  kotakKeCrop,
+  petakanBox,
   serializeDataset,
   ukuranDataset,
   validasiLabel,
@@ -73,5 +75,38 @@ describe('konstanta ambang', () => {
   it('sesuai kontrak publish', () => {
     assert.equal(MIN_SAMPEL, 20);
     assert.equal(STREAK_SYARAT, 5);
+  });
+});
+
+describe('kotakKeCrop', () => {
+  it('memad box menjadi persegi dari tengah', () => {
+    assert.deepEqual(kotakKeCrop([10, 20, 100, 60], 640, 480), { sx: 10, sy: 0, s: 100 });
+  });
+
+  it('menjepit box keluar frame', () => {
+    const r = kotakKeCrop([600, 400, 100, 100], 640, 480);
+    assert.ok(r.sx + r.s <= 640 && r.sy + r.s <= 480 && r.s > 0);
+  });
+
+  it('menolak box rusak', () => {
+    assert.equal(kotakKeCrop([0, 0, 0, 0], 640, 480), null);
+    assert.equal(kotakKeCrop(null, 640, 480), null);
+    assert.equal(kotakKeCrop([10, 10, 50, 50], 0, 480), null);
+  });
+});
+
+describe('petakanBox', () => {
+  it('memetakan object-cover tanpa crop', () => {
+    assert.deepEqual(petakanBox([0, 0, 640, 480], 640, 480, 640, 480), { left: 0, top: 0, width: 640, height: 480 });
+  });
+
+  it('menghitung offset saat cover memotong sisi', () => {
+    const r = petakanBox([0, 0, 320, 480], 640, 320, 640, 480);
+    assert.equal(r.left + r.width <= 640, true);
+    assert.ok(r.width > 0 && r.height > 0);
+  });
+
+  it('menolak dimensi nol', () => {
+    assert.equal(petakanBox([0, 0, 10, 10], 0, 100, 640, 480), null);
   });
 });
