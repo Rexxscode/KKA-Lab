@@ -252,6 +252,20 @@ npm run dev
 
 Buka `http://127.0.0.1:8000`. Akun demo (password `password`): `admin@kkalab.sch.id`, `guru@kkalab.sch.id`, `siswa@kkalab.sch.id`.
 
+#### 6️⃣ Data Demo (Seeder)
+
+`php artisan migrate --seed` mengisi data beragam, aman dijalankan ulang (idempoten):
+
+| Isi | Volume |
+|---|---|
+| Pengguna (1 admin, 4 guru, 31 siswa) | ±36 |
+| Kelas (5 buka + 1 arsip, kode `100001`–`100006`) | 6 |
+| Modul (6 default + 14 custom guru) | 20 |
+| Soal (90 default + ±28 custom) | ±118 |
+| Progres, percobaan kuis, badge, sertifikat, chat AI, umpan balik | ratusan baris |
+
+Struktur: `database/seeders/` — `DatabaseSeeder` (orkestrasi) → `ModulDefaultSeeder`, `PenggunaSeeder`, `KelasSeeder`, `ModulGuruSeeder`, `ProgresSeeder`, `InteraksiSeeder`, plus bank data di `Data/`.
+
 ---
 
 ## 🚀 Penggunaan
