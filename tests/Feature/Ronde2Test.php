@@ -23,9 +23,16 @@ class Ronde2Test extends TestCase
         $res->assertOk();
         $this->assertSame('SAMEORIGIN', $res->headers->get('X-Frame-Options'));
         $this->assertSame('nosniff', $res->headers->get('X-Content-Type-Options'));
-        $this->assertStringContainsString("default-src 'self'", $res->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString("default-src 'self'",
+            $res->headers->get('Content-Security-Policy'));
+        // Host bobot model wajib diizinkan connect-src (kalau tidak,
+        // demo kamera landing + deteksi mati dengan "Failed to fetch").
+        $csp = $res->headers->get('Content-Security-Policy');
+        $this->assertStringContainsString('https://tfhub.dev', $csp);
+        $this->assertStringContainsString('https://www.kaggle.com', $csp);
+        $this->assertStringContainsString('https://storage.googleapis.com', $csp);
+        $this->assertStringContainsString('https://cdn.jsdelivr.net', $csp);
     }
-
     public function test_lepas_modul_tak_terpasang_404(): void
     {
         $this->seed(DatabaseSeeder::class);
