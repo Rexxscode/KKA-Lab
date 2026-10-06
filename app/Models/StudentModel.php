@@ -17,10 +17,10 @@ class StudentModel extends Model
     public const MAKS_BYTE = 2 * 1024 * 1024;
 
     protected $fillable = [
-        'student_id', 'name', 'labels', 'dataset', 'backbone', 'status', 'accuracy', 'note',
+        'student_id', 'name', 'labels', 'dataset', 'weights', 'backbone', 'status', 'accuracy', 'note',
     ];
 
-    protected $casts = ['labels' => 'array', 'dataset' => 'array'];
+    protected $casts = ['labels' => 'array', 'dataset' => 'array', 'weights' => 'array'];
 
     public function student()
     {

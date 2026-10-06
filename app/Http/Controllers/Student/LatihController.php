@@ -48,6 +48,12 @@ class LatihController extends Controller
             'dataset' => 'required|array',
             'dataset.labels' => 'required|array|min:2|max:5',
             'dataset.contoh' => 'required|array',
+            'weights' => 'nullable|array',
+            'weights.tensors' => 'required_with:weights|array|min:1|max:10',
+            'weights.tensors.*.shape' => 'required|array|min:1|max:3',
+            'weights.tensors.*.shape.*' => 'required|integer|min:1|max:2048',
+            'weights.tensors.*.dtype' => 'required|in:float32',
+            'weights.tensors.*.data' => 'required|string|max:1500000',
         ]);
 
         $module = Module::where('slug', 'latih-ai-mu')->firstOrFail();
@@ -78,12 +84,22 @@ class LatihController extends Controller
                 return response()->json(['errors' => ['dataset' => ["Label \"{$label}\" baru {$n}/20 contoh."]]], 422);
             }
         }
+        if (isset($data['weights'])) {
+            $byteBobot = 0;
+            foreach ($data['weights']['tensors'] as $t) {
+                $byteBobot += (int) ceil(strlen($t['data']) * 3 / 4);
+            }
+            if ($byteBobot > StudentModel::MAKS_BYTE) {
+                return response()->json(['errors' => ['weights' => ['Bobot melebihi 2MB.']]], 422);
+            }
+        }
 
         $model = StudentModel::create([
             'student_id' => $request->user()->id,
             'name' => $data['name'],
             'labels' => array_values($data['labels']),
             'dataset' => $data['dataset'],
+            'weights' => $data['weights'] ?? null,
             'backbone' => $data['dataset']['backbone'] ?? 'mobilenet',
             'status' => StudentModel::STATUS_PENDING,
         ]);

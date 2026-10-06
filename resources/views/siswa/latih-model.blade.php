@@ -338,6 +338,10 @@
                 this.mengirim = true;
                 this.pesanOk = false;
                 this.pesanDraf = 'Mengirim dataset ke guru...';
+                let bobot = null;
+                if (this.headSiap) {
+                    try { bobot = this.pelatih.serializeBobot(); } catch (e) { bobot = null; }
+                }
                 try {
                     const res = await fetch(@js(route('siswa.latih.publish')), {
                         method: 'POST',
@@ -350,6 +354,7 @@
                             name: this.namaModel.trim(),
                             labels: this.labels,
                             dataset: this.pelatih.serialize(this.labels),
+                            weights: bobot,
                         }),
                     });
                     const data = await res.json();

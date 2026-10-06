@@ -18,9 +18,14 @@
                     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <div>
-                                <p class="font-bold text-slate-900 dark:text-white">{{ $model->name }}</p>
+                                <p class="font-bold text-slate-900 dark:text-white">{{ $model->name }}
+                                    @if($model->weights)
+                                        <span class="ml-1 px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300 text-[11px]">+ bobot lanjutan</span>
+                                    @endif
+                                </p>
                                 <p class="text-xs text-slate-500 dark:text-slate-400">{{ $model->student->name }} • {{ implode(', ', $model->labels) }} • {{ $model->created_at->format('d M Y H:i') }}</p>
                             </div>
+                            <a href="{{ route('guru.model.unduh', $model) }}" class="kka-btn-secondary !py-1.5 text-xs shrink-0">Unduh Data</a>
                         </div>
                         <form method="POST" action="{{ route('guru.model.setujui', $model) }}" class="mt-3 flex flex-col sm:flex-row gap-2">
                             @csrf

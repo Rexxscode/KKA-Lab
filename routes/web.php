@@ -111,6 +111,7 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::get('/model-siswa', [ModelModerasiController::class, 'index'])->name('model.index');
         Route::post('/model-siswa/{model}/setujui', [ModelModerasiController::class, 'setujui'])->name('model.setujui');
         Route::post('/model-siswa/{model}/tolak', [ModelModerasiController::class, 'tolak'])->name('model.tolak');
+        Route::get('/model-siswa/{model}/unduh', [ModelModerasiController::class, 'unduh'])->name('model.unduh');
     });
 });
 

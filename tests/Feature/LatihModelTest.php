@@ -195,4 +195,61 @@ class LatihModelTest extends TestCase
         $this->actingAs($siswa)->get(route('siswa.model.global'))
             ->assertOk()->assertSee('Model Perdana', false);
     }
+
+    private function bobotValid(): array
+    {
+        return ['tensors' => [
+            ['shape' => [4, 2], 'dtype' => 'float32', 'data' => base64_encode(random_bytes(32))],
+            ['shape' => [2], 'dtype' => 'float32', 'data' => base64_encode(random_bytes(8))],
+        ]];
+    }
+
+    public function test_publish_dengan_bobot_tersimpan(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $this->bukaAkses($siswa);
+
+        $this->actingAs($siswa)->postJson(route('siswa.latih.publish'), [
+            'name' => 'Model Plus Bobot',
+            'labels' => ['Botol', 'Buku'],
+            'dataset' => $this->datasetValid(),
+            'weights' => $this->bobotValid(),
+        ])->assertCreated();
+
+        $model = StudentModel::where('student_id', $siswa->id)->firstOrFail();
+        $this->assertCount(2, $model->weights['tensors']);
+    }
+
+    public function test_publish_menolak_bobot_rusak(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $this->bukaAkses($siswa);
+
+        $rusak = $this->bobotValid();
+        $rusak['tensors'][0]['dtype'] = 'int32';
+
+        $this->actingAs($siswa)->postJson(route('siswa.latih.publish'), [
+            'name' => 'Model Rusak',
+            'labels' => ['Botol', 'Buku'],
+            'dataset' => $this->datasetValid(),
+            'weights' => $rusak,
+        ])->assertStatus(422)->assertJsonValidationErrors('weights.tensors.0.dtype');
+
+        $this->assertDatabaseMissing('student_models', ['student_id' => $siswa->id]);
+    }
+
+    public function test_guru_bisa_unduh_model_muridnya(): void
+    {
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $guruLain = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $model = $this->pendingModel($guru, $siswa);
+
+        $this->actingAs($guru)->get(route('guru.model.unduh', $model))
+            ->assertOk()->assertJson(['name' => 'Model Bagus']);
+
+        $this->actingAs($guruLain)->get(route('guru.model.unduh', $model))->assertForbidden();
+    }
 }

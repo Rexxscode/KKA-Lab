@@ -56,6 +56,7 @@ class ModelModerasiController extends Controller
             'backbone' => $model->backbone,
             'labels' => $model->labels,
             'dataset' => $model->dataset,
+            'weights' => $model->weights,
             'student_model_id' => $model->id,
             'approved_by' => $request->user()->id,
             'is_active' => true,
@@ -83,8 +84,7 @@ class ModelModerasiController extends Controller
     }
 
     public function tolak(Request $request, StudentModel $model)
-    {
-        $this->milik($request, $model);
+    {        $this->milik($request, $model);
 
         $data = $request->validate(['note' => 'required|string|max:500']);
 
@@ -92,6 +92,23 @@ class ModelModerasiController extends Controller
         Log::info('guru.model_tolak', ['actor' => $request->user()->id, 'model' => $model->id]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Model \"{$model->name}\" ditolak dengan catatan."]);
+    }
+
+    /**
+     * Unduh dataset + bobot karya siswa (JSON) untuk dinilai offline.
+     */
+    public function unduh(Request $request, StudentModel $model)
+    {
+        $this->milik($request, $model);
+
+        return response()->json([
+            'name' => $model->name,
+            'labels' => $model->labels,
+            'backbone' => $model->backbone,
+            'dataset' => $model->dataset,
+            'weights' => $model->weights,
+            'status' => $model->status,
+        ], 200, ['Content-Disposition' => 'attachment; filename="model-' . $model->id . '.json"']);
     }
 
     private function milik(Request $request, StudentModel $model): void

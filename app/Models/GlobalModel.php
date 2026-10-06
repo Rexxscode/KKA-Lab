@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class GlobalModel extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'version', 'backbone', 'labels', 'dataset',
+        'name', 'slug', 'version', 'backbone', 'labels', 'dataset', 'weights',
         'student_model_id', 'approved_by', 'is_active', 'accuracy',
     ];
 
-    protected $casts = ['labels' => 'array', 'dataset' => 'array', 'is_active' => 'boolean'];
+    protected $casts = ['labels' => 'array', 'dataset' => 'array', 'weights' => 'array', 'is_active' => 'boolean'];
 
     public function asal()
     {

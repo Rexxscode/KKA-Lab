@@ -299,6 +299,32 @@ export class Pelatih {
     }
   }
 
+  /** Serialisasi bobot head -> {units, epochs, tensors:[{shape, dtype, data:b64}]} atau null. */
+  serializeBobot() {
+    if (!this.head) return null;
+    const tensors = this.head.getWeights().map((t) => {
+      const data = t.dataSync();
+      const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      let b64;
+      if (typeof Buffer !== 'undefined') {
+        b64 = Buffer.from(bytes).toString('base64');
+      } else {
+        let s = '';
+        for (let i = 0; i < bytes.length; i += 8192) {
+          s += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+        }
+        // eslint-disable-next-line no-undef
+        b64 = btoa(s);
+      }
+      return { shape: t.shape, dtype: t.dtype, data: b64 };
+    });
+    return {
+      units: this.headInfo?.units ?? null,
+      kelas: this.headInfo?.kelas ?? [],
+      tensors,
+    };
+  }
+
   /** Unduh bobot head (model.json + weights.bin) sebagai artefak. */
   async unduhBobot(nama = 'model-latihanku') {
     if (!this.head) throw new Error('belum-latih');
