@@ -166,7 +166,7 @@
                 <p>Total XP: <b>{{ $totalXp }}</b> • Badge: <b>{{ $badges->count() }}</b></p>
                 <p>Status: @if(($sertifikatAda ?? false) || ($sertifikatEligible ?? false))<span class="kka-status-ok">Sertifikat diperoleh</span>@else<span class="kka-status-warn">Belum lulus semua</span>@endif</p>
             </div>
-            <div class="grid grid-cols-2 gap-2 mt-3">
+            <div class="grid grid-cols-2 gap-2 mt-auto pt-3">
                 <a href="{{ route('siswa.raporku') }}" class="kka-btn-secondary !py-2 text-sm text-center">Lihat Raport Lengkap</a>
                 <a href="{{ route('siswa.raporku.cetak') }}" class="kka-btn-secondary !py-2 text-sm text-center">Cetak Raport</a>
             </div>
@@ -176,11 +176,11 @@
             @if(($sertifikatAda ?? false) || ($sertifikatEligible ?? false))
                 <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Sertifikat Kamu Sudah Terbit 🎓</p>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">6/6 modul + ujian akhir lulus — progresmu {{ $persen }}%.</p>
-                <a href="{{ route('siswa.sertifikat') }}" class="kka-btn-primary !py-2 text-sm text-center w-full mt-3">Lihat Sertifikat</a>
+                <div class="mt-auto pt-3"><a href="{{ route('siswa.sertifikat') }}" class="kka-btn-primary !py-2 text-sm text-center block w-full">Lihat Sertifikat</a></div>
             @else
                 <p class="text-sm text-slate-600 dark:text-slate-300">Selesaikan 6 modul lalu lulus ujian akhir untuk sertifikat.</p>
                 <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
-                <a href="{{ route('siswa.sertifikat') }}" class="kka-btn-secondary !py-2 text-sm text-center w-full mt-3">Progres Sertifikat ({{ $selesai }}/{{ $totalModul }})</a>
+                <div class="mt-auto pt-3"><a href="{{ route('siswa.sertifikat') }}" class="kka-btn-secondary !py-2 text-sm text-center block w-full">Progres Sertifikat ({{ $selesai }}/{{ $totalModul }})</a></div>
             @endif
         </x-card>
     </div>
@@ -191,18 +191,18 @@
             @php $m = $d['module']; $p = $d['progress']; @endphp
             <x-card :title="$d['posisi'] . '. ' . $m->title" :subtitle="$m->description">
                 <div class="flex items-center justify-between text-xs gap-2">
-                    <span class="kka-badge">+{{ $m->xp_reward }} XP</span>
+                    <span class="kka-badge shrink-0">+{{ $m->xp_reward }} XP</span>
                     @if($d['terkunci'])
-                        <span class="kka-status-idle inline-flex items-center gap-1"><x-icon name="lock" class="w-3.5 h-3.5" />Terkunci</span>
+                        <span class="kka-status-idle inline-flex items-center gap-1 whitespace-nowrap"><x-icon name="lock" class="w-3.5 h-3.5" />Terkunci</span>
                     @elseif($p && $p->is_completed)
-                        <span class="kka-status-ok">✓ Selesai • {{ $p->quiz_score }}</span>
+                        <span class="kka-status-ok whitespace-nowrap">✓ Selesai • {{ $p->quiz_score }}</span>
                     @elseif($p && ($p->quiz_score > 0 || $p->reading_done))
-                        <span class="kka-status-warn inline-flex items-center gap-1"><x-icon name="clock" class="w-3.5 h-3.5" />Dikerjakan{{ $p->quiz_score ? ' • ' . $p->quiz_score : '' }}</span>
+                        <span class="kka-status-warn inline-flex items-center gap-1 whitespace-nowrap"><x-icon name="clock" class="w-3.5 h-3.5" />Dikerjakan{{ $p->quiz_score ? ' • ' . $p->quiz_score : '' }}</span>
                     @else
-                        <span class="kka-status-idle">Belum mulai</span>
+                        <span class="kka-status-idle whitespace-nowrap">Belum mulai</span>
                     @endif
                 </div>
-                <div class="grid grid-cols-2 gap-2 mt-3">
+                <div class="grid grid-cols-2 gap-2 mt-auto pt-3">
                     <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary !py-2 text-sm text-center">Bahan</a>
                     @if($d['terkunci'])
                         <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40">Kuis</span>

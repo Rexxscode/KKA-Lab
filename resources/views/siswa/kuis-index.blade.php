@@ -26,11 +26,11 @@
                         @endif
                     </div>
                     @if($d['terkunci'])
-                        <span class="kka-btn-secondary px-4 !py-1.5 text-sm gap-1.5 opacity-40 cursor-not-allowed inline-flex items-center"><x-icon name="lock" class="w-4 h-4" />Terkunci</span>
+                        <span class="kka-btn-secondary px-4 !py-1.5 text-sm gap-1.5 opacity-40 cursor-not-allowed inline-flex items-center mt-auto"><x-icon name="lock" class="w-4 h-4" />Terkunci</span>
                     @elseif($p && $p->reading_done)
-                        <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary px-4 !py-1.5 text-sm inline-flex items-center">{{ $p->is_completed ? 'Ulangi Kuis' : 'Kerjakan Kuis' }}</a>
+                        <div class="mt-auto pt-3"><a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary px-4 !py-1.5 text-sm inline-flex items-center">{{ $p->is_completed ? 'Ulangi Kuis' : 'Kerjakan Kuis' }}</a></div>
                     @else
-                        <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary px-4 !py-1.5 text-sm gap-1.5 inline-flex items-center"><x-icon name="book" class="w-4 h-4" />Baca Dulu</a>
+                        <div class="mt-auto pt-3"><a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary px-4 !py-1.5 text-sm gap-1.5 inline-flex items-center"><x-icon name="book" class="w-4 h-4" />Baca Dulu</a></div>
                     @endif
                 </div>
             </x-card>
