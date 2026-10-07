@@ -57,11 +57,20 @@
     <div x-data="{ cari: '' }">
         <label for="cari-soal" class="sr-only">Cari soal</label>
         <input id="cari-soal" x-model="cari" type="search" placeholder="Cari teks soal..." class="w-full sm:max-w-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500 mb-3" />
-    <div class="space-y-3">
+    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Klik baris soal untuk membuka opsi, pembahasan, dan tombol Ubah/Hapus.</p>
+    <div class="space-y-2">
         @forelse($module->quizzes as $idx => $q)
             <div x-show="$el.dataset.cari.toLowerCase().includes(cari.toLowerCase())" data-cari="{{ strtolower($q->question) }}">
-            <x-card :title="'Soal ' . ($idx + 1)" :subtitle="$q->question">
-                <div class="space-y-1.5 text-sm">
+            <details class="kka-card !p-3 sm:!p-4">
+                <summary class="flex items-center gap-3 cursor-pointer list-none">
+                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 font-extrabold text-xs text-slate-600 dark:text-slate-300">{{ $idx + 1 }}</span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{{ $q->question }}</span>
+                        <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">Jawaban: <b class="text-emerald-600 dark:text-emerald-400">{{ chr(65 + $q->correct_index) }}</b>{{ $q->explanation ? ' • ada pembahasan' : '' }}</span>
+                    </span>
+                    <span class="kka-badge shrink-0 hidden sm:inline-flex">{{ chr(65 + $q->correct_index) }} ✓</span>
+                </summary>
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-sm">
                     @foreach($q->options as $oi => $opt)
                         <p class="{{ $oi == $q->correct_index ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-300' }}">
                             {{ chr(65 + $oi) }}. {{ $opt }} @if($oi == $q->correct_index) ✓ @endif
@@ -104,7 +113,7 @@
                         <button class="kka-btn-secondary !py-1.5 text-xs !text-red-600">Hapus</button>
                     </form>
                 </div>
-            </x-card>
+            </details>
             </div>
         @empty
             <x-card title="Belum ada soal" subtitle="Tambah soal pertama lewat formulir di atas." />
