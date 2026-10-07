@@ -9,7 +9,7 @@
         <input id="cari-bank-soal" x-model="cari" type="search" placeholder="Cari modul..." class="w-full sm:max-w-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
 
     <h3 class="mt-4 mb-3 font-extrabold text-slate-900 dark:text-white">Modul Milikmu ({{ $milik->count() }})</h3>
-    <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         @forelse($milik as $m)
             <div x-show="$el.dataset.judul.toLowerCase().includes(cari.toLowerCase())" data-judul="{{ strtolower($m->title) }}" class="h-full">
             <x-card :title="$m->title" :subtitle="$m->soal . ' soal'">
@@ -23,7 +23,7 @@
 
     @if($default->count())
         <h3 class="mt-6 mb-3 font-extrabold text-slate-900 dark:text-white">Modul Default (salin dulu untuk mengedit)</h3>
-        <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             @foreach($default as $m)
                 <div x-show="$el.dataset.judul.toLowerCase().includes(cari.toLowerCase())" data-judul="{{ strtolower($m->title) }}" class="h-full">
                 <x-card :title="$m->title" :subtitle="$m->soal . ' soal default'">

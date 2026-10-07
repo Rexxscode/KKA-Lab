@@ -28,13 +28,13 @@ class StudentModuleService
 
     /**
      * Aturan bank & sampling latihan/ujian (sumber kebenaran tunggal).
-     * - Modul default admin: target bank 40, tiap latihan keluar 20 acak.
+     * - Modul default admin: target bank 30, tiap latihan keluar 15 acak.
      * - Modul buatan guru: bank wajib 25–30, tiap latihan keluar 15 acak.
      * - Ujian akhir: 40 soal acak dari ke-6 modul default, lulus jika >= 80.
      */
-    public const BANK_DEFAULT_TARGET = 40;
+    public const BANK_DEFAULT_TARGET = 30;
 
-    public const LATIHAN_DEFAULT_TAMPIL = 20;
+    public const LATIHAN_DEFAULT_TAMPIL = 15;
 
     public const BANK_GURU_MIN = 25;
 
@@ -169,7 +169,7 @@ class StudentModuleService
 
     /**
      * Jumlah soal latihan yang keluar untuk satu percobaan.
-     * - Modul default: 20 acak (atau seluruh bank bila bank < 20, mis. masa pengisian admin).
+     * - Modul default: 15 acak (atau seluruh bank bila bank < 15, mis. masa pengisian admin).
      * - Modul guru (custom maupun fork): 15 acak (atau seluruh bank bila < 15).
      */
     public function jumlahTampilLatihan(Module $module, ?int $teacherId = null): int

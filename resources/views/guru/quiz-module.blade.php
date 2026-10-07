@@ -10,9 +10,12 @@
         @if(! auth()->user()->isAdmin() && $milikSaya < $minBank)
             <p class="mt-2 text-xs font-bold rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 text-orange-700 dark:text-orange-300 p-2.5">Bank belum lengkap — latihan siswa terkunci sampai bank mencapai {{ $minBank }} soal. Tambah {{ $minBank - $milikSaya }} soal lagi!</p>
         @endif
+        @if(auth()->user()->isAdmin() && $milikSaya < $targetBank)
+            <p class="mt-2 text-xs font-bold rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 text-orange-700 dark:text-orange-300 p-2.5">Target bank {{ $targetBank }} soal — tambah {{ $targetBank - $milikSaya }} soal lagi agar tiap latihan keluar 15 acak dari bank penuh!</p>
+        @endif
     </x-slot>
 
-    <x-card title="Tambah Banyak Soal Sekaligus" subtitle="Isi beberapa soal lalu simpan sekali — maks 30 per submit, bank guru wajib 25–30.">
+    <x-card title="Tambah Banyak Soal Sekaligus" subtitle="{{ auth()->user()->isAdmin() ? 'Isi beberapa soal lalu simpan sekali — maks 30 per submit, target bank 30 soal per modul.' : 'Isi beberapa soal lalu simpan sekali — maks 30 per submit, bank guru wajib 25–30.' }}">
         @if($module->isDefault() && ! auth()->user()->isAdmin())
             <p class="text-xs rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 p-2.5 mb-3">Ini soal default admin. Silakan tambah/edit langsung — tersimpan otomatis sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
         @endif
@@ -49,7 +52,7 @@
                 <button type="button" @click="if (jumlah < maks) jumlah++" :disabled="jumlah >= maks" class="kka-btn-secondary !py-2 text-sm text-center disabled:opacity-40">+ Tambah Soal Lagi (<span x-text="jumlah"></span>/30)</button>
                 <x-button type="submit" class="text-center">Simpan Semua Soal</x-button>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Tips: blok kosong yang tidak diisi otomatis dilewati. Bank guru wajib 25–30 soal agar latihan terbuka untuk siswa (tiap latihan keluar 15 acak).</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Tips: blok kosong yang tidak diisi otomatis dilewati. Tiap latihan keluar 15 soal acak dari bank.</p>
         </form>
     </x-card>
 

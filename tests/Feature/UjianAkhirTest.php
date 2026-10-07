@@ -53,18 +53,18 @@ class UjianAkhirTest extends TestCase
             ->assertRedirect(route('siswa.bahan.index'));
     }
 
-    public function test_latihan_default_keluar_20_dari_bank_40(): void
+    public function test_latihan_default_keluar_15_dari_bank_30(): void
     {
         $this->seed(DatabaseSeeder::class);
         $modul = Module::where('slug', 'apa-itu-ai')->firstOrFail();
-        $this->tambahSoal($modul, 25); // bank 15 + 25 = 40
+        $this->tambahSoal($modul, 15); // bank 15 + 15 = 30
 
         $layanan = app(StudentModuleService::class);
-        $this->assertSame(40, $layanan->soalEfektif($modul)->count());
-        $this->assertSame(20, $layanan->jumlahTampilLatihan($modul));
+        $this->assertSame(30, $layanan->soalEfektif($modul)->count());
+        $this->assertSame(15, $layanan->jumlahTampilLatihan($modul));
 
         $paket = $layanan->paketAcak($layanan->soalEfektif($modul), $layanan->jumlahTampilLatihan($modul));
-        $this->assertCount(20, $paket);
+        $this->assertCount(15, $paket);
     }
 
     public function test_bank_guru_min_25_blokir_latihan_dan_maks_30(): void
@@ -135,19 +135,19 @@ class UjianAkhirTest extends TestCase
         $this->assertSame(15, $layanan->jumlahTampilLatihan($modul, $guru->id));
     }
 
-    public function test_bank_default_maks_40(): void
+    public function test_bank_default_maks_30(): void
     {
         $this->seed(DatabaseSeeder::class);
         $admin = User::where('email', 'admin@kkalab.sch.id')->firstOrFail();
         $modul = Module::where('slug', 'apa-itu-ai')->firstOrFail();
-        $this->tambahSoal($modul, 25); // bank pas 40
+        $this->tambahSoal($modul, 15); // bank pas 30
 
         $this->actingAs($admin)->post(route('guru.quiz.module.store', $modul), [
-            'question' => 'Soal ke-41?',
+            'question' => 'Soal ke-31?',
             'options' => ['A', 'B', 'C', 'D', 'E'],
             'correct_letter' => 'A',
         ])->assertSessionHas('toast');
-        $this->assertSame(40, $modul->quizzes()->whereNull('teacher_id')->count());
+        $this->assertSame(30, $modul->quizzes()->whereNull('teacher_id')->count());
     }
 
     public function test_ujian_akhir_lulus_menerbitkan_sertifikat(): void
