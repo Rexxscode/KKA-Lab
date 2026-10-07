@@ -72,6 +72,19 @@ class AdminModuleGuardTest extends TestCase
         $this->actingAs($guruLain)->get(route('guru.kelas.modul.show', [$kelas, $modulGuru]))->assertForbidden();
     }
 
+    public function test_header_tabel_progres_disembunyikan_untuk_admin(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = User::where('email', 'admin@kkalab.sch.id')->firstOrFail();
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'Kelas', 'code' => '666666']);
+
+        $this->actingAs($admin)->get(route('guru.kelas.show', $kelas))
+            ->assertOk()->assertDontSee('<th scope="col"', false);
+        $this->actingAs($guru)->get(route('guru.kelas.show', $kelas))
+            ->assertOk()->assertSee('<th scope="col"', false);
+    }
+
     public function test_admin_tetap_bisa_kelola_modul_default(): void
     {
         $this->seed(DatabaseSeeder::class);

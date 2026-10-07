@@ -27,15 +27,17 @@
                 <input id="cari-siswa" x-model="cari" type="search" placeholder="Cari nama / email siswa..." class="w-full sm:max-w-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500 mb-3" />
             <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[720px]">
-                    <thead>
-                        <tr class="text-left text-xs text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                            <th scope="col" class="py-2 pr-3">Siswa</th>
-                            @foreach($modules as $m)
-                                <th scope="col" class="py-2 pr-3">{{ $m->title }}</th>
-                            @endforeach
-                            <th scope="col" class="py-2">Total XP</th>
-                        </tr>
-                    </thead>
+                    @if(! auth()->user()->isAdmin())
+                        <thead>
+                            <tr class="text-left text-xs text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <th scope="col" class="py-2 pr-3">Siswa</th>
+                                @foreach($modules as $m)
+                                    <th scope="col" class="py-2 pr-3">{{ $m->title }}</th>
+                                @endforeach
+                                <th scope="col" class="py-2">Total XP</th>
+                            </tr>
+                        </thead>
+                    @endif
                     <tbody>
                         @forelse($classroom->students as $s)
                             @php $by = $s->progress->keyBy('module_id'); @endphp
