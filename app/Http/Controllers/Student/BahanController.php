@@ -64,15 +64,6 @@ class BahanController extends Controller
                 ->with('toast', ['type' => 'info', 'message' => 'Mode pratinjau admin: progres tidak disimpan.']);
         }
 
-        // Tenggat kelas: modul yang belum lulus tak bisa diprogress lagi.
-        if ($modul->tenggatLewat($request->user(), $module, $item['progress'])) {
-            $tenggat = $modul->tenggatUntuk($request->user(), $module);
-
-            return redirect()
-                ->route('siswa.bahan.index')
-                ->with('toast', ['type' => 'error', 'message' => 'Tenggat modul ini sudah lewat (' . $tenggat->format('d M Y H:i') . '). Minta gurumu membuka kembali tenggatnya!']);
-        }
-
         $kunciBuka = 'baca_mulai_' . $module->id;
         $dibuka = session($kunciBuka);
         // Carbon 3: diffInSeconds bertanda (negatif untuk waktu lampau),

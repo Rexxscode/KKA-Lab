@@ -32,10 +32,9 @@ class AdminModuleGuardTest extends TestCase
         $this->actingAs($admin)->delete(route('guru.modul.destroy', $modulGuru))->assertForbidden();
         $this->actingAs($admin)->post(route('guru.modul.duplikat', $modulGuru))->assertForbidden();
 
-        // Lepas / geser / tenggat modul guru di kelas → 403.
+        // Lepas / geser modul guru di kelas → 403.
         $this->actingAs($admin)->delete(route('guru.kelas.modul.lepas', [$kelas, $modulGuru]))->assertForbidden();
         $this->actingAs($admin)->patch(route('guru.kelas.modul.naik', [$kelas, $modulGuru]))->assertForbidden();
-        $this->actingAs($admin)->patch(route('guru.kelas.modul.tenggat', [$kelas, $modulGuru]), ['due_at' => null])->assertForbidden();
 
         // Tempel modul guru ke kelas → 403.
         $kelas2 = Classroom::create(['teacher_id' => $guru->id, 'name' => 'Kelas 2', 'code' => '333333']);
@@ -104,7 +103,6 @@ class AdminModuleGuardTest extends TestCase
         $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'Kelas', 'code' => '444444']);
         $kelas->modules()->attach($modulGuru->id, ['position' => 1]);
 
-        $this->actingAs($guru)->patch(route('guru.kelas.modul.tenggat', [$kelas, $modulGuru]), ['due_at' => null])->assertRedirect();
         $this->actingAs($guru)->delete(route('guru.kelas.modul.lepas', [$kelas, $modulGuru]))->assertRedirect();
         $this->assertFalse($kelas->modules()->where('modules.id', $modulGuru->id)->exists());
     }

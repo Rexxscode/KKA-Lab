@@ -53,15 +53,6 @@ class ProgressController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk mengerjakan kuis!']);
         }
 
-        // Tenggat kelas: modul yang belum lulus tak bisa dinilai lagi.
-        if ($modul->tenggatLewat($request->user(), $module, $progress)) {
-            $tenggat = $modul->tenggatUntuk($request->user(), $module);
-
-            return redirect()
-                ->route('siswa.bahan.index')
-                ->with('toast', ['type' => 'error', 'message' => 'Tenggat modul ini sudah lewat (' . $tenggat->format('d M Y H:i') . '). Minta gurumu membuka kembali tenggatnya!']);
-        }
-
         // Bank guru wajib 25–30 soal (cek ulang di POST agar tak diakali via request manual).
         $guruId = $modul->guruKelasAktif($request->user());
         if ($modul->bankGuruKurang($module, $guruId)) {
@@ -232,12 +223,6 @@ class ProgressController extends Controller
                 'xp_earned' => 0,
                 'message' => 'Mode pratinjau admin: Uji tidak dicatat.',
             ]);
-        }
-
-        // Tenggat kelas: modul yang belum lulus tak bisa diuji lagi.
-        $progressAda = StudentProgress::where('student_id', $request->user()->id)->where('module_id', $module->id)->first();
-        if ($modul->tenggatLewat($request->user(), $module, $progressAda)) {
-            return response()->json(['message' => 'Tenggat modul ini sudah lewat. Minta gurumu membuka kembali tenggatnya!'], 403);
         }
 
         $progress = StudentProgress::firstOrCreate(

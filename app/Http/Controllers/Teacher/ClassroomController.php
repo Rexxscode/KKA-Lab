@@ -258,24 +258,4 @@ class ClassroomController extends Controller
         abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
     }
 
-    /**
-     * Atur tenggat modul di kelas ini (kosongkan = tanpa tenggat).
-     */
-    public function tenggat(Request $request, Classroom $classroom, \App\Models\Module $module)
-    {
-        $this->milik($request, $classroom);
-        abort_unless($classroom->modules()->where('modules.id', $module->id)->exists(), 404);
-        // Admin hanya boleh menyetel tenggat modul default.
-        abort_unless(
-            $module->isDefault() || ! $request->user()->isAdmin(),
-            403,
-            'Modul buatan guru hanya bisa diatur gurunya sendiri.'
-        );
-
-        $data = $request->validate(['due_at' => 'nullable|date']);
-
-        $classroom->modules()->updateExistingPivot($module->id, ['due_at' => $data['due_at'] ?? null]);
-
-        return back()->with('toast', ['type' => 'success', 'message' => $data['due_at'] ?? null ? "Tenggat \"{$module->title}\" diset!" : "Tenggat \"{$module->title}\" dihapus."]);
-    }
 }

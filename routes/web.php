@@ -97,7 +97,6 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::patch('/kelas/{classroom}/arsip', [GuruClassroomController::class, 'arsip'])->name('kelas.arsip');
         Route::delete('/kelas/{classroom}/siswa/{user}', [GuruClassroomController::class, 'kick'])->name('kelas.siswa.kick');
         Route::delete('/kelas/{classroom}/siswa/{user}/progres', [GuruClassroomController::class, 'resetProgres'])->name('kelas.siswa.reset');
-        Route::patch('/kelas/{classroom}/modul/{module}/tenggat', [GuruClassroomController::class, 'tenggat'])->name('kelas.modul.tenggat');
         Route::get('/kelas/{classroom}/siswa/{siswa}', [StudentReportController::class, 'show'])->name('kelas.siswa.show');
         Route::post('/kelas/{classroom}/siswa/{siswa}/umpan-balik', [StudentReportController::class, 'feedback'])->name('kelas.siswa.feedback');
         Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');

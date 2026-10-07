@@ -213,7 +213,7 @@ class ModuleController extends Controller
     /**
      * Susunan modul di kelas: admin hanya boleh mengatur modul default.
      * Modul buatan guru steril — hanya gurunya sendiri yang boleh
-     * menempel, melepas, menggeser, atau menyetel tenggatnya.
+     * menempel, melepas, atau menggesernya.
      */
     private function modulBolehDiatur(Request $request, Module $module): void
     {
