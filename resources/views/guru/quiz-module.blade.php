@@ -4,28 +4,44 @@
         <p class="text-sm text-slate-500 dark:text-slate-400">{{ $module->quizzes->count() }} soal • Poin per soal 20 • Lulus jika skor ≥80.</p>
     </x-slot>
 
-    <x-card title="Tambah Soal Baru" subtitle="Untuk modul ini saja.">
+    <x-card title="Tambah Banyak Soal Sekaligus" subtitle="Isi beberapa soal lalu simpan sekali — maks 20 per submit.">
         @if($module->isDefault() && ! auth()->user()->isAdmin())
-            <p class="text-xs rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 p-2.5 mb-3">Ini soal default admin. Silakan edit langsung — perubahan otomatis tersimpan sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
+            <p class="text-xs rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 p-2.5 mb-3">Ini soal default admin. Silakan tambah/edit langsung — tersimpan otomatis sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
         @endif
-        <form method="POST" action="{{ route('guru.quiz.module.store', $module) }}" class="space-y-2.5">
+        <form method="POST" action="{{ route('guru.quiz.module.bulk', $module) }}" x-data="{ jumlah: 1, maks: 20 }" class="space-y-3">
             @csrf
-            <label for="soal-baru" class="text-xs font-bold text-slate-600 dark:text-slate-300">Pertanyaan baru</label>
-            <input id="soal-baru" name="question" required placeholder="Tulis pertanyaan..." class="w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
-            @foreach(['A', 'B', 'C', 'D', 'E'] as $huruf)
-                <label for="opsi-baru-{{ $huruf }}" class="flex items-center gap-2.5 text-sm">
-                    <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 font-extrabold text-slate-600 dark:text-slate-300" aria-hidden="true">{{ $huruf }}</span>
-                    <input id="opsi-baru-{{ $huruf }}" name="options[]" required placeholder="Opsi {{ $huruf }} (wajib diisi)" class="flex-1 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
-                </label>
-            @endforeach
-            <label for="jawaban-baru" class="flex items-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">Jawaban benar:
-                <select id="jawaban-baru" name="correct_letter" required class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500">
-                    @foreach(['A', 'B', 'C', 'D', 'E'] as $huruf)
-                        <option value="{{ $huruf }}">{{ $huruf }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <div><x-button type="submit">Simpan Soal</x-button></div>
+            <template x-for="i in jumlah" :key="i">
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-xs font-extrabold text-slate-600 dark:text-slate-300" x-text="'Soal baru #' + i"></p>
+                        <button type="button" @click="if (jumlah > 1) jumlah--" x-show="jumlah > 1" class="text-xs font-bold text-red-600 hover:text-red-700">Hapus blok</button>
+                    </div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300">Pertanyaan
+                        <input :name="`soal[${i-1}][question]`" required placeholder="Tulis pertanyaan..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                    </label>
+                    <template x-for="(huruf, oi) in ['A','B','C','D','E']" :key="huruf">
+                        <label class="flex items-center gap-2.5 text-sm">
+                            <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 font-extrabold text-slate-600 dark:text-slate-300" x-text="huruf"></span>
+                            <input :name="`soal[${i-1}][options][${oi}]`" required :placeholder="`Opsi ${huruf} (wajib diisi)`" class="flex-1 min-w-0 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                        </label>
+                    </template>
+                    <div class="grid sm:grid-cols-2 gap-2.5">
+                        <label class="flex items-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">Jawaban benar:
+                            <select :name="`soal[${i-1}][correct_letter]`" required class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500">
+                                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                            </select>
+                        </label>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300">Pembahasan (opsional)
+                            <input :name="`soal[${i-1}][explanation]`" placeholder="Kenapa jawaban itu benar..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                        </label>
+                    </div>
+                </div>
+            </template>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <button type="button" @click="if (jumlah < maks) jumlah++" :disabled="jumlah >= maks" class="kka-btn-secondary !py-2 text-sm text-center disabled:opacity-40">+ Tambah Soal Lagi (<span x-text="jumlah"></span>/20)</button>
+                <x-button type="submit" class="text-center">Simpan Semua Soal</x-button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Tips: blok kosong yang tidak diisi otomatis dilewati. Butuh &gt;20 soal? Simpan dulu, lalu tambah batch berikutnya.</p>
         </form>
     </x-card>
 

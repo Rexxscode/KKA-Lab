@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Module;
 use App\Models\Quiz;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class QuizController extends Controller
 {
@@ -125,6 +126,61 @@ class QuizController extends Controller
         $module->quizzes()->create($data);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Soal berhasil ditambah ke ' . $module->title . '!']);
+    }
+
+    /**
+     * Simpan BANYAK soal sekaligus (maks 20 per submit) dalam 1 transaction.
+     * Form bulk mengirim `soal[i][question]`, `soal[i][options][0..4]`,
+     * `soal[i][correct_letter]`, `soal[i][explanation]` (opsional).
+     */
+    public function storeBulk(Request $request, Module $module)
+    {
+        $user = $request->user();
+
+        if ($user->isAdmin()) {
+            abort_unless($module->isDefault(), 403);
+            $pemilik = null;
+        } else {
+            abort_unless($module->isDefault() || $module->teacher_id === $user->id, 403);
+            $this->pastikanSalinan($module, $user);
+            $pemilik = $user->id;
+        }
+
+        $data = $request->validate([
+            'soal' => 'required|array|min:1|max:20',
+            'soal.*.question' => 'required|string|max:5000',
+            'soal.*.options' => 'required|array|min:5|max:5',
+            'soal.*.options.*' => 'required|string|max:255',
+            'soal.*.correct_letter' => 'required|in:A,B,C,D,E',
+            'soal.*.explanation' => 'nullable|string|max:5000',
+        ], [
+            'soal.max' => 'Maksimal 20 soal per sekali simpan. Bagi menjadi beberapa batch bila lebih.',
+        ]);
+
+        $dibuat = 0;
+        DB::transaction(function () use ($module, $data, $pemilik, &$dibuat) {
+            foreach ($data['soal'] as $baris) {
+                // Lewati blok kosong (mis. guru tambah blok lalu tidak diisi).
+                if (trim((string) ($baris['question'] ?? '')) === '') {
+                    continue;
+                }
+                $module->quizzes()->create([
+                    'teacher_id' => $pemilik,
+                    'question' => $baris['question'],
+                    'options' => array_values($baris['options']),
+                    'correct_index' => ord($baris['correct_letter']) - 65,
+                    'explanation' => $baris['explanation'] ?? null,
+                    'points' => 20,
+                ]);
+                $dibuat++;
+            }
+        });
+
+        if ($dibuat === 0) {
+            return back()->withInput()->with('toast', ['type' => 'error', 'message' => 'Tidak ada soal tersimpan — isi minimal 1 blok soal dulu!']);
+        }
+
+        return back()->with('toast', ['type' => 'success', 'message' => $dibuat . ' soal berhasil ditambah ke ' . $module->title . '!']);
     }
 
     public function update(Request $request, Quiz $quiz)
