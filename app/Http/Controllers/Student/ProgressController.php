@@ -62,14 +62,22 @@ class ProgressController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Tenggat modul ini sudah lewat (' . $tenggat->format('d M Y H:i') . '). Minta gurumu membuka kembali tenggatnya!']);
         }
 
+        // Bank guru wajib 25–30 soal (cek ulang di POST agar tak diakali via request manual).
+        $guruId = $modul->guruKelasAktif($request->user());
+        if ($modul->bankGuruKurang($module, $guruId)) {
+            return redirect()
+                ->route('siswa.bahan.index')
+                ->with('toast', ['type' => 'error', 'message' => 'Bank soal modul ini belum lengkap. Minta gurumu melengkapi dulu!']);
+        }
+
         // Nilai memakai paket acak yang disimpan saat halaman kuis dibuka,
         // sehingga urutan soal & opsi yang diacak tetap konsisten.
         $kunciPaket = 'kuis_paket_' . $module->id;
         $kunciMulai = 'kuis_mulai_' . $module->id;
         $paket = session($kunciPaket);
         if (empty($paket)) {
-            $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
-            $paket = $modul->paketAcak($quizzes);
+            $quizzes = $modul->soalEfektif($module, $guruId);
+            $paket = $modul->paketAcak($quizzes, $modul->jumlahTampilLatihan($module, $guruId));
             session([$kunciPaket => $paket, $kunciMulai => now()->toIso8601String()]);
         } elseif (! session($kunciMulai) || abs(now()->diffInMinutes(Carbon::parse(session($kunciMulai)))) > self::DURASI_KUIS_MENIT) {
             // Waktu habis: paket lama hangus, buat percobaan baru.

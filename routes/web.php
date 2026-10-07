@@ -10,6 +10,7 @@ use App\Http\Controllers\Student\CertificateController;
 use App\Http\Controllers\Student\ClassroomJoinController;
 use App\Http\Controllers\Student\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Student\KuisController;
+use App\Http\Controllers\Student\UjianAkhirController;
 use App\Http\Controllers\Student\LatihController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RaportController;
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->middleware('throttle:30,1')->name('modul.handson');
     Route::get('/raporku', [RaportController::class, 'index'])->name('raporku');
     Route::get('/raporku/cetak', [RaportController::class, 'cetak'])->name('raporku.cetak');
+    Route::get('/ujian-akhir', [UjianAkhirController::class, 'index'])->name('ujian.index');
+    Route::get('/ujian-akhir/mulai', [UjianAkhirController::class, 'show'])->name('ujian.show');
+    Route::post('/ujian-akhir', [UjianAkhirController::class, 'submit'])->middleware('throttle:10,1')->name('ujian.submit');
     Route::get('/sertifikat', [CertificateController::class, 'index'])->name('sertifikat');
     // Kompatibilitas bookmark lama.
     Route::redirect('/modul/{slug}', '/siswa/bahan/{slug}');

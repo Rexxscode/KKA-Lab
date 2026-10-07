@@ -1,7 +1,15 @@
 <x-sidebar-layout>
+    @php
+        $milikSaya = auth()->user()->isAdmin() ? $module->quizzes->whereNull('teacher_id')->count() : $module->quizzes->where('teacher_id', auth()->id())->count();
+        $targetBank = auth()->user()->isAdmin() ? \App\Services\StudentModuleService::BANK_DEFAULT_TARGET : \App\Services\StudentModuleService::BANK_GURU_MAX;
+        $minBank = \App\Services\StudentModuleService::BANK_GURU_MIN;
+    @endphp
     <x-slot name="header">
         <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Soal: {{ $module->title }}</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400">{{ $module->quizzes->count() }} soal • Poin per soal 20 • Lulus jika skor ≥80.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Bank saya: <b>{{ $milikSaya }}/{{ $targetBank }}</b> • Poin per soal 20 • Lulus jika skor ≥80.</p>
+        @if(! auth()->user()->isAdmin() && $milikSaya < $minBank)
+            <p class="mt-2 text-xs font-bold rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 text-orange-700 dark:text-orange-300 p-2.5">Bank belum lengkap — latihan siswa terkunci sampai bank mencapai {{ $minBank }} soal. Tambah {{ $minBank - $milikSaya }} soal lagi!</p>
+        @endif
     </x-slot>
 
     <x-card title="Tambah Banyak Soal Sekaligus" subtitle="Isi beberapa soal lalu simpan sekali — maks 20 per submit.">

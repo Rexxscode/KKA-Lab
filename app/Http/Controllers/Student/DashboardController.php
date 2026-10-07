@@ -39,8 +39,11 @@ class DashboardController extends Controller
 
         $sertifikatAda = \App\Models\Certificate::where('user_id', $user->id)->exists();
         $sertifikatEligible = $sertifikat->isEligible($user);
+        // Ujian akhir terbuka bila 6 modul lulus; sertifikat butuh lulus ujian.
+        $modulLulusSemua = $sertifikat->modulLulus($user);
+        $ujianLulus = $sertifikat->finalExamPassed($user);
 
-        return view('siswa.dashboard', compact('daftar', 'totalXp', 'badges', 'classrooms', 'kelasAktif', 'terakhir', 'riwayat', 'rapor', 'selesai', 'totalModul', 'persen', 'lanjut', 'rataNilai', 'nilaiTerbaik', 'totalKuis', 'sertifikatAda', 'sertifikatEligible'));
+        return view('siswa.dashboard', compact('daftar', 'totalXp', 'badges', 'classrooms', 'kelasAktif', 'terakhir', 'riwayat', 'rapor', 'selesai', 'totalModul', 'persen', 'lanjut', 'rataNilai', 'nilaiTerbaik', 'totalKuis', 'sertifikatAda', 'sertifikatEligible', 'modulLulusSemua', 'ujianLulus'));
     }
 
     /**

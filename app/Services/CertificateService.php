@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Certificate;
+use App\Models\FinalExamAttempt;
 use App\Models\Module;
 use App\Models\StudentProgress;
 use App\Models\User;
@@ -13,7 +14,8 @@ use Illuminate\Support\Str;
 /**
  * Penerbitan sertifikat murni backend.
  * Syarat: HANYA 6 modul default (teacher_id NULL), masing-masing
- * is_completed + quiz_score >= 80. Modul custom guru diabaikan.
+ * is_completed + quiz_score >= 80, DITAMBAH lulus ujian akhir (>= 80).
+ * Modul custom guru diabaikan.
  */
 class CertificateService
 {
@@ -24,7 +26,11 @@ class CertificateService
         return Module::whereNull('teacher_id')->orderBy('order')->get();
     }
 
-    public function isEligible(User $user): bool
+    /**
+     * 6 modul default lulus (tanpa ujian akhir). Dipakai sebagai gerbang
+     * membuka halaman ujian akhir.
+     */
+    public function modulLulus(User $user): bool
     {
         $modules = $this->modulDefault();
         if ($modules->count() === 0) {
@@ -35,6 +41,16 @@ class CertificateService
         return $modules->every(fn ($m) => isset($progress[$m->id])
             && $progress[$m->id]->is_completed
             && (int) $progress[$m->id]->quiz_score >= StudentProgress::PASS_SCORE);
+    }
+
+    public function finalExamPassed(User $user): bool
+    {
+        return FinalExamAttempt::where('student_id', $user->id)->where('passed', true)->exists();
+    }
+
+    public function isEligible(User $user): bool
+    {
+        return $this->modulLulus($user) && $this->finalExamPassed($user);
     }
 
     public function countLulus(User $user): int
@@ -71,6 +87,11 @@ class CertificateService
                 if (! $p || ! $p->is_completed || (int) $p->quiz_score < StudentProgress::PASS_SCORE) {
                     return null;
                 }
+            }
+
+            // Syarat tambahan: lulus ujian akhir (tidak percaya frontend).
+            if (! FinalExamAttempt::where('student_id', $user->id)->where('passed', true)->exists()) {
+                return null;
             }
 
             $existing = Certificate::where('user_id', $user->id)->first();

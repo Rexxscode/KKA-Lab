@@ -118,6 +118,13 @@ class QuizController extends Controller
             'correct_letter' => 'required|in:A,B,C,D,E',
         ]);
 
+        // Batas bank: default maks 40 (admin), bank guru maks 30.
+        $batas = $user->isAdmin() ? \App\Services\StudentModuleService::BANK_DEFAULT_TARGET : \App\Services\StudentModuleService::BANK_GURU_MAX;
+        $isi = $module->quizzes()->where('teacher_id', $pemilik)->count();
+        if ($isi >= $batas) {
+            return back()->withInput()->with('toast', ['type' => 'error', 'message' => 'Bank soal sudah penuh (' . $isi . '/' . $batas . '). Hapus soal lama bila ingin mengganti!']);
+        }
+
         $data['correct_index'] = ord($data['correct_letter']) - 65;
         unset($data['correct_letter']);
         $data['points'] = 20;
@@ -125,7 +132,7 @@ class QuizController extends Controller
 
         $module->quizzes()->create($data);
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Soal berhasil ditambah ke ' . $module->title . '!']);
+        return back()->with('toast', ['type' => 'success', 'message' => 'Soal berhasil ditambah ke ' . $module->title . '! (' . ($isi + 1) . '/' . $batas . ')']);
     }
 
     /**
@@ -156,6 +163,14 @@ class QuizController extends Controller
         ], [
             'soal.max' => 'Maksimal 20 soal per sekali simpan. Bagi menjadi beberapa batch bila lebih.',
         ]);
+
+        // Batas bank: default maks 40 (admin), bank guru maks 30.
+        $batas = $user->isAdmin() ? \App\Services\StudentModuleService::BANK_DEFAULT_TARGET : \App\Services\StudentModuleService::BANK_GURU_MAX;
+        $isi = $module->quizzes()->where('teacher_id', $pemilik)->count();
+        $valid = collect($data['soal'])->filter(fn ($b) => trim((string) ($b['question'] ?? '')) !== '')->count();
+        if ($isi + $valid > $batas) {
+            return back()->withInput()->with('toast', ['type' => 'error', 'message' => 'Bank soal hanya muat ' . ($batas - $isi) . ' soal lagi (' . $isi . '/' . $batas . '). Kurangi jumlah blok!']);
+        }
 
         $dibuat = 0;
         DB::transaction(function () use ($module, $data, $pemilik, &$dibuat) {

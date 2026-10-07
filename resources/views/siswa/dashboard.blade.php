@@ -123,6 +123,26 @@
         </x-card>
     </div>
 
+    <x-card title="Ujian Akhir" subtitle="40 soal acak dari 6 modul • lulus ≥80 untuk sertifikat" class="mt-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div class="flex-1 min-w-0 text-sm">
+                @if(($ujianLulus ?? false))
+                    <p class="font-bold text-emerald-700 dark:text-emerald-400">Kamu lulus ujian akhir ✓ — sertifikat bisa diterbitkan.</p>
+                @elseif(! ($modulLulusSemua ?? false))
+                    <p class="text-slate-600 dark:text-slate-300">Terkunci — selesaikan dulu 6 modul (saat ini {{ $selesai }}/{{ $totalModul }}).</p>
+                    <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
+                @else
+                    <p class="font-semibold text-slate-800 dark:text-slate-100">Terbuka! 6 modul lulus — saatnya ujian akhir 40 soal (±60 menit).</p>
+                @endif
+            </div>
+            @if(($ujianLulus ?? false) || ($modulLulusSemua ?? false))
+                <a href="{{ route('siswa.ujian.index') }}" class="kka-btn-primary !py-2 text-sm text-center shrink-0">{{ ($ujianLulus ?? false) ? 'Lihat Ujian' : 'Mulai Ujian Akhir →' }}</a>
+            @else
+                <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40 shrink-0">Terkunci</span>
+            @endif
+        </div>
+    </x-card>
+
     <div class="grid lg:grid-cols-3 gap-3 sm:gap-4 mt-4">
         <x-card title="Report Belajar" subtitle="ringkasan dari database">
             <div class="grid grid-cols-2 gap-2 text-sm">
@@ -162,13 +182,13 @@
             </div>
         </x-card>
 
-        <x-card title="Sertifikat" subtitle="6 modul default • nilai ≥80">
+        <x-card title="Sertifikat" subtitle="6 modul (≥80) + lulus ujian akhir">
             @if(($sertifikatAda ?? false) || ($sertifikatEligible ?? false))
                 <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Sertifikat Kamu Sudah Terbit 🎓</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Selesaikan 6/6 modul default — progresmu {{ $persen }}%.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">6/6 modul + ujian akhir lulus — progresmu {{ $persen }}%.</p>
                 <a href="{{ route('siswa.sertifikat') }}" class="kka-btn-primary !py-2 text-sm text-center w-full mt-3">Lihat Sertifikat</a>
             @else
-                <p class="text-sm text-slate-600 dark:text-slate-300">Selesaikan 6 modul untuk mendapatkan sertifikat.</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Selesaikan 6 modul lalu lulus ujian akhir untuk sertifikat.</p>
                 <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
                 <a href="{{ route('siswa.sertifikat') }}" class="kka-btn-secondary !py-2 text-sm text-center w-full mt-3">Progres Sertifikat ({{ $selesai }}/{{ $totalModul }})</a>
             @endif

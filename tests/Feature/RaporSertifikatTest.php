@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Certificate;
 use App\Models\Classroom;
+use App\Models\FinalExamAttempt;
 use App\Models\Module;
 use App\Models\StudentProgress;
 use App\Models\User;
@@ -32,6 +33,16 @@ class RaporSertifikatTest extends TestCase
         }
     }
 
+    private function luluskanUjian(User $siswa, int $score = 85): void
+    {
+        FinalExamAttempt::create([
+            'student_id' => $siswa->id,
+            'score' => $score,
+            'answers' => [],
+            'passed' => $score >= 80,
+        ]);
+    }
+
     public function test_sertifikat_terbit_dengan_kode_stabil_dan_bisa_diverifikasi_publik(): void
     {
         $this->seedKka();
@@ -42,6 +53,12 @@ class RaporSertifikatTest extends TestCase
         $this->assertDatabaseMissing('certificates', ['user_id' => $siswa->id]);
 
         $this->luluskanSemua($siswa);
+
+        // 6 modul lulus saja belum cukup: wajib lulus ujian akhir dulu.
+        $this->actingAs($siswa)->get(route('siswa.sertifikat'))->assertOk()->assertSee('Belum memenuhi syarat');
+        $this->assertDatabaseMissing('certificates', ['user_id' => $siswa->id]);
+
+        $this->luluskanUjian($siswa);
 
         $this->actingAs($siswa)->get(route('siswa.sertifikat'))->assertOk()->assertSee('Kode Sertifikat');
         $cert = Certificate::where('user_id', $siswa->id)->firstOrFail();
@@ -90,6 +107,7 @@ class RaporSertifikatTest extends TestCase
         $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
         $kelas->students()->attach($siswa->id);
         $this->luluskanSemua($siswa);
+        $this->luluskanUjian($siswa);
 
         $this->actingAs($siswa)->get(route('siswa.sertifikat'))->assertOk();
 
@@ -108,6 +126,7 @@ class RaporSertifikatTest extends TestCase
         $this->seedKka();
         $siswa = User::factory()->create(['role' => 'siswa']);
         $this->luluskanSemua($siswa);
+        $this->luluskanUjian($siswa);
 
         $this->actingAs($siswa)->get(route('siswa.sertifikat'))->assertOk();
 
