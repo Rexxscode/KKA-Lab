@@ -7,7 +7,7 @@
     <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         @foreach($daftar as $d)
             @php $m = $d['module']; $p = $d['progress']; @endphp
-            <x-card :title="$d['posisi'] . '. ' . $m->title" :subtitle="$d['jumlah_soal'] . ' soal pilihan ganda'">
+            <x-card :title="$d['posisi'] . '. ' . $m->title" :subtitle="'Bank ' . $d['jumlah_soal'] . ' soal • keluar ' . ($d['tampil'] ?? $d['jumlah_soal']) . ' acak'">
                 <div class="mt-auto pt-3 space-y-2">
                     <div class="flex items-center justify-between text-xs gap-2">
                         @if($d['terkunci'])

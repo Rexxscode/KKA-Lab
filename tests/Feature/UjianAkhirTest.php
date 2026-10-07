@@ -111,6 +111,30 @@ class UjianAkhirTest extends TestCase
         $this->assertSame(25, $modul->quizzes()->where('teacher_id', $guru->id)->count());
     }
 
+    public function test_guru_bisa_bulk_25_soal_sekaligus(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $modul = Module::create([
+            'teacher_id' => $guru->id, 'title' => 'Modul Bulk', 'slug' => 'modul-bulk',
+            'order' => 1, 'description' => 'Tes', 'xp_reward' => 100,
+        ]);
+
+        $soal = [];
+        for ($i = 1; $i <= 25; $i++) {
+            $soal[] = ['question' => "Soal bulk {$i}?", 'options' => ['A', 'B', 'C', 'D', 'E'], 'correct_letter' => 'A'];
+        }
+
+        $this->actingAs($guru)->post(route('guru.quiz.module.bulk', $modul), ['soal' => $soal])
+            ->assertRedirect()->assertSessionHas('toast');
+        $this->assertSame(25, $modul->quizzes()->where('teacher_id', $guru->id)->count());
+
+        // 25 memenuhi minimal: latihan terbuka dan keluar 15 acak.
+        $layanan = app(StudentModuleService::class);
+        $this->assertFalse($layanan->bankGuruKurang($modul, $guru->id));
+        $this->assertSame(15, $layanan->jumlahTampilLatihan($modul, $guru->id));
+    }
+
     public function test_bank_default_maks_40(): void
     {
         $this->seed(DatabaseSeeder::class);

@@ -12,11 +12,11 @@
         @endif
     </x-slot>
 
-    <x-card title="Tambah Banyak Soal Sekaligus" subtitle="Isi beberapa soal lalu simpan sekali — maks 20 per submit.">
+    <x-card title="Tambah Banyak Soal Sekaligus" subtitle="Isi beberapa soal lalu simpan sekali — maks 30 per submit, bank guru wajib 25–30.">
         @if($module->isDefault() && ! auth()->user()->isAdmin())
             <p class="text-xs rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 p-2.5 mb-3">Ini soal default admin. Silakan tambah/edit langsung — tersimpan otomatis sebagai versi kelas-kelasmu, soal admin tetap aman.</p>
         @endif
-        <form method="POST" action="{{ route('guru.quiz.module.bulk', $module) }}" x-data="{ jumlah: 1, maks: 20 }" class="space-y-3">
+        <form method="POST" action="{{ route('guru.quiz.module.bulk', $module) }}" x-data="{ jumlah: 1, maks: 30 }" class="space-y-3">
             @csrf
             <template x-for="i in jumlah" :key="i">
                 <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 space-y-2.5">
@@ -46,10 +46,10 @@
                 </div>
             </template>
             <div class="flex flex-col sm:flex-row gap-2">
-                <button type="button" @click="if (jumlah < maks) jumlah++" :disabled="jumlah >= maks" class="kka-btn-secondary !py-2 text-sm text-center disabled:opacity-40">+ Tambah Soal Lagi (<span x-text="jumlah"></span>/20)</button>
+                <button type="button" @click="if (jumlah < maks) jumlah++" :disabled="jumlah >= maks" class="kka-btn-secondary !py-2 text-sm text-center disabled:opacity-40">+ Tambah Soal Lagi (<span x-text="jumlah"></span>/30)</button>
                 <x-button type="submit" class="text-center">Simpan Semua Soal</x-button>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Tips: blok kosong yang tidak diisi otomatis dilewati. Butuh &gt;20 soal? Simpan dulu, lalu tambah batch berikutnya.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Tips: blok kosong yang tidak diisi otomatis dilewati. Bank guru wajib 25–30 soal agar latihan terbuka untuk siswa (tiap latihan keluar 15 acak).</p>
         </form>
     </x-card>
 

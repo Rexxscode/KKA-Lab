@@ -154,14 +154,14 @@ class QuizController extends Controller
         }
 
         $data = $request->validate([
-            'soal' => 'required|array|min:1|max:20',
+            'soal' => 'required|array|min:1|max:30',
             'soal.*.question' => 'required|string|max:5000',
             'soal.*.options' => 'required|array|min:5|max:5',
             'soal.*.options.*' => 'required|string|max:255',
             'soal.*.correct_letter' => 'required|in:A,B,C,D,E',
             'soal.*.explanation' => 'nullable|string|max:5000',
         ], [
-            'soal.max' => 'Maksimal 20 soal per sekali simpan. Bagi menjadi beberapa batch bila lebih.',
+            'soal.max' => 'Maksimal 30 soal per sekali simpan. Bagi menjadi beberapa batch bila lebih.',
         ]);
 
         // Batas bank: default maks 40 (admin), bank guru maks 30.

@@ -119,12 +119,18 @@ class StudentModuleService
         foreach ($modules->values() as $i => $m) {
             $p = $progress->get($m->id);
             $terkunci = $i > 0 && ! $sebelumSelesai;
+            // Jumlah soal yang keluar per latihan: 15 acak (bank guru) atau 20 acak (bank default).
+            $bankMilik = (int) ($milik->get($m->id, 0));
+            $tampil = $bankMilik > 0
+                ? min($bankMilik, self::LATIHAN_GURU_TAMPIL)
+                : min((int) $default->get($m->id, 0), self::LATIHAN_DEFAULT_TAMPIL);
             $hasil[] = [
                 'module' => $m,
                 'progress' => $p,
                 'terkunci' => $terkunci,
                 'posisi' => $i + 1,
                 'jumlah_soal' => (int) ($milik->get($m->id) ?? $default->get($m->id, 0)),
+                'tampil' => $tampil,
             ];
             $sebelumSelesai = $p && $p->is_completed;
         }
