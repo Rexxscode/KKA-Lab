@@ -143,9 +143,11 @@ class ModuleController extends Controller
         $data = $request->validate(['module_id' => 'required|exists:modules,id']);
         $module = Module::findOrFail($data['module_id']);
 
+        // Admin hanya boleh menempel modul default; modul buatan guru steril dari admin.
         abort_unless(
-            $module->isDefault() || $module->teacher_id === $request->user()->id || $request->user()->isAdmin(),
-            403
+            $module->isDefault() || (! $request->user()->isAdmin() && $module->teacher_id === $request->user()->id),
+            403,
+            'Modul buatan guru hanya bisa diatur gurunya sendiri.'
         );
 
         if (! $classroom->modules()->where('modules.id', $module->id)->exists()) {
@@ -160,6 +162,7 @@ class ModuleController extends Controller
     {
         $this->kelasMilik($request, $classroom);
         $this->modulTerpasang($classroom, $module);
+        $this->modulBolehDiatur($request, $module);
         $classroom->modules()->detach($module->id);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Modul \"{$module->title}\" dilepas dari {$classroom->name}."]);
@@ -179,6 +182,7 @@ class ModuleController extends Controller
     {
         $this->kelasMilik($request, $classroom);
         $this->modulTerpasang($classroom, $module);
+        $this->modulBolehDiatur($request, $module);
 
         $daftar = $classroom->modules()->orderByPivot('position')->get();
         $idx = $daftar->search(fn ($m) => $m->id === $module->id);
@@ -203,6 +207,20 @@ class ModuleController extends Controller
             $user->isAdmin() ? $module->isDefault() : $module->teacher_id === $user->id,
             403,
             'Modul default hanya bisa diubah admin.'
+        );
+    }
+
+    /**
+     * Susunan modul di kelas: admin hanya boleh mengatur modul default.
+     * Modul buatan guru steril — hanya gurunya sendiri yang boleh
+     * menempel, melepas, menggeser, atau menyetel tenggatnya.
+     */
+    private function modulBolehDiatur(Request $request, Module $module): void
+    {
+        abort_unless(
+            $module->isDefault() || ! $request->user()->isAdmin(),
+            403,
+            'Modul buatan guru hanya bisa diatur gurunya sendiri.'
         );
     }
 

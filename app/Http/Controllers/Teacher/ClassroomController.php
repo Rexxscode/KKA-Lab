@@ -238,6 +238,12 @@ class ClassroomController extends Controller
     {
         $this->milik($request, $classroom);
         abort_unless($classroom->modules()->where('modules.id', $module->id)->exists(), 404);
+        // Admin hanya boleh menyetel tenggat modul default.
+        abort_unless(
+            $module->isDefault() || ! $request->user()->isAdmin(),
+            403,
+            'Modul buatan guru hanya bisa diatur gurunya sendiri.'
+        );
 
         $data = $request->validate(['due_at' => 'nullable|date']);
 
