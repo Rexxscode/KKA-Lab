@@ -45,6 +45,34 @@ class AdminModuleGuardTest extends TestCase
         $this->assertTrue($kelas->modules()->where('modules.id', $modulGuru->id)->exists());
     }
 
+    public function test_admin_bisa_lihat_modul_guru_lewat_kelas_saja(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = User::where('email', 'admin@kkalab.sch.id')->firstOrFail();
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $modulGuru = Module::create([
+            'teacher_id' => $guru->id, 'title' => 'Modul Guru Lihat', 'slug' => 'modul-guru-lihat',
+            'order' => 1, 'description' => 'Deskripsi', 'materi' => 'Materi guru.', 'xp_reward' => 100,
+        ]);
+        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'Kelas', 'code' => '555555']);
+        $kelas->modules()->attach($modulGuru->id, ['position' => 1]);
+
+        // Lihat lewat kelas: OK, materi tampil, tanpa form ubah.
+        $this->actingAs($admin)->get(route('guru.kelas.modul.show', [$kelas, $modulGuru]))
+            ->assertOk()->assertSee('Materi guru.', false)->assertDontSee('Simpan Perubahan', false);
+
+        // Modul yang TIDAK terpasang di kelas: 404 (tak bisa intip via URL).
+        $modulLain = Module::create([
+            'teacher_id' => $guru->id, 'title' => 'Modul Lain', 'slug' => 'modul-guru-lain',
+            'order' => 2, 'description' => 'X', 'materi' => 'Y', 'xp_reward' => 100,
+        ]);
+        $this->actingAs($admin)->get(route('guru.kelas.modul.show', [$kelas, $modulLain]))->assertNotFound();
+
+        // Guru lain yang bukan pemilik kelas: 403.
+        $guruLain = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $this->actingAs($guruLain)->get(route('guru.kelas.modul.show', [$kelas, $modulGuru]))->assertForbidden();
+    }
+
     public function test_admin_tetap_bisa_kelola_modul_default(): void
     {
         $this->seed(DatabaseSeeder::class);

@@ -89,6 +89,9 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::get('/kelas', [GuruClassroomController::class, 'index'])->name('kelas.index');
         Route::post('/kelas', [GuruClassroomController::class, 'store'])->name('kelas.store');
         Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
+        // Lihat modul di kelas (read-only): admin bisa melihat modul guru
+        // hanya lewat kelas, tanpa bisa mengubah.
+        Route::get('/kelas/{classroom}/modul/{module}', [GuruClassroomController::class, 'modulShow'])->name('kelas.modul.show');
         Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');
         Route::patch('/kelas/{classroom}/kode-baru', [GuruClassroomController::class, 'kodeBaru'])->name('kelas.kode');
         Route::patch('/kelas/{classroom}/arsip', [GuruClassroomController::class, 'arsip'])->name('kelas.arsip');
