@@ -24,10 +24,12 @@
         <x-card title="Total XP" subtitle="dari kuis & praktik"><p class="kka-stat text-orange-600 dark:text-orange-400 flex items-center gap-2"><x-icon name="bolt" class="w-7 h-7" />{{ $totalXp }}</p></x-card>
         <x-card title="Badge" subtitle="dikumpulkan"><p class="kka-stat text-emerald-600 dark:text-emerald-400 flex items-center gap-2"><x-icon name="cap" class="w-7 h-7" />{{ $badges->count() }}</p></x-card>
         <x-card title="Modul Selesai" subtitle="skor ≥80"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $selesai }}/{{ $totalModul }}</p></x-card>
-        <div class="kka-card p-6">
+        <div class="kka-card p-6 flex flex-col h-full">
             <p class="text-sm text-slate-500 dark:text-slate-400">Progres Belajar</p>
-            <p class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{{ $persen }}%</p>
-            <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
+            <div class="mt-auto pt-2">
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $persen }}%</p>
+                <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
+            </div>
         </div>
     </div>
 
