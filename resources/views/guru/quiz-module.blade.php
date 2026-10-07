@@ -21,29 +21,55 @@
         @endif
         <form method="POST" action="{{ route('guru.quiz.module.bulk', $module) }}" x-data="{ jumlah: 1, maks: 30 }" class="space-y-3">
             @csrf
-            <template x-for="i in jumlah" :key="i">
+            {{-- Blok #1 dirender server agar kartu selalu pas isi (tetap tampil walau Alpine lambat). --}}
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 space-y-2.5">
+                <p class="text-xs font-extrabold text-slate-600 dark:text-slate-300">Soal baru #1</p>
+                <label class="block text-xs font-bold text-slate-600 dark:text-slate-300">Pertanyaan
+                    <input name="soal[0][question]" value="{{ old('soal.0.question') }}" required placeholder="Tulis pertanyaan..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                </label>
+                @foreach(['A', 'B', 'C', 'D', 'E'] as $oi => $huruf)
+                    <label class="flex items-center gap-2.5 text-sm">
+                        <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 font-extrabold text-slate-600 dark:text-slate-300">{{ $huruf }}</span>
+                        <input name="soal[0][options][{{ $oi }}]" value="{{ old("soal.0.options.{$oi}") }}" required placeholder="Opsi {{ $huruf }} (wajib diisi)" class="flex-1 min-w-0 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                    </label>
+                @endforeach
+                <div class="grid sm:grid-cols-2 gap-2.5">
+                    <label class="flex items-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">Jawaban benar:
+                        <select name="soal[0][correct_letter]" required class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500">
+                            @foreach(['A', 'B', 'C', 'D', 'E'] as $huruf)
+                                <option value="{{ $huruf }}" @selected(old('soal.0.correct_letter') === $huruf)>{{ $huruf }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300">Pembahasan (opsional)
+                        <input name="soal[0][explanation]" value="{{ old('soal.0.explanation') }}" placeholder="Kenapa jawaban itu benar..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                    </label>
+                </div>
+            </div>
+            {{-- Blok #2 dst. ditambah dinamis via Alpine. --}}
+            <template x-for="k in (jumlah - 1)" :key="k">
                 <div class="rounded-2xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 space-y-2.5">
                     <div class="flex items-center justify-between gap-2">
-                        <p class="text-xs font-extrabold text-slate-600 dark:text-slate-300" x-text="'Soal baru #' + i"></p>
-                        <button type="button" @click="if (jumlah > 1) jumlah--" x-show="jumlah > 1" class="text-xs font-bold text-red-600 hover:text-red-700">Hapus blok</button>
+                        <p class="text-xs font-extrabold text-slate-600 dark:text-slate-300" x-text="'Soal baru #' + (k + 1)"></p>
+                        <button type="button" @click="jumlah--" class="text-xs font-bold text-red-600 hover:text-red-700">Hapus blok</button>
                     </div>
                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-300">Pertanyaan
-                        <input :name="`soal[${i-1}][question]`" required placeholder="Tulis pertanyaan..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                        <input :name="`soal[${k}][question]`" required placeholder="Tulis pertanyaan..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
                     </label>
                     <template x-for="(huruf, oi) in ['A','B','C','D','E']" :key="huruf">
                         <label class="flex items-center gap-2.5 text-sm">
                             <span class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-700 font-extrabold text-slate-600 dark:text-slate-300" x-text="huruf"></span>
-                            <input :name="`soal[${i-1}][options][${oi}]`" required :placeholder="`Opsi ${huruf} (wajib diisi)`" class="flex-1 min-w-0 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                            <input :name="`soal[${k}][options][${oi}]`" required :placeholder="`Opsi ${huruf} (wajib diisi)`" class="flex-1 min-w-0 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
                         </label>
                     </template>
                     <div class="grid sm:grid-cols-2 gap-2.5">
                         <label class="flex items-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">Jawaban benar:
-                            <select :name="`soal[${i-1}][correct_letter]`" required class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500">
+                            <select :name="`soal[${k}][correct_letter]`" required class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500">
                                 <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
                             </select>
                         </label>
                         <label class="block text-xs font-bold text-slate-600 dark:text-slate-300">Pembahasan (opsional)
-                            <input :name="`soal[${i-1}][explanation]`" placeholder="Kenapa jawaban itu benar..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                            <input :name="`soal[${k}][explanation]`" placeholder="Kenapa jawaban itu benar..." class="mt-1 w-full rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500" />
                         </label>
                     </div>
                 </div>
