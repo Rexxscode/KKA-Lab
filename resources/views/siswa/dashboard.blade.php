@@ -72,10 +72,11 @@
         <x-card title="Gabung Kelas" subtitle="6 digit kode dari gurumu">
             <form method="POST" action="{{ route('siswa.join') }}" class="flex gap-2">
                 @csrf
-                <input name="code" maxlength="6" required placeholder="cth: 482913"
-                       class="flex-1 min-w-0 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500 tracking-widest text-center font-bold" />
+                <input name="code" id="kode-kelas" value="{{ old('code') }}" minlength="6" maxlength="6" required inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="cth: 482913" aria-label="Kode kelas 6 digit"
+                       class="flex-1 min-w-0 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500 tracking-[0.35em] text-center font-bold text-lg py-2" />
                 <x-button type="submit">Gabung</x-button>
             </form>
+            <x-input-error :messages="$errors->get('code')" class="mt-2" />
             @if($classrooms->count())
                 <div class="mt-3 flex flex-wrap gap-2">
                     @foreach($classrooms as $c)

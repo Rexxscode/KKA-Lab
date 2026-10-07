@@ -19,7 +19,7 @@
     <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mt-3">
         @forelse($classrooms as $c)
             <div x-show="$el.dataset.cari.toLowerCase().includes(cari.toLowerCase())" data-cari="{{ strtolower($c->name . ' ' . $c->code) }}" class="h-full">
-            <x-card :title="$c->name" :subtitle="'Kode: '.$c->code.' • '.$c->students_count.' siswa' . (isset($c->teacher) ? ' • '.$c->teacher->name : '')">
+            <x-card :title="$c->name" :subtitle="'Kode: '.$c->code.' • '.$c->students_count.' siswa' . (auth()->user()->isAdmin() && isset($c->teacher) ? ' • '.$c->teacher->name : '')">
                 <div class="flex gap-2 mt-auto pt-2">
                     <a href="{{ route('guru.kelas.show', $c) }}" class="kka-btn-primary !py-2 text-sm flex-1 text-center">Detail & Nilai</a>
                     <a href="{{ route('guru.kelas.export', $c) }}" class="kka-btn-secondary !py-2 text-sm">CSV</a>
