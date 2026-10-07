@@ -190,25 +190,27 @@
         @foreach($daftar as $d)
             @php $m = $d['module']; $p = $d['progress']; @endphp
             <x-card :title="$d['posisi'] . '. ' . $m->title" :subtitle="$m->description">
-                <div class="flex items-center justify-between text-xs gap-2">
-                    <span class="kka-badge shrink-0">+{{ $m->xp_reward }} XP</span>
-                    @if($d['terkunci'])
-                        <span class="kka-status-idle inline-flex items-center gap-1 whitespace-nowrap"><x-icon name="lock" class="w-3.5 h-3.5" />Terkunci</span>
-                    @elseif($p && $p->is_completed)
-                        <span class="kka-status-ok whitespace-nowrap">✓ Selesai • {{ $p->quiz_score }}</span>
-                    @elseif($p && ($p->quiz_score > 0 || $p->reading_done))
-                        <span class="kka-status-warn inline-flex items-center gap-1 whitespace-nowrap"><x-icon name="clock" class="w-3.5 h-3.5" />Dikerjakan{{ $p->quiz_score ? ' • ' . $p->quiz_score : '' }}</span>
-                    @else
-                        <span class="kka-status-idle whitespace-nowrap">Belum mulai</span>
-                    @endif
-                </div>
-                <div class="grid grid-cols-2 gap-2 mt-auto pt-3">
-                    <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary !py-2 text-sm text-center">Bahan</a>
-                    @if($d['terkunci'])
-                        <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40">Kuis</span>
-                    @else
-                        <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary !py-2 text-sm text-center">Kuis</a>
-                    @endif
+                <div class="mt-auto pt-3 space-y-3">
+                    <div class="flex items-center justify-between text-xs gap-2">
+                        <span class="kka-badge shrink-0">+{{ $m->xp_reward }} XP</span>
+                        @if($d['terkunci'])
+                            <span class="kka-status-idle inline-flex items-center gap-1 whitespace-nowrap"><x-icon name="lock" class="w-3.5 h-3.5" />Terkunci</span>
+                        @elseif($p && $p->is_completed)
+                            <span class="kka-status-ok whitespace-nowrap">✓ Selesai • {{ $p->quiz_score }}</span>
+                        @elseif($p && ($p->quiz_score > 0 || $p->reading_done))
+                            <span class="kka-status-warn inline-flex items-center gap-1 whitespace-nowrap"><x-icon name="clock" class="w-3.5 h-3.5" />Dikerjakan{{ $p->quiz_score ? ' • ' . $p->quiz_score : '' }}</span>
+                        @else
+                            <span class="kka-status-idle whitespace-nowrap">Belum mulai</span>
+                        @endif
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('siswa.bahan.show', $m->slug) }}" class="kka-btn-secondary !py-2 text-sm text-center">Bahan</a>
+                        @if($d['terkunci'])
+                            <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40">Kuis</span>
+                        @else
+                            <a href="{{ route('siswa.kuis.show', $m->slug) }}" class="kka-btn-primary !py-2 text-sm text-center">Kuis</a>
+                        @endif
+                    </div>
                 </div>
             </x-card>
         @endforeach
