@@ -33,19 +33,12 @@
 
     @if(isset($lanjut) && $lanjut)
         @php $lm = $lanjut['module']; $lp = $lanjut['progress']; @endphp
-        <x-card title="Lanjutkan Belajar" subtitle="modul yang sedang kamu kerjakan" class="mt-4">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div class="flex-1 min-w-0">
-                    <p class="font-extrabold text-slate-900 dark:text-white truncate">{{ $lanjut['posisi'] }}. {{ $lm->title }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Status: {{ $lp && $lp->is_completed ? 'Selesai' : ($lp && ($lp->reading_done || $lp->quiz_score > 0) ? 'Sedang dikerjakan' : 'Belum dimulai') }}
-                        @if($lp && $lp->quiz_score > 0) • Nilai terakhir: <b>{{ $lp->quiz_score }}</b>@endif
-                        @if($lp && $lp->last_accessed_at) • Terakhir dibuka: {{ $lp->last_accessed_at->format('d M Y H:i') }}@endif
-                    </p>
-                </div>
-                <a href="{{ route('siswa.bahan.show', $lm->slug) }}" class="kka-btn-primary !py-2 text-sm text-center shrink-0">Lanjut →</a>
-            </div>
-        </x-card>
+        <div class="mt-4 rounded-2xl border border-orange-200 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 px-4 py-3 flex flex-wrap items-center gap-2 text-sm" role="status">
+            <span class="font-extrabold text-orange-800 dark:text-orange-300 truncate">
+                Lanjut: {{ $lanjut['posisi'] }}. {{ $lm->title }}@if($lp && $lp->quiz_score > 0) (skor {{ $lp->quiz_score }})@endif
+            </span>
+            <a href="{{ route('siswa.bahan.show', $lm->slug) }}" class="kka-btn-primary !py-1.5 text-xs text-center ml-auto shrink-0">Lanjut →</a>
+        </div>
     @endif
 
     @if(isset($terakhir) && $terakhir && $terakhir->module)
@@ -123,25 +116,22 @@
         </x-card>
     </div>
 
-    <x-card title="Ujian Akhir" subtitle="40 soal acak dari 6 modul • lulus ≥80 untuk sertifikat" class="mt-4">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div class="flex-1 min-w-0 text-sm">
-                @if(($ujianLulus ?? false))
-                    <p class="font-bold text-emerald-700 dark:text-emerald-400">Kamu lulus ujian akhir ✓ — sertifikat bisa diterbitkan.</p>
-                @elseif(! ($modulLulusSemua ?? false))
-                    <p class="text-slate-600 dark:text-slate-300">Terkunci — selesaikan dulu 6 modul (saat ini {{ $selesai }}/{{ $totalModul }}).</p>
-                    <x-progress-bar :value="$selesai" :max="$totalModul ?: 1" class="mt-2" />
-                @else
-                    <p class="font-semibold text-slate-800 dark:text-slate-100">Terbuka! 6 modul lulus — saatnya ujian akhir 40 soal (±60 menit).</p>
-                @endif
-            </div>
-            @if(($ujianLulus ?? false) || ($modulLulusSemua ?? false))
-                <a href="{{ route('siswa.ujian.index') }}" class="kka-btn-primary !py-2 text-sm text-center shrink-0">{{ ($ujianLulus ?? false) ? 'Lihat Ujian' : 'Mulai Ujian Akhir →' }}</a>
+    <div class="mt-4 rounded-2xl border {{ ($ujianLulus ?? false) ? 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800' }} px-4 py-3 flex flex-wrap items-center gap-2 text-sm" role="status">
+        <span class="font-extrabold {{ ($ujianLulus ?? false) ? 'text-emerald-800 dark:text-emerald-300' : 'text-slate-800 dark:text-slate-100' }} truncate">
+            @if(($ujianLulus ?? false))
+                Ujian Akhir: lulus ✓
+            @elseif(! ($modulLulusSemua ?? false))
+                Ujian Akhir: terkunci ({{ $selesai }}/{{ $totalModul }} modul)
             @else
-                <span class="kka-btn-secondary !py-2 text-sm text-center opacity-40 shrink-0">Terkunci</span>
+                Ujian Akhir: terbuka — 40 soal (±60 menit)
             @endif
-        </div>
-    </x-card>
+        </span>
+        @if(($ujianLulus ?? false) || ($modulLulusSemua ?? false))
+            <a href="{{ route('siswa.ujian.index') }}" class="kka-btn-primary !py-1.5 text-xs text-center ml-auto shrink-0">{{ ($ujianLulus ?? false) ? 'Lihat Ujian' : 'Mulai Ujian →' }}</a>
+        @else
+            <span class="kka-btn-secondary !py-1.5 text-xs text-center opacity-40 ml-auto shrink-0">Terkunci</span>
+        @endif
+    </div>
 
     <div class="grid lg:grid-cols-3 gap-3 sm:gap-4 mt-4">
         <x-card title="Report Belajar" subtitle="ringkasan dari database">
