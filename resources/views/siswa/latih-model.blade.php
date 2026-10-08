@@ -128,7 +128,8 @@
                     this.modelSiap = true;
                     this.statusModel = 'Model siap — aktifkan kamera!';
                 } catch (e) {
-                    this.statusModel = 'Gagal memuat model (butuh internet sekali). Muat ulang halaman.';
+                    const sebab = String((e && e.message) || e).slice(0, 90);
+                    this.statusModel = 'Gagal memuat model (' + sebab + '). Periksa internet lalu muat ulang halaman.';
                     return;
                 }
                 try {
@@ -167,6 +168,10 @@
             },
             bisaLatih() { return this.modelSiap && this.cameraOn && this.labels.length >= 2; },
             async toggleKamera() {
+                if (!this.pelatih) {
+                    this.statusModel = 'Modul latih belum termuat. Muat ulang halaman.';
+                    return;
+                }
                 if (this.cameraOn) {
                     this.pelatih.hentikanKamera(this.$refs.video);
                     this.cameraOn = false;
