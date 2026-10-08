@@ -5,6 +5,32 @@
     </x-slot>
 
     <div class="py-8 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <x-card title="Track Record Belajar" subtitle="kronologi dari database — hanya siswa kelas ini.">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500">Progres</p><p class="font-extrabold">{{ $lulus }}/{{ count($daftar) }}</p></div>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500">Total XP</p><p class="font-extrabold">{{ $totalXp }}</p></div>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500">Badge</p><p class="font-extrabold">{{ $badgeCount ?? 0 }}</p></div>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-xs text-slate-500">Sertifikat</p><p class="font-extrabold">@if(isset($sertifikat) && $sertifikat) Diperoleh @else Belum @endif</p></div>
+            </div>
+            <div class="mt-3 overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead><tr class="text-left text-slate-500"><th class="py-1 pr-2">Modul</th><th class="py-1 pr-2">Status</th><th class="py-1 pr-2 text-right">Nilai</th><th class="py-1 pr-2 text-right">Coba</th><th class="py-1 text-right">Terakhir</th></tr></thead>
+                    <tbody>
+                        @foreach($daftar as $d)
+                            @php $p = $track[$d['module']->id] ?? $d['progress']; $a = isset($attempts) ? $attempts->get($d['module']->id) : null; @endphp
+                            <tr class="border-t border-slate-100 dark:border-slate-800">
+                                <td class="py-1.5 pr-2 font-semibold">{{ $d['posisi'] }}. {{ $d['module']->title }}</td>
+                                <td class="py-1.5 pr-2">@if($p && $p->is_completed)<span class="kka-status-ok">Selesai</span>@elseif($p && ($p->reading_done || $p->quiz_score > 0))<span class="kka-status-warn">Berjalan</span>@else<span class="kka-status-idle">Belum</span>@endif</td>
+                                <td class="py-1.5 pr-2 text-right font-bold">{{ $p ? $p->quiz_score : '—' }}{{$a && $a->maks ? ' (maks '.$a->maks.')' : ''}}</td>
+                                <td class="py-1.5 pr-2 text-right">{{ $p->attempts ?? $a->jml ?? 0 }}×</td>
+                                <td class="py-1.5 text-right">@if($p && $p->last_accessed_at){{ $p->last_accessed_at->format('d M Y') }}@elseif($p && $p->updated_at){{ $p->updated_at->format('d M Y') }}@else — @endif</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </x-card>
+
         <x-card title="Skor per Modul" subtitle="Skor kuis terakhir tiap modul (lulus ≥80).">
             <div class="space-y-2">
                 @foreach($daftar as $d)

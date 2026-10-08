@@ -180,6 +180,33 @@ class ClassroomController extends Controller
     }
 
     /**
+     * Lihat modul yang terpasang di kelas (murni read-only, tanpa form ubah).
+     * Admin memakai jalur ini untuk melihat modul buatan guru:
+     * hanya modul yang terpasang di kelas ini yang bisa dibuka.
+     */
+    public function modulShow(Request $request, Classroom $classroom, \App\Models\Module $module)
+    {
+        $this->milik($request, $classroom);
+        abort_unless($classroom->modules()->where('modules.id', $module->id)->exists(), 404);
+
+        // Bank yang ditampilkan mengikuti versi efektif (milik guru bila ada,
+        // selain itu default) — sama seperti yang dilihat siswa. Tanpa form ubah.
+        $user = $request->user();
+        if ($module->isDefault()) {
+            $soal = $user->isAdmin()
+                ? $module->quizzes()->whereNull('teacher_id')->orderBy('id')->get()
+                : $module->quizzes()->where('teacher_id', $user->id)->orderBy('id')->get();
+            if ($soal->isEmpty()) {
+                $soal = $module->quizzes()->whereNull('teacher_id')->orderBy('id')->get();
+            }
+        } else {
+            $soal = $module->quizzes()->where('teacher_id', $module->teacher_id)->orderBy('id')->get();
+        }
+
+        return view('guru.kelas-modul-show', compact('classroom', 'module', 'soal'));
+    }
+
+    /**
      * Keluarkan siswa dari kelas (progresnya tetap tersimpan).
      */
     public function kick(Request $request, Classroom $classroom, \App\Models\User $user)
@@ -231,18 +258,4 @@ class ClassroomController extends Controller
         abort_unless($classroom->teacher_id === $request->user()->id || $request->user()->isAdmin(), 403);
     }
 
-    /**
-     * Atur tenggat modul di kelas ini (kosongkan = tanpa tenggat).
-     */
-    public function tenggat(Request $request, Classroom $classroom, \App\Models\Module $module)
-    {
-        $this->milik($request, $classroom);
-        abort_unless($classroom->modules()->where('modules.id', $module->id)->exists(), 404);
-
-        $data = $request->validate(['due_at' => 'nullable|date']);
-
-        $classroom->modules()->updateExistingPivot($module->id, ['due_at' => $data['due_at'] ?? null]);
-
-        return back()->with('toast', ['type' => 'success', 'message' => $data['due_at'] ?? null ? "Tenggat \"{$module->title}\" diset!" : "Tenggat \"{$module->title}\" dihapus."]);
-    }
 }

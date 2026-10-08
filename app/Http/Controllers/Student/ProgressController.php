@@ -7,7 +7,9 @@ use App\Models\Badge;
 use App\Models\Module;
 use App\Models\QuizAttempt;
 use App\Models\StudentProgress;
+use App\Services\CertificateService;
 use App\Services\StudentModuleService;
+use App\Services\StudentProgressTracker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -51,13 +53,12 @@ class ProgressController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk mengerjakan kuis!']);
         }
 
-        // Tenggat kelas: modul yang belum lulus tak bisa dinilai lagi.
-        if ($modul->tenggatLewat($request->user(), $module, $progress)) {
-            $tenggat = $modul->tenggatUntuk($request->user(), $module);
-
+        // Bank guru wajib 25–30 soal (cek ulang di POST agar tak diakali via request manual).
+        $guruId = $modul->guruKelasAktif($request->user());
+        if ($modul->bankGuruKurang($module, $guruId)) {
             return redirect()
                 ->route('siswa.bahan.index')
-                ->with('toast', ['type' => 'error', 'message' => 'Tenggat modul ini sudah lewat (' . $tenggat->format('d M Y H:i') . '). Minta gurumu membuka kembali tenggatnya!']);
+                ->with('toast', ['type' => 'error', 'message' => 'Bank soal modul ini belum lengkap. Minta gurumu melengkapi dulu!']);
         }
 
         // Nilai memakai paket acak yang disimpan saat halaman kuis dibuka,
@@ -66,8 +67,8 @@ class ProgressController extends Controller
         $kunciMulai = 'kuis_mulai_' . $module->id;
         $paket = session($kunciPaket);
         if (empty($paket)) {
-            $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
-            $paket = $modul->paketAcak($quizzes);
+            $quizzes = $modul->soalEfektif($module, $guruId);
+            $paket = $modul->paketAcak($quizzes, $modul->jumlahTampilLatihan($module, $guruId));
             session([$kunciPaket => $paket, $kunciMulai => now()->toIso8601String()]);
         } elseif (! session($kunciMulai) || abs(now()->diffInMinutes(Carbon::parse(session($kunciMulai)))) > self::DURASI_KUIS_MENIT) {
             // Waktu habis: paket lama hangus, buat percobaan baru.
@@ -155,16 +156,27 @@ class ProgressController extends Controller
             'passed' => $passed,
         ]);
 
-        $progress = StudentProgress::updateOrCreate(
-            ['student_id' => $request->user()->id, 'module_id' => $module->id],
-            ['quiz_score' => $score, 'xp_earned' => $xp, 'is_completed' => $passed]
-        );
+        // Track record terpusat: attempts/best_score/status/completed_at dihitung backend.
+        $tracker = app(StudentProgressTracker::class);
+        $progress = $tracker->recordQuiz($request->user(), $module, $score, $xp, $passed);
+
+        // Sertifikat otomatis saat modul terakhir lulus (hanya 6 default, transaction, idempoten).
+        $sertifikatBaru = null;
+        if ($passed) {
+            try {
+                $sertifikatBaru = app(CertificateService::class)->issueIfEligible($request->user());
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        $pesanSertifikat = $sertifikatBaru ? ' Selamat! Kamu telah menyelesaikan seluruh modul KobotAI Lab dan mendapatkan sertifikat.' : '';
 
         if ($passed && $module->badge) {
             $request->user()->badges()->syncWithoutDetaching([$module->badge->id]);
             session()->forget([$kunciPaket, $kunciMulai]);
 
-            return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus {$module->title} dengan skor {$score}. +{$xp} XP & badge didapat!"]);
+            return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus {$module->title} dengan skor {$score}. +{$xp} XP & badge didapat!{$pesanSertifikat}"]);
         }
 
         if ($passed) {
@@ -172,7 +184,7 @@ class ProgressController extends Controller
             $request->user()->badges()->syncWithoutDetaching([Badge::where('module_id', $module->id)->first()->id]);
             session()->forget([$kunciPaket, $kunciMulai]);
 
-            return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus dengan skor {$score}. +{$xp} XP!"]);
+            return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => "Hebat! Kamu lulus dengan skor {$score}. +{$xp} XP!{$pesanSertifikat}"]);
         }
 
         // Gagal: cabut badge modul bila pernah didapat (mis. lulus lalu mengulang dan gagal),
@@ -213,16 +225,11 @@ class ProgressController extends Controller
             ]);
         }
 
-        // Tenggat kelas: modul yang belum lulus tak bisa diuji lagi.
-        $progressAda = StudentProgress::where('student_id', $request->user()->id)->where('module_id', $module->id)->first();
-        if ($modul->tenggatLewat($request->user(), $module, $progressAda)) {
-            return response()->json(['message' => 'Tenggat modul ini sudah lewat. Minta gurumu membuka kembali tenggatnya!'], 403);
-        }
-
         $progress = StudentProgress::firstOrCreate(
             ['student_id' => $request->user()->id, 'module_id' => $module->id],
-            ['quiz_score' => 0, 'xp_earned' => 0, 'is_completed' => false]
+            ['quiz_score' => 0, 'xp_earned' => 0, 'is_completed' => false, 'status' => StudentProgress::STATUS_IN_PROGRESS, 'started_at' => now(), 'last_accessed_at' => now()]
         );
+        $progress->update(['last_accessed_at' => now()]);
 
         // Hanya Uji meyakinkan (keyakinan >= 50) yang dihitung.
         if (($data['confidence'] ?? 0) >= 50) {

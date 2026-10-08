@@ -49,9 +49,21 @@ class DashboardController extends Controller
             ->paginate(15, ['*'], 'siswa_page')
             ->withQueryString();
 
-        // Pengajuan akun guru yang menunggu verifikasi NPK.
+        // Pengajuan akun guru yang menunggu verifikasi NPK (arsip data lama; pendaftar baru dihentikan).
         $pengajuan = User::where('role', 'guru')->where('status', 'pending')->latest()->get();
 
-        return view('admin.dashboard', compact('stats', 'users', 'classrooms', 'modules', 'siswaList', 'pengajuan'));
+        // Statistik global belajar (reuse tabel existing, tanpa query berat).
+        $modulDefaultIds = Module::whereNull('teacher_id')->pluck('id');
+        $global = [
+            'modul_selesai' => \App\Models\StudentProgress::where('is_completed', true)->count(),
+            'rata_nilai' => (int) round((float) (\App\Models\StudentProgress::where('quiz_score', '>', 0)->avg('quiz_score') ?? 0)),
+            'sertifikat' => \App\Models\Certificate::count(),
+            'siswa_aktif' => \App\Models\StudentProgress::where('last_accessed_at', '>=', now()->subDays(7))->distinct('student_id')->count('student_id'),
+        ];
+        $global['rata_progress'] = $stats['siswa'] > 0 && $modulDefaultIds->count() > 0
+            ? (int) round($global['modul_selesai'] / ($stats['siswa'] * $modulDefaultIds->count()) * 100)
+            : 0;
+
+        return view('admin.dashboard', compact('stats', 'users', 'classrooms', 'modules', 'siswaList', 'pengajuan', 'global'));
     }
 }

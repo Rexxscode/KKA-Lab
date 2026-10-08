@@ -20,6 +20,6 @@ class Classroom extends Model
 
     public function modules()
     {
-        return $this->belongsToMany(Module::class, 'classroom_module')->withPivot(['position', 'due_at'])->withTimestamps()->orderByPivot('position');
+        return $this->belongsToMany(Module::class, 'classroom_module')->withPivot(['position'])->withTimestamps()->orderByPivot('position');
     }
 }

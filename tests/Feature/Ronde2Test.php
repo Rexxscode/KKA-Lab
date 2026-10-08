@@ -141,24 +141,6 @@ class Ronde2Test extends TestCase
         $this->assertDatabaseMissing('feedbacks', ['classroom_id' => $kelas->id, 'student_id' => $siswa->id, 'module_id' => $module->id]);
     }
 
-    public function test_modul_lewat_tenggat_tak_bisa_diprogress(): void
-    {
-        $this->seed(DatabaseSeeder::class);
-        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
-        $siswa = User::factory()->create(['role' => 'siswa']);
-        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
-        $module = Module::where('slug', 'apa-itu-ai')->firstOrFail();
-        $kelas->modules()->attach($module->id, ['position' => 1, 'due_at' => now()->subDay()]);
-        $kelas->students()->attach($siswa->id);
-
-        $this->actingAs($siswa)->post(route('siswa.bahan.read', 'apa-itu-ai'))
-            ->assertRedirect(route('siswa.bahan.index'));
-        $this->assertDatabaseMissing('student_progress', [
-            'student_id' => $siswa->id,
-            'module_id' => $module->id,
-        ]);
-    }
-
     public function test_refresh_kuis_memakai_paket_yang_sama(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -307,29 +289,6 @@ class Ronde2Test extends TestCase
         $this->assertDatabaseHas('quiz_attempts', ['student_id' => $siswa->id, 'module_id' => $module->id, 'score' => 100, 'passed' => true]);
         $this->actingAs($siswa)->get(route('siswa.dashboard'))->assertSee('Riwayat Kuis');
         $this->actingAs($siswa)->get(route('siswa.raporku'))->assertSee('Terbaik: 100');
-    }
-
-    public function test_tenggat_tampil_dan_terlambat_ditandai(): void
-    {
-        $this->seed(DatabaseSeeder::class);
-        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
-        $siswa = User::factory()->create(['role' => 'siswa']);
-        $kelas = Classroom::create(['teacher_id' => $guru->id, 'name' => 'XI RPL 1', 'code' => '123456']);
-        $kelas->students()->attach($siswa->id);
-        $m1 = Module::where('slug', 'apa-itu-ai')->firstOrFail();
-        $m2 = Module::where('slug', 'latih-ai-mu')->firstOrFail();
-        $kelas->modules()->attach($m1->id, ['position' => 1, 'due_at' => now()->subDay()]);
-        $kelas->modules()->attach($m2->id, ['position' => 2, 'due_at' => now()->addWeek()]);
-
-        // Guru ubah tenggat via endpoint.
-        $this->actingAs($guru)->patch(route('guru.kelas.modul.tenggat', [$kelas, $m1]), ['due_at' => now()->addDays(2)->format('Y-m-d')])
-            ->assertRedirect();
-        $this->assertNotNull($kelas->modules()->where('modules.id', $m1->id)->first()->pivot->due_at);
-
-        // Set lagi ke masa lalu agar Terlambat muncul.
-        $kelas->modules()->updateExistingPivot($m1->id, ['due_at' => now()->subDay()]);
-        $this->actingAs($siswa)->get(route('siswa.bahan.index'))
-            ->assertOk()->assertSee('Terlambat')->assertSee('Tenggat');
     }
 
     public function test_umpan_balik_guru_tampil_di_rapor_siswa(): void

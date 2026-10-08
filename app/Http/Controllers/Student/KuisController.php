@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Student\ProgressController;
 use App\Models\Module;
 use App\Services\StudentModuleService;
+use App\Services\StudentProgressTracker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -18,7 +19,7 @@ class KuisController extends Controller
         return view('siswa.kuis-index', compact('daftar'));
     }
 
-    public function show(Request $request, string $slug, StudentModuleService $modul)
+    public function show(Request $request, string $slug, StudentModuleService $modul, StudentProgressTracker $tracker)
     {
         $module = Module::where('slug', $slug)->firstOrFail();
         $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
@@ -38,9 +39,24 @@ class KuisController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan bahan bacaan dulu untuk membuka kuis ini!']);
         }
 
-        // Paket acak baru tiap percobaan (urutan soal + opsi diacak,
-        // maksimal 15 soal bila bank lebih besar). Disimpan di sesi
-        // agar penilaian POST memakai susunan yang sama persis.
+        if (! $request->user()->isAdmin()) {
+            $tracker->touchOpen($request->user(), $module);
+        }
+
+        // Bank guru wajib 25–30 soal; bila belum lengkap, latihan diblokir
+        // sampai gurunya melengkapi (bank default admin tidak diblokir).
+        $guruId = $modul->guruKelasAktif($request->user());
+        if ($modul->bankGuruKurang($module, $guruId)) {
+            $ada = $module->quizzes()->where('teacher_id', $guruId)->count();
+
+            return redirect()
+                ->route('siswa.bahan.index')
+                ->with('toast', ['type' => 'error', 'message' => 'Bank soal modul ini belum lengkap (' . $ada . '/' . StudentModuleService::BANK_GURU_MIN . '). Minta gurumu melengkapi dulu!']);
+        }
+
+        // Paket acak baru tiap percobaan (urutan soal + opsi diacak:
+        // 20 soal untuk bank default, 15 soal untuk bank guru). Disimpan
+        // di sesi agar penilaian POST memakai susunan yang sama persis.
         // - Sehabis submit gagal (ada quiz_result): pakai paket yang sama
         //   agar pembahasan sejajar, waktu diperpanjang dari sekarang.
         // - Refresh dalam jendela waktu: pakai paket yang sama (anti
@@ -56,8 +72,8 @@ class KuisController extends Controller
         ) {
             $paket = session($kunciPaket);
         } else {
-            $quizzes = $modul->soalEfektif($module, $modul->guruKelasAktif($request->user()));
-            $paket = $modul->paketAcak($quizzes);
+            $quizzes = $modul->soalEfektif($module, $guruId);
+            $paket = $modul->paketAcak($quizzes, $modul->jumlahTampilLatihan($module, $guruId));
             session([$kunciPaket => $paket, $kunciMulai => now()->toIso8601String()]);
         }
         $tampil = $modul->uraikanPaket($paket);

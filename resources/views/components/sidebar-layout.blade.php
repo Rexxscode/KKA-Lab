@@ -140,7 +140,9 @@
             @isset($header)
                 <div class="mb-6">{{ $header }}</div>
             @endisset
-            {{ $slot }}
+            {{-- Pembungkus blok: memutus rantai height:100% agar x-card yang jadi
+                anak langsung tetap pas isi (h-full kartu grid tetap bekerja). --}}
+            <div class="min-w-0">{{ $slot }}</div>
         </main>
     </div>
 </div>
