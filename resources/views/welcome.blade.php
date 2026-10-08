@@ -43,7 +43,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <a href="{{ route('home') }}" class="kka-nav-logo flex items-center gap-2" aria-label="KobotAI Lab - Beranda">
                 <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-10 h-10 rounded-2xl" width="40" height="40" />
-                <span><span class="block font-extrabold text-slate-900 dark:text-white dark:text-white leading-none">KKA <span class="text-orange-500">Lab</span></span><span class="block text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Koding & Kecerdasan Artifisial</span></span>
+                <span><span class="block font-extrabold text-slate-900 dark:text-white dark:text-white leading-none">KobotAI <span class="text-orange-500">Lab</span></span><span class="block text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Koding & Kecerdasan Artifisial</span></span>
             </a>
             <div class="flex items-center gap-2">
                 <x-theme-toggle />
