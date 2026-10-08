@@ -10,6 +10,7 @@ use App\Http\Controllers\Student\CertificateController;
 use App\Http\Controllers\Student\ClassroomJoinController;
 use App\Http\Controllers\Student\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Student\KuisController;
+use App\Http\Controllers\Student\UjianAkhirController;
 use App\Http\Controllers\Student\LatihController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RaportController;
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->middleware('throttle:30,1')->name('modul.handson');
     Route::get('/raporku', [RaportController::class, 'index'])->name('raporku');
     Route::get('/raporku/cetak', [RaportController::class, 'cetak'])->name('raporku.cetak');
+    Route::get('/ujian-akhir', [UjianAkhirController::class, 'index'])->name('ujian.index');
+    Route::get('/ujian-akhir/mulai', [UjianAkhirController::class, 'show'])->name('ujian.show');
+    Route::post('/ujian-akhir', [UjianAkhirController::class, 'submit'])->middleware('throttle:10,1')->name('ujian.submit');
     Route::get('/sertifikat', [CertificateController::class, 'index'])->name('sertifikat');
     // Kompatibilitas bookmark lama.
     Route::redirect('/modul/{slug}', '/siswa/bahan/{slug}');
@@ -85,17 +89,20 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::get('/kelas', [GuruClassroomController::class, 'index'])->name('kelas.index');
         Route::post('/kelas', [GuruClassroomController::class, 'store'])->name('kelas.store');
         Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
+        // Lihat modul di kelas (read-only): admin bisa melihat modul guru
+        // hanya lewat kelas, tanpa bisa mengubah.
+        Route::get('/kelas/{classroom}/modul/{module}', [GuruClassroomController::class, 'modulShow'])->name('kelas.modul.show');
         Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');
         Route::patch('/kelas/{classroom}/kode-baru', [GuruClassroomController::class, 'kodeBaru'])->name('kelas.kode');
         Route::patch('/kelas/{classroom}/arsip', [GuruClassroomController::class, 'arsip'])->name('kelas.arsip');
         Route::delete('/kelas/{classroom}/siswa/{user}', [GuruClassroomController::class, 'kick'])->name('kelas.siswa.kick');
         Route::delete('/kelas/{classroom}/siswa/{user}/progres', [GuruClassroomController::class, 'resetProgres'])->name('kelas.siswa.reset');
-        Route::patch('/kelas/{classroom}/modul/{module}/tenggat', [GuruClassroomController::class, 'tenggat'])->name('kelas.modul.tenggat');
         Route::get('/kelas/{classroom}/siswa/{siswa}', [StudentReportController::class, 'show'])->name('kelas.siswa.show');
         Route::post('/kelas/{classroom}/siswa/{siswa}/umpan-balik', [StudentReportController::class, 'feedback'])->name('kelas.siswa.feedback');
         Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
         Route::get('/quiz/modul/{module}', [QuizController::class, 'module'])->name('quiz.module');
         Route::post('/quiz/modul/{module}', [QuizController::class, 'store'])->name('quiz.module.store');
+        Route::post('/quiz/modul/{module}/bulk', [QuizController::class, 'storeBulk'])->name('quiz.module.bulk');
         Route::get('/modul', [GuruModuleController::class, 'index'])->name('modul.index');
         Route::post('/modul', [GuruModuleController::class, 'store'])->name('modul.store');
         Route::patch('/modul/{module}', [GuruModuleController::class, 'update'])->name('modul.update');

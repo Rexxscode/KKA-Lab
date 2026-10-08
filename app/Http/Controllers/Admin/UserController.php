@@ -29,9 +29,11 @@ class UserController extends Controller
             'password' => Hash::make($data['password']),
         ]);
         $baru->role = $data['role'];
+        // Guru yang dibuat admin langsung aktif, tanpa approval/pending/NPK.
+        $baru->status = 'aktif';
         $baru->save();
 
-        return back()->with('toast', ['type' => 'success', 'message' => "Akun {$data['role']} {$data['email']} berhasil dibuat!"]);
+        return back()->with('toast', ['type' => 'success', 'message' => "Akun {$data['role']} {$data['email']} berhasil dibuat dan langsung aktif!"]);
     }
 
     public function resetPassword(Request $request, User $user)

@@ -18,5 +18,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Visitor yang mencoba halaman auth diarahkan ke login dengan pesan jelas.
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Silakan login terlebih dahulu untuk mengakses fitur pembelajaran.'], 401);
+            }
+
+            return redirect()
+                ->guest(route('login'))
+                ->with('toast', ['type' => 'error', 'message' => 'Silakan login terlebih dahulu untuk mengakses fitur pembelajaran.']);
+        });
     })->create();

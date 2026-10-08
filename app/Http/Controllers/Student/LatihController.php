@@ -65,10 +65,6 @@ class LatihController extends Controller
         if ($request->user()->isAdmin()) {
             return response()->json(['message' => 'Mode pratinjau admin: model tidak dikirim.'], 403);
         }
-        $progressAda = StudentProgress::where('student_id', $request->user()->id)->where('module_id', $module->id)->first();
-        if ($modul->tenggatLewat($request->user(), $module, $progressAda)) {
-            return response()->json(['message' => 'Tenggat modul ini sudah lewat. Minta gurumu membuka kembali tenggatnya!'], 403);
-        }
         if (StudentModel::where('student_id', $request->user()->id)->where('status', StudentModel::STATUS_PENDING)->count() >= StudentModel::MAKS_PENDING) {
             return response()->json(['message' => 'Antrean penuh (maks 5 menunggu). Tunggu guru memeriksa dulu!'], 429);
         }

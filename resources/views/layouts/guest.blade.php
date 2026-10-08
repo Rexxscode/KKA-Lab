@@ -24,6 +24,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-slate-900 dark:text-slate-100 antialiased" style="background:var(--color-page)">
+        <x-toast />
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div class="flex items-center gap-3">
                 <a href="/" class="flex items-center gap-2.5">

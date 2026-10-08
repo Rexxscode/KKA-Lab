@@ -47,7 +47,11 @@
             </a>
             <div class="flex items-center gap-2">
                 <x-theme-toggle />
-                <a href="{{ route('login') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Masuk</a>
+                @auth
+                    <a href="{{ route('dashboard') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Dashboard</a>
+                @else
+                    <a href="{{ route('login') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Masuk</a>
+                @endauth
             </div>
         </div>
     </nav>
@@ -59,8 +63,13 @@
             <h1 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white dark:text-white leading-tight">Belajar AI & Koding <span class="text-orange-500">hands-on</span> di browser.</h1>
             <p class="mt-4 text-slate-600 dark:text-slate-300">6 modul interaktif: konsep AI → latih model webcam → bias data → etika & hoaks → Python dasar → data & logika AI. Privasi terjaga: gambar tidak dikirim ke server. Kuis minimal <b>80</b> untuk lulus, kumpulkan XP & badge, cetak sertifikat otomatis.</p>
             <div class="mt-6 flex flex-wrap gap-3">
-                <x-button href="{{ route('login') }}">Masuk sebagai Siswa</x-button>
-                <x-button variant="secondary" href="{{ route('login') }}">Portal Guru</x-button>
+                @auth
+                    <x-button href="{{ route('dashboard') }}">Ke Dashboard</x-button>
+                    <div class="w-full text-xs text-slate-500 dark:text-slate-400">Kamu login sebagai <b>{{ auth()->user()->name }}</b> ({{ ucfirst(auth()->user()->role) }}). Tombol login tidak bisa ganti akun — <form method="POST" action="{{ route('logout') }}" class="inline">@csrf<button class="underline font-bold text-orange-600">keluar dulu</button></form> bila ingin masuk akun lain.</div>
+                @else
+                    <x-button href="{{ route('login') }}">Masuk sebagai Siswa</x-button>
+                    <x-button variant="secondary" href="{{ route('login') }}">Portal Guru</x-button>
+                @endauth
             </div>
             <div class="mt-6 grid grid-cols-3 gap-3 text-center">
                 <div class="kka-card !p-4"><p class="kka-stat text-orange-600 dark:text-orange-400">6</p><p class="text-xs text-slate-500 dark:text-slate-400">Modul interaktif</p></div>
@@ -89,21 +98,51 @@
     <section class="py-8">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ $modules->count() ?: 6 }} Modul KKA</h2>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Dari konsep → praktik kamera → data kritis → etika → Python untuk AI.</p>
-        <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
             @forelse($modules as $m)
                 <x-card :title="$m->title" :subtitle="$m->description">
-                    <div class="flex items-center justify-between">
-                        <span class="kka-badge">+{{ $m->xp_reward }} XP</span>
-                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600">Mulai →</a>
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+{{ $m->xp_reward }} XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
                     </div>
                 </x-card>
             @empty
-                <x-card title="Modul 1: Apa itu AI?" subtitle="Konsep dasar AI & ML dengan visual interaktif + kuis." />
-                <x-card title="Modul 2: Latih AI-mu" subtitle="Deteksi objek real-time via webcam (COCO-SSD pretrained) + bounding box." />
-                <x-card title="Modul 3: Bias Data" subtitle="Simulasi dataset tidak seimbang dengan Alpine.js." />
-                <x-card title="Modul 4: Etika & Hoaks AI" subtitle="Studi kasus deepfake & kuis literasi digital." />
-                <x-card title="Modul 5: Python Dasar untuk AI" subtitle="Python asli di browser: print, list, loop, fungsi, dict." />
-                <x-card title="Modul 6: Data & Logika AI" subtitle="Rata-rata, filter data, dan mini-classifier aturan." />
+                <x-card title="Modul 1: Apa itu AI?" subtitle="Konsep dasar AI & ML dengan visual interaktif + kuis.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+100 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 2: Latih AI-mu" subtitle="Deteksi objek real-time via webcam (COCO-SSD pretrained) + bounding box.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+200 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 3: Bias Data" subtitle="Simulasi dataset tidak seimbang dengan Alpine.js.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+150 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 4: Etika & Hoaks AI" subtitle="Studi kasus deepfake & kuis literasi digital.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+150 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 5: Python Dasar untuk AI" subtitle="Python asli di browser: print, list, loop, fungsi, dict.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+150 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
+                <x-card title="Modul 6: Data & Logika AI" subtitle="Rata-rata, filter data, dan mini-classifier aturan.">
+                    <div class="mt-auto pt-4 flex items-center justify-between gap-2">
+                        <span class="kka-badge shrink-0">+200 XP</span>
+                        <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
+                    </div>
+                </x-card>
             @endforelse
         </div>
     </section>
@@ -140,8 +179,12 @@
                     <p class="mt-2 text-sm sm:text-base text-slate-300">Mulai dari konsep AI, latih model pakai webcam, sampai nulis Python asli di browser. Kuis lulus di skor 80.</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                    <a href="{{ route('register') }}" class="inline-block px-7 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm transition">Daftar gratis</a>
-                    <a href="{{ route('login') }}" class="inline-block px-7 py-3 rounded-2xl border border-slate-600 text-slate-200 font-bold text-sm hover:border-slate-400 transition">Masuk</a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="inline-block px-7 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm transition">Ke Dashboard</a>
+                    @else
+                        <a href="{{ route('register') }}" class="inline-block px-7 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm transition">Daftar gratis</a>
+                        <a href="{{ route('login') }}" class="inline-block px-7 py-3 rounded-2xl border border-slate-600 text-slate-200 font-bold text-sm hover:border-slate-400 transition">Masuk</a>
+                    @endauth
                 </div>
             </div>
         </div>

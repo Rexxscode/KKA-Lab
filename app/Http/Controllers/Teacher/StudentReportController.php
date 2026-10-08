@@ -21,7 +21,14 @@ class StudentReportController extends Controller
         $feedbacks = Feedback::with('module')->where('classroom_id', $classroom->id)
             ->where('student_id', $siswa->id)->latest()->get();
 
-        return view('guru.siswa-rapor', ['classroom' => $classroom, 'siswa' => $siswa, 'feedbacks' => $feedbacks] + $rapor);
+        // Track record kronologis dari database (bukan dummy).
+        $track = \App\Models\StudentProgress::with('module')->where('student_id', $siswa->id)->orderBy('module_id')->get()->keyBy('module_id');
+        $attempts = \App\Models\QuizAttempt::where('student_id', $siswa->id)
+            ->selectRaw('module_id, COUNT(*) AS jml, MAX(score) AS maks')->groupBy('module_id')->get()->keyBy('module_id');
+        $sertifikat = \App\Models\Certificate::where('user_id', $siswa->id)->first();
+        $badges = $siswa->badges()->count();
+
+        return view('guru.siswa-rapor', ['classroom' => $classroom, 'siswa' => $siswa, 'feedbacks' => $feedbacks, 'track' => $track, 'attempts' => $attempts, 'sertifikat' => $sertifikat, 'badgeCount' => $badges] + $rapor);
     }
 
     public function feedback(Request $request, Classroom $classroom, User $siswa)

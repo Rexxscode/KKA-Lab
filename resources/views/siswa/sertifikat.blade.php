@@ -1,7 +1,7 @@
 <x-sidebar-layout>
     <x-slot name="header">
         <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Sertifikat Kelulusan</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Terbit otomatis jika {{ $modules->count() }} modul wajib lulus (skor ≥80).</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Terbit otomatis jika {{ $modules->count() }} modul wajib lulus (skor ≥80) + lulus ujian akhir.</p>
     </x-slot>
 
     <div class="py-8">
@@ -42,7 +42,7 @@
             </div>
         @else
             <div class="grid lg:grid-cols-3 gap-4 items-start">
-                <x-card title="Belum memenuhi syarat" subtitle="Selesaikan semua modul wajib dengan skor ≥80. Modul buatan guru bersifat bonus." class="lg:col-span-2">
+                <x-card title="Belum memenuhi syarat" subtitle="Selesaikan semua modul wajib (skor ≥80), lalu lulus ujian akhir. Modul buatan guru bersifat bonus." class="lg:col-span-2">
                     <div class="space-y-2">
                         @foreach($modules as $m)
                             @php $p = $progress->get($m->id); @endphp
@@ -71,7 +71,10 @@
                             <span class="font-extrabold text-orange-500">{{ $totalXp }} XP</span>
                         </div>
                     </div>
-                    <a href="{{ route('siswa.dashboard') }}" class="kka-btn-primary mt-4 !py-2 text-sm">Lanjut Belajar</a>
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <a href="{{ route('siswa.dashboard') }}" class="kka-btn-secondary !py-2 text-sm text-center">Lanjut Belajar</a>
+                        <a href="{{ route('siswa.ujian.index') }}" class="kka-btn-primary !py-2 text-sm text-center">Ujian Akhir</a>
+                    </div>
                 </x-card>
             </div>
         @endif

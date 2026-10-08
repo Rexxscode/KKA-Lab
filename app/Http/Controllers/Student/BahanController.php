@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Module;
 use App\Models\StudentProgress;
 use App\Services\StudentModuleService;
+use App\Services\StudentProgressTracker;
 use Illuminate\Http\Request;
 
 class BahanController extends Controller
@@ -23,7 +24,7 @@ class BahanController extends Controller
         return view('siswa.bahan-index', compact('daftar'));
     }
 
-    public function show(Request $request, string $slug, StudentModuleService $modul)
+    public function show(Request $request, string $slug, StudentModuleService $modul, StudentProgressTracker $tracker)
     {
         $module = Module::where('slug', $slug)->firstOrFail();
         $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
@@ -35,7 +36,11 @@ class BahanController extends Controller
                 ->with('toast', ['type' => 'error', 'message' => 'Selesaikan modul sebelumnya dulu sesuai urutan!']);
         }
 
+        // Track record: buka modul (lewati pratinjau admin agar tidak mengotori data).
         $progress = $item['progress'];
+        if (! $request->user()->isAdmin()) {
+            $progress = $tracker->touchOpen($request->user(), $module);
+        }
 
         // Catat kapan bahan pertama dibuka (sesi) untuk gerbang jeda baca.
         $kunciBuka = 'baca_mulai_' . $module->id;
@@ -46,7 +51,7 @@ class BahanController extends Controller
         return view('siswa.bahan-show', compact('module', 'progress'));
     }
 
-    public function markRead(Request $request, string $slug, StudentModuleService $modul)
+    public function markRead(Request $request, string $slug, StudentModuleService $modul, StudentProgressTracker $tracker)
     {
         $module = Module::where('slug', $slug)->firstOrFail();
         $item = collect($modul->denganStatus($request->user()))->firstWhere(fn ($d) => $d['module']->id === $module->id);
@@ -57,15 +62,6 @@ class BahanController extends Controller
             return redirect()
                 ->route('siswa.kuis.show', $module->slug)
                 ->with('toast', ['type' => 'info', 'message' => 'Mode pratinjau admin: progres tidak disimpan.']);
-        }
-
-        // Tenggat kelas: modul yang belum lulus tak bisa diprogress lagi.
-        if ($modul->tenggatLewat($request->user(), $module, $item['progress'])) {
-            $tenggat = $modul->tenggatUntuk($request->user(), $module);
-
-            return redirect()
-                ->route('siswa.bahan.index')
-                ->with('toast', ['type' => 'error', 'message' => 'Tenggat modul ini sudah lewat (' . $tenggat->format('d M Y H:i') . '). Minta gurumu membuka kembali tenggatnya!']);
         }
 
         $kunciBuka = 'baca_mulai_' . $module->id;
@@ -79,11 +75,7 @@ class BahanController extends Controller
         }
         session()->forget($kunciBuka);
 
-        $progress = StudentProgress::firstOrCreate(
-            ['student_id' => $request->user()->id, 'module_id' => $module->id],
-            ['quiz_score' => 0, 'xp_earned' => 0, 'is_completed' => false]
-        );
-        $progress->update(['reading_done' => true]);
+        $progress = $tracker->markReading($request->user(), $module);
 
         return redirect()
             ->route('siswa.kuis.show', $module->slug)

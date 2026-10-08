@@ -11,12 +11,21 @@ class ClassroomJoinController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate(['code' => 'required|string|size:6']);
+        // Normalisasi: buang spasi (mis. "482 913") agar tidak gagal validasi diam-diam.
+        $request->merge(['code' => preg_replace('/\s+/', '', (string) $request->input('code', ''))]);
+
+        $request->validate(
+            ['code' => 'required|string|size:6'],
+            [
+                'code.required' => 'Isi dulu kode kelas 6 digit dari gurumu!',
+                'code.size' => 'Kode kelas harus tepat 6 digit angka. Periksa lagi kode dari gurumu!',
+            ]
+        );
 
         $classroom = Classroom::where('code', $request->code)->first();
 
         if (! $classroom || $classroom->status === 'arsip') {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Kode kelas salah. Coba tanya ke gurumu ya!']);
+            return back()->withInput()->with('toast', ['type' => 'error', 'message' => 'Kode kelas salah atau kelas sudah diarsip. Coba tanya kode terbaru ke gurumu ya!']);
         }
 
         $request->user()->classrooms()->syncWithoutDetaching([$classroom->id]);

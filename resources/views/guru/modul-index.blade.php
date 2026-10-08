@@ -69,7 +69,7 @@
         @forelse($milik as $m)
             <x-card :title="$m->title" :subtitle="$m->soal . ' soal • +' . $m->xp_reward . ' XP'">
                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{{ $m->description }}</p>
-                <div class="flex flex-wrap gap-2 mt-3">
+                <div class="flex flex-wrap gap-2 mt-auto pt-3">
                     <a href="{{ route('guru.quiz.module', $m) }}" class="kka-btn-primary !py-1.5 text-xs inline-flex items-center gap-1"><x-icon name="pencil" class="w-3.5 h-3.5" />Kelola Soal</a>
                     <details class="relative">
                         <summary class="kka-btn-secondary !py-1.5 text-xs cursor-pointer list-none">Ubah</summary>

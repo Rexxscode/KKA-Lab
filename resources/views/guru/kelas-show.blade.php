@@ -27,15 +27,17 @@
                 <input id="cari-siswa" x-model="cari" type="search" placeholder="Cari nama / email siswa..." class="w-full sm:max-w-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm focus:border-orange-500 focus:ring-orange-500 mb-3" />
             <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[720px]">
-                    <thead>
-                        <tr class="text-left text-xs text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                            <th scope="col" class="py-2 pr-3">Siswa</th>
-                            @foreach($modules as $m)
-                                <th scope="col" class="py-2 pr-3">{{ $m->title }}</th>
-                            @endforeach
-                            <th scope="col" class="py-2">Total XP</th>
-                        </tr>
-                    </thead>
+                    @if(! auth()->user()->isAdmin())
+                        <thead>
+                            <tr class="text-left text-xs text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <th scope="col" class="py-2 pr-3">Siswa</th>
+                                @foreach($modules as $m)
+                                    <th scope="col" class="py-2 pr-3">{{ $m->title }}</th>
+                                @endforeach
+                                <th scope="col" class="py-2">Total XP</th>
+                            </tr>
+                        </thead>
+                    @endif
                     <tbody>
                         @forelse($classroom->students as $s)
                             @php $by = $s->progress->keyBy('module_id'); @endphp
@@ -80,24 +82,23 @@
                 @forelse($modules as $i => $m)
                     <div class="flex items-center gap-2 sm:gap-3 rounded-xl border border-slate-200 dark:border-slate-700 px-3 sm:px-4 py-2">
                         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400 text-xs font-extrabold shrink-0">{{ $i + 1 }}</span>
-                        <div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">{{ $m->title }}</p><p class="text-xs text-slate-400">{{ $m->isDefault() ? 'Default' : 'Modulmu' }}{{ $m->pivot->due_at ? ' • Tenggat ' . \Illuminate\Support\Carbon::parse($m->pivot->due_at)->format('d M Y') : '' }}</p></div>
-                        <form method="POST" action="{{ route('guru.kelas.modul.tenggat', [$classroom, $m]) }}" class="flex items-center gap-1">
-                            @csrf @method('PATCH')
-                            <input type="date" name="due_at" value="{{ $m->pivot->due_at ? \Illuminate\Support\Carbon::parse($m->pivot->due_at)->format('Y-m-d') : '' }}" aria-label="Tenggat {{ $m->title }}" class="rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-xs py-1" />
-                            <button class="kka-btn-secondary !py-1 !px-2 text-xs">Set</button>
-                        </form>
-                        <form method="POST" action="{{ route('guru.kelas.modul.naik', [$classroom, $m]) }}">
-                            @csrf @method('PATCH')
-                            <button class="kka-btn-secondary !py-1 !px-2.5 text-xs" @disabled($i === 0)>↑</button>
-                        </form>
-                        <form method="POST" action="{{ route('guru.kelas.modul.turun', [$classroom, $m]) }}">
-                            @csrf @method('PATCH')
-                            <button class="kka-btn-secondary !py-1 !px-2.5 text-xs" @disabled($i === $modules->count() - 1)>↓</button>
-                        </form>
-                        <form method="POST" action="{{ route('guru.kelas.modul.lepas', [$classroom, $m]) }}" onsubmit="return confirm('Lepas modul ini dari kelas?')">
-                            @csrf @method('DELETE')
-                            <button class="kka-btn-secondary !py-1 !px-2.5 text-xs !text-red-600">Lepas</button>
-                        </form>
+                        <div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">{{ $m->title }}</p><p class="text-xs text-slate-400">{{ $m->isDefault() ? 'Default' : 'Modul guru' }}@if(auth()->user()->isAdmin()) • <a href="{{ route('guru.kelas.modul.show', [$classroom, $m]) }}" class="font-bold text-orange-500 hover:text-orange-600">Lihat isi →</a>@endif</p></div>
+                        @if($m->isDefault() || ! auth()->user()->isAdmin())
+                            <form method="POST" action="{{ route('guru.kelas.modul.naik', [$classroom, $m]) }}">
+                                @csrf @method('PATCH')
+                                <button class="kka-btn-secondary !py-1 !px-2.5 text-xs" @disabled($i === 0)>↑</button>
+                            </form>
+                            <form method="POST" action="{{ route('guru.kelas.modul.turun', [$classroom, $m]) }}">
+                                @csrf @method('PATCH')
+                                <button class="kka-btn-secondary !py-1 !px-2.5 text-xs" @disabled($i === $modules->count() - 1)>↓</button>
+                            </form>
+                            <form method="POST" action="{{ route('guru.kelas.modul.lepas', [$classroom, $m]) }}" onsubmit="return confirm('Lepas modul ini dari kelas?')">
+                                @csrf @method('DELETE')
+                                <button class="kka-btn-secondary !py-1 !px-2.5 text-xs !text-red-600">Lepas</button>
+                            </form>
+                        @else
+                            <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap">Milik guru</span>
+                        @endif
                     </div>
                 @empty
                     <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada modul di kelas ini.</p>
