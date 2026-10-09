@@ -54,9 +54,15 @@
             async uji() {
                 if (!this.siap || !this.cameraOn) return;
                 try {
-                    const hasil = await this.pelatih.uji(this.$refs.video);
-                    if (!hasil) { this.hasil = 'Model kosong.'; return; }
-                    this.hasil = 'Terdeteksi: "' + (this.labels[Number(hasil.label)] || '?') + '"';
+                    const hasil = await this.pelatih.uji(this.$refs.video, { minConfidence: 0.6 });
+                    if (!hasil) { this.hasil = 'Model kosong (butuh 2 label).'; return; }
+                    if (hasil.butuhData) { this.hasil = hasil.alasan; return; }
+                    const persen = Math.round((hasil.confidence || 0) * 100);
+                    if (hasil.tidakYakin) {
+                        this.hasil = 'Tidak yakin (' + persen + '%) — coba dekatkan benda / perbaiki cahaya.';
+                        return;
+                    }
+                    this.hasil = 'Terdeteksi: "' + (this.labels[Number(hasil.label)] || '?') + '" (' + persen + '%)';
                 } catch (e) { this.hasil = 'Gagal menguji. Coba lagi.'; }
             },
         };

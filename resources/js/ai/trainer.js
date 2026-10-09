@@ -9,7 +9,7 @@ import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
-import { deserializeDataset, jepitHiperparam, kotakKeCrop, serializeDataset } from './trainer-utils.js';
+import { bboxTengah, isCahayaBuruk, jarakEmbedding, putuskanHasil, rataTerang, deserializeDataset, jepitHiperparam, kotakKeCrop, serializeDataset, JARAK_DUPLIKAT_MIN, MIN_CONFIDENCE, MIN_SAMPEL_UJI } from './trainer-utils.js';
 
 export const BACKBONE_NAMA = 'mobilenet-v1-0.25';
 
@@ -65,6 +65,8 @@ export class Pelatih {
     this.knn = knnClassifier.create();
     this.stream = null;
     this.kanvasCrop = null;
+    this.kanvasCek = null;
+    this.embeddingTerakhir = {};
   }
 
   get siap() {
@@ -94,19 +96,53 @@ export class Pelatih {
     this.stream = null;
   }
 
-  /** Ambil 1 contoh dari frame video untuk kelas ke-labelIdx. */
+  /** Ambil 1 contoh dari frame video untuk kelas ke-labelIdx (LEGACY full-frame, hindari). */
   tambahContoh(video, labelIdx) {
-    const aktivasi = this.backbone.infer(video, true);
+    // Arahkan ke crop tengah agar tidak melatih background (anti-ngasal).
+    return this.tambahContohTengah(video, labelIdx);
+  }
+
+  /** Cek pencahayaan frame crop: null=ok, string=alasan tolak. */
+  cekCahaya() {
     try {
-      this.knn.addExample(aktivasi, labelIdx);
-    } finally {
-      aktivasi.dispose();
+      if (!this.kanvasCrop) return null;
+      const ctx = this.kanvasCrop.getContext('2d', { willReadFrequently: true });
+      const data = ctx.getImageData(0, 0, Math.min(this.kanvasCrop.width, 56), Math.min(this.kanvasCrop.height, 56));
+      const rata = rataTerang(data.data);
+      if (isCahayaBuruk(rata)) {
+        return rata < 128 ? 'cahaya-gelap' : 'cahaya-terang';
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
+  }
+
+  /** Tolak duplikat: true bila embedding terlalu mirip contoh terakhir label itu. */
+  isDuplikat(labelIdx, embeddingArr) {
+    const terakhir = this.embeddingTerakhir[labelIdx];
+    if (!terakhir) return false;
+    try {
+      return jarakEmbedding(terakhir, embeddingArr) < JARAK_DUPLIKAT_MIN;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** Ambil 1 contoh dari tengah frame (crop wajib 60%). Kembalikan kode status. */
+  tambahContohTengah(video, labelIdx, rasio = 0.6) {
+    if (!video || !video.videoWidth) return 'frame-kosong';
+    const bbox = bboxTengah(video.videoWidth, video.videoHeight, rasio);
+    if (!bbox) return 'frame-kosong';
+    const hasil = this.tambahContohCrop(video, bbox, labelIdx);
+    return hasil === true ? 'ok' : hasil;
   }
 
   /**
    * Ambil 1 contoh dari hasil crop bbox deteksi (selector objek).
-   * Mengembalikan true bila crop valid, false bila box di luar frame.
+   * Kembalikan 'ok' bila berhasil, kode alasan bila ditolak:
+   * 'box-invalid' | 'cahaya-gelap' | 'cahaya-terang' | 'duplikat'.
+   * Kompatibel lama: true === 'ok'.
    */
   tambahContohCrop(video, bbox, labelIdx, target = 224) {
     const potong = kotakKeCrop(bbox, video.videoWidth, video.videoHeight);
@@ -116,10 +152,20 @@ export class Pelatih {
     this.kanvasCrop.height = target;
     const ctx = this.kanvasCrop.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(video, potong.sx, potong.sy, potong.s, potong.s, 0, 0, target, target);
+    const masalahCahaya = this.cekCahaya();
+    if (masalahCahaya) {
+      ctx.clearRect(0, 0, target, target);
+      return masalahCahaya;
+    }
     const piksel = tf.browser.fromPixels(this.kanvasCrop);
     const aktivasi = this.backbone.infer(piksel, true);
     try {
+      const dataEmb = Array.from(aktivasi.dataSync());
+      if (this.isDuplikat(labelIdx, dataEmb)) {
+        return 'duplikat';
+      }
       this.knn.addExample(aktivasi, labelIdx);
+      this.embeddingTerakhir[labelIdx] = dataEmb.slice(0, 128);
     } finally {
       piksel.dispose();
       aktivasi.dispose();
@@ -142,14 +188,44 @@ export class Pelatih {
     return (hasil || []).map((d) => ({ bbox: d.bbox, class: d.class, score: d.score }));
   }
 
-  /** Klasifikasi frame saat ini -> {label, keyakinan} atau null. */
-  async uji(video) {
-    if (this.knn.getNumClasses() === 0) return null;
-    const aktivasi = this.backbone.infer(video, true);
+  /** Klasifikasi crop tengah frame -> {label, confidence, tidakYakin, alasan} atau null. */
+  async uji(video, { minConfidence = MIN_CONFIDENCE } = {}) {
+    if (this.knn.getNumClasses() < 2) return null;
+    const counts = this.knn.getClassExampleCount();
+    for (const k of Object.keys(counts)) {
+      if ((counts[k] || 0) < MIN_SAMPEL_UJI) {
+        return { butuhData: true, label: null, confidence: 0, tidakYakin: true, alasan: `Contoh tiap label minimal ${MIN_SAMPEL_UJI} untuk uji.` };
+      }
+    }
+    // Uji memakai crop tengah yang sama seperti saat latih (konsisten).
+    const s = Math.min(video.videoWidth || 0, video.videoHeight || 0) * 0.6;
+    let aktivasi;
+    let piksel = null;
+    if (s > 0 && this.kanvasCrop) {
+      const bbox = [video.videoWidth / 2 - s / 2, video.videoHeight / 2 - s / 2, s, s];
+      const potong = kotakKeCrop(bbox, video.videoWidth, video.videoHeight);
+      if (potong) {
+        if (!this.kanvasCrop) this.kanvasCrop = document.createElement('canvas');
+        this.kanvasCrop.width = 224;
+        this.kanvasCrop.height = 224;
+        const ctx = this.kanvasCrop.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, potong.sx, potong.sy, potong.s, potong.s, 0, 0, 224, 224);
+        piksel = tf.browser.fromPixels(this.kanvasCrop);
+        aktivasi = this.backbone.infer(piksel, true);
+        ctx.clearRect(0, 0, 224, 224);
+      }
+    }
+    if (!aktivasi) {
+      aktivasi = this.backbone.infer(video, true);
+    }
     try {
-      return await this.knn.predictClass(aktivasi);
+      const mentah = await this.knn.predictClass(aktivasi);
+      const conf = Number(mentah.confidences?.[mentah.label] ?? 0);
+      const putus = putuskanHasil(mentah.label, conf, minConfidence);
+      return { ...putus, confidences: mentah.confidences };
     } finally {
       aktivasi.dispose();
+      if (piksel) piksel.dispose();
     }
   }
 
@@ -177,6 +253,7 @@ export class Pelatih {
   setDataset(dataset) {
     this.knn.clearAllClasses();
     this.buangHead();
+    this.embeddingTerakhir = {};
     const tensors = {};
     for (const [k, arrs] of Object.entries(dataset || {})) {
       if (!arrs.length) continue;
@@ -211,6 +288,7 @@ export class Pelatih {
   reset() {
     this.knn.clearAllClasses();
     this.buangHead();
+    this.embeddingTerakhir = {};
   }
 
   /** Buang head transfer-learning bila ada (dipakai ulang tiap latih baru). */
@@ -225,7 +303,8 @@ export class Pelatih {
   /**
    * Latih Lanjutan (transfer learning beneran): head dense kecil di atas
    * embedding MobileNet beku, dilatih dari contoh KNN yang terkumpul.
-   * Mengembalikan {loss, acc} epoch terakhir. Lempar bila data kurang.
+   * Split 80/20 train/val per label (anti overfit, anti akurasi semu).
+   * Mengembalikan {loss, acc, valAcc, trainCount, valCount}. Lempar bila data kurang.
    */
   async latihLanjutan({ epochs = 10, batchSize = 5, units = 64, lr = 0.001, onEpoch } = {}) {
     const { epochs: ep, batchSize: bs } = jepitHiperparam({ epochs, batchSize });
@@ -233,16 +312,32 @@ export class Pelatih {
     const kelas = Object.keys(mentah);
     if (kelas.length < 2) throw new Error('butuh-2-kelas');
     const dim = mentah[kelas[0]].shape[1];
-    const xsArr = [];
-    const ysArr = [];
-    kelas.forEach((k, ci) => {
+    // Kumpulkan per label lalu split acak 80/20 (min 1 val bila >=5).
+    const perLabel = {};
+    for (const k of kelas) {
       const t = mentah[k];
       const data = t.dataSync();
       const perContoh = data.length / t.shape[0];
+      const semua = [];
       for (let i = 0; i < t.shape[0]; i++) {
-        xsArr.push(Array.from(data.slice(i * perContoh, (i + 1) * perContoh)));
-        ysArr.push(ci);
+        semua.push(Array.from(data.slice(i * perContoh, (i + 1) * perContoh)));
       }
+      if (semua.length < 10) throw new Error('contoh-kurang');
+      // Acak.
+      for (let i = semua.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [semua[i], semua[j]] = [semua[j], semua[i]];
+      }
+      const nVal = Math.max(1, Math.floor(semua.length * 0.2));
+      perLabel[k] = { train: semua.slice(0, semua.length - nVal), val: semua.slice(semua.length - nVal) };
+    }
+    const xsArr = [];
+    const ysArr = [];
+    const valXsArr = [];
+    const valYsArr = [];
+    kelas.forEach((k, ci) => {
+      perLabel[k].train.forEach((row) => { xsArr.push(row); ysArr.push(ci); });
+      perLabel[k].val.forEach((row) => { valXsArr.push(row); valYsArr.push(ci); });
     });
     if (xsArr.length < kelas.length * 5) throw new Error('contoh-kurang');
 
@@ -251,15 +346,23 @@ export class Pelatih {
     const ys = tf.oneHot(tf.tensor1d(ysArr, 'int32'), kelas.length);
     const head = tf.sequential();
     head.add(tf.layers.dense({ inputShape: [dim], units: Math.max(16, Math.min(units, 256)), activation: 'relu' }));
+    head.add(tf.layers.dropout({ rate: 0.2 }));
     head.add(tf.layers.dense({ units: kelas.length, activation: 'softmax' }));
     head.compile({ optimizer: tf.train.adam(lr), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
     this.head = head;
     this.headInfo = { kelas, dim, units, epochs: ep };
+    let valXs = null;
+    let valYs = null;
     try {
+      if (valXsArr.length) {
+        valXs = tf.tensor2d(valXsArr, [valXsArr.length, dim]);
+        valYs = tf.oneHot(tf.tensor1d(valYsArr, 'int32'), kelas.length);
+      }
       const riwayat = await head.fit(xs, ys, {
         shuffle: true,
         batchSize: Math.min(bs, xsArr.length),
         epochs: ep,
+        validationData: valXs && valYs ? [valXs, valYs] : undefined,
         callbacks: {
           onEpochEnd: (epoch, logs) => {
             if (onEpoch) onEpoch(epoch, logs || {});
@@ -268,14 +371,32 @@ export class Pelatih {
       });
       const loss = riwayat.history.loss || [];
       const acc = riwayat.history.acc || riwayat.history.accuracy || [];
+      const valAccArr = riwayat.history.val_acc || riwayat.history.val_accuracy || [];
+      // Hitung val-acc manual bila history tak menyediakan (konsisten antar versi tfjs).
+      let valAcc = valAccArr.length ? valAccArr[valAccArr.length - 1] : null;
+      if (valAcc === null && valXs) {
+        try {
+          const pred = head.predict(valXs);
+          const predIdx = Array.from(pred.argMax(1).dataSync());
+          pred.dispose();
+          let benar = 0;
+          predIdx.forEach((p, i) => { if (p === valYsArr[i]) benar++; });
+          valAcc = valYsArr.length ? benar / valYsArr.length : null;
+        } catch (e) { /* abaikan, tetap lapor train-acc */ }
+      }
       this.headInfo.hasil = {
         loss: loss.length ? loss[loss.length - 1] : null,
         acc: acc.length ? acc[acc.length - 1] : null,
+        valAcc,
+        trainCount: xsArr.length,
+        valCount: valXsArr.length,
       };
       return this.headInfo.hasil;
     } finally {
       xs.dispose();
       ys.dispose();
+      if (valXs) valXs.dispose();
+      if (valYs) valYs.dispose();
     }
   }
 
@@ -287,8 +408,8 @@ export class Pelatih {
     return this.head !== null && this.head !== undefined;
   }
 
-  /** Prediksi memakai head hasil latih lanjutan -> {label, confidence} atau null. */
-  async ujiHead(video) {
+  /** Prediksi memakai head hasil latih lanjutan -> {label, confidence, tidakYakin} atau null. */
+  async ujiHead(video, { minConfidence = MIN_CONFIDENCE } = {}) {
     if (!this.head || !this.headInfo) return null;
     const aktivasi = this.backbone.infer(video, true);
     try {
@@ -297,7 +418,8 @@ export class Pelatih {
       keluar.dispose();
       let idx = 0;
       skor.forEach((s, i) => { if (s > skor[idx]) idx = i; });
-      return { label: this.headInfo.kelas[idx], confidence: skor[idx] };
+      const putus = putuskanHasil(this.headInfo.kelas[idx], skor[idx], minConfidence);
+      return putus;
     } finally {
       aktivasi.dispose();
     }

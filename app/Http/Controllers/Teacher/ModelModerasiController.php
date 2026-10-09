@@ -43,6 +43,23 @@ class ModelModerasiController extends Controller
 
         $data = $request->validate(['accuracy' => 'nullable|numeric|min:0|max:100']);
 
+        // Quality gate anti-ngasal: tiap label min 20 contoh, akurasi min 70 bila diisi.
+        $dataset = is_array($model->dataset) ? $model->dataset : [];
+        $contoh = $dataset['contoh'] ?? [];
+        $labels = is_array($model->labels) ? $model->labels : [];
+        if (count($labels) < 2) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Ditolak otomatis: butuh minimal 2 label.']);
+        }
+        foreach ($labels as $label) {
+            $n = isset($contoh[$label]) && is_array($contoh[$label]) ? count($contoh[$label]) : 0;
+            if ($n < 20) {
+                return back()->with('toast', ['type' => 'error', 'message' => "Ditolak otomatis: label \"{$label}\" baru {$n}/20 contoh. Minta siswa tambah contoh bervariasi."]);
+            }
+        }
+        if (isset($data['accuracy']) && (float) $data['accuracy'] < 70) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Akurasi uji guru minimal 70%. Uji 5x beruntun dulu, tolak bila tidak yakin.']);
+        }
+
         $model->update(['status' => StudentModel::STATUS_APPROVED, 'accuracy' => $data['accuracy'] ?? null, 'note' => null]);
 
         // Promote ke model global aktif (nonaktifkan yang lama).
