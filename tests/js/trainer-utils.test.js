@@ -5,16 +5,27 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  CAHAYA_MAKS,
+  CAHAYA_MIN,
+  JARAK_DUPLIKAT_MIN,
   MAKS_BATCH,
   MAKS_EPOCH,
+  MIN_CONFIDENCE,
   MIN_SAMPEL,
   MIN_SAMPEL_LATIH,
+  MIN_SAMPEL_UJI,
   STREAK_SYARAT,
+  bboxTengah,
   cekSyarat,
   deserializeDataset,
+  isCahayaBuruk,
+  jarakEmbedding,
   jepitHiperparam,
   kotakKeCrop,
+  layakUji,
   petakanBox,
+  putuskanHasil,
+  rataTerang,
   serializeDataset,
   ukuranDataset,
   validasiLabel,
@@ -77,9 +88,12 @@ describe('serializeDataset', () => {
 });
 
 describe('konstanta ambang', () => {
-  it('sesuai kontrak publish', () => {
+  it('sesuai kontrak publish + anti-ngasal', () => {
     assert.equal(MIN_SAMPEL, 20);
     assert.equal(STREAK_SYARAT, 5);
+    assert.equal(MIN_SAMPEL_UJI, 10);
+    assert.equal(MIN_CONFIDENCE, 0.6);
+    assert.equal(MIN_SAMPEL_LATIH, 10);
   });
 });
 
@@ -117,13 +131,13 @@ describe('petakanBox', () => {
 });
 
 describe('validasiLatih', () => {
-  it('lolos bila tiap label cukup contoh', () => {
-    assert.equal(validasiLatih({ Botol: 8, Buku: 5 }).ok, true);
-    assert.equal(MIN_SAMPEL_LATIH, 5);
+  it('lolos bila tiap label cukup contoh (min 10 anti-overfit)', () => {
+    assert.equal(validasiLatih({ Botol: 12, Buku: 10 }).ok, true);
+    assert.equal(MIN_SAMPEL_LATIH, 10);
   });
 
   it('menolak label kurang contoh', () => {
-    const r = validasiLatih({ Botol: 8, Buku: 2 });
+    const r = validasiLatih({ Botol: 12, Buku: 2 });
     assert.equal(r.ok, false);
     assert.ok(r.galat.includes('Buku'));
   });
@@ -134,5 +148,53 @@ describe('jepitHiperparam', () => {
     assert.deepEqual(jepitHiperparam({ epochs: 100, batchSize: 64 }), { epochs: MAKS_EPOCH, batchSize: MAKS_BATCH });
     assert.deepEqual(jepitHiperparam({ epochs: 0, batchSize: 0 }), { epochs: 10, batchSize: 5 });
     assert.deepEqual(jepitHiperparam(), { epochs: 10, batchSize: 5 });
+  });
+});
+
+describe('layakUji anti-ngasal', () => {
+  it('menolak bila contoh <10 per label', () => {
+    assert.equal(layakUji({ Botol: 20, Buku: 3 }).ok, false);
+    assert.equal(layakUji({ Botol: 10, Buku: 10 }).ok, true);
+    assert.equal(layakUji({ Botol: 20 }).ok, false);
+  });
+});
+
+describe('putuskanHasil anti-ngasal', () => {
+  it('tidak yakin bila di bawah 0.6', () => {
+    const r = putuskanHasil('0', 0.34);
+    assert.equal(r.tidakYakin, true);
+    assert.ok(r.alasan.includes('60%'));
+    const ok = putuskanHasil('1', 0.82);
+    assert.equal(ok.tidakYakin, false);
+  });
+});
+
+describe('bboxTengah', () => {
+  it('kembalikan kotak tengah 60%', () => {
+    assert.deepEqual(bboxTengah(640, 480, 0.6), [176, 96, 288, 288]);
+    assert.equal(bboxTengah(0, 480), null);
+  });
+});
+
+describe('cahaya + duplikat', () => {
+  it('deteksi gelap/terang', () => {
+    assert.equal(isCahayaBuruk(10), true);
+    assert.equal(isCahayaBuruk(120), false);
+    assert.equal(isCahayaBuruk(250), true);
+    assert.equal(CAHAYA_MIN, 25);
+    assert.equal(CAHAYA_MAKS, 230);
+  });
+
+  it('rataTerang hitung mean', () => {
+    const px = new Uint8ClampedArray([100, 100, 100, 255, 200, 200, 200, 255]);
+    const rata = rataTerang(px);
+    assert.ok(rata > 140 && rata < 160);
+    assert.equal(rataTerang(new Uint8ClampedArray([])), null);
+  });
+
+  it('jarakEmbedding bedakan duplikat', () => {
+    const a = [0.5, 0.5, 0.5];
+    assert.ok(jarakEmbedding(a, [0.5, 0.5, 0.5]) < JARAK_DUPLIKAT_MIN);
+    assert.ok(jarakEmbedding(a, [1.5, -1.5, 0.5]) >= JARAK_DUPLIKAT_MIN);
   });
 });

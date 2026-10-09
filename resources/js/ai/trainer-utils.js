@@ -8,9 +8,14 @@ export const MAX_LABEL = 5;
 export const MIN_SAMPEL = 20;
 export const STREAK_SYARAT = 5;
 export const MAKS_LABEL_PANJANG = 30;
-export const MIN_SAMPEL_LATIH = 5;
+export const MIN_SAMPEL_LATIH = 10;
+export const MIN_SAMPEL_UJI = 10;
+export const MIN_CONFIDENCE = 0.6;
 export const MAKS_EPOCH = 20;
 export const MAKS_BATCH = 16;
+export const CAHAYA_MIN = 25;
+export const CAHAYA_MAKS = 230;
+export const JARAK_DUPLIKAT_MIN = 0.05;
 
 /** Validasi daftar label karya siswa. */
 export function validasiLabel(daftar) {
@@ -123,6 +128,95 @@ export function jepitHiperparam({ epochs = 10, batchSize = 5 } = {}) {
     epochs: Math.max(1, Math.min(Math.floor(epochs) || 10, MAKS_EPOCH)),
     batchSize: Math.max(1, Math.min(Math.floor(batchSize) || 5, MAKS_BATCH)),
   };
+}
+
+/**
+ * Syarat uji beruntun (anti-ngasal): minimal 2 label,
+ * tiap label >= MIN_SAMPEL_UJI contoh. Publish tetap butuh MIN_SAMPEL.
+ */
+export function layakUji(jumlah) {
+  const labels = Object.keys(jumlah || {});
+  if (labels.length < MIN_LABEL) return { ok: false, galat: `Butuh minimal ${MIN_LABEL} label berisi contoh.` };
+  for (const label of labels) {
+    if ((jumlah[label] || 0) < MIN_SAMPEL_UJI) {
+      return { ok: false, galat: `"${label}" baru ${jumlah[label] || 0}/${MIN_SAMPEL_UJI} contoh untuk uji. Tambah contoh yang bervariasi dulu.` };
+    }
+  }
+  return { ok: true, galat: '' };
+}
+
+/**
+ * Putuskan hasil prediksi dengan ambang keyakinan (anti-ngasal).
+ * Kembalikan {label, confidence, tidakYakin, alasan}.
+ */
+export function putuskanHasil(label, confidence, minConfidence = MIN_CONFIDENCE) {
+  const keyakinan = Number(confidence);
+  if (!Number.isFinite(keyakinan)) {
+    return { label, confidence: 0, tidakYakin: true, alasan: 'Keyakinan tidak valid.' };
+  }
+  if (keyakinan < minConfidence) {
+    return {
+      label,
+      confidence: keyakinan,
+      tidakYakin: true,
+      alasan: `Keyakinan ${Math.round(keyakinan * 100)}% di bawah ambang ${Math.round(minConfidence * 100)}%. Dekatkan benda, perbaiki cahaya, tambah contoh bervariasi.`,
+    };
+  }
+  return { label, confidence: keyakinan, tidakYakin: false, alasan: '' };
+}
+
+/**
+ * Bbox persegi tengah frame (crop wajib anti-background).
+ * videoW/H resolusi asli, rasio 0..1 dari sisi terpendek.
+ */
+export function bboxTengah(videoW, videoH, rasio = 0.6) {
+  const w = Number(videoW);
+  const h = Number(videoH);
+  const r = Number(rasio);
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return null;
+  const rasioAman = Math.max(0.3, Math.min(r || 0.6, 0.9));
+  const s = Math.min(w, h) * rasioAman;
+  if (!(s > 0)) return null;
+  return [w / 2 - s / 2, h / 2 - s / 2, s, s];
+}
+
+/** Rata-rata terang 0..255 dari data piksel (Uint8ClampedArray RGBA). */
+export function rataTerang(dataPiksel) {
+  if (!dataPiksel || !dataPiksel.length) return null;
+  const n = Math.floor(dataPiksel.length / 4);
+  if (n <= 0) return null;
+  // Sampel adaptif: semua piksel bila sedikit, tiap 16 piksel bila banyak (cepat di HP).
+  const langkahPiksel = n > 1000 ? 16 : 1;
+  const langkahByte = langkahPiksel * 4;
+  let total = 0;
+  let hitung = 0;
+  for (let i = 0; i + 2 < dataPiksel.length; i += langkahByte) {
+    total += (dataPiksel[i] + dataPiksel[i + 1] + dataPiksel[i + 2]) / 3;
+    hitung++;
+  }
+  if (!hitung) return null;
+  return total / hitung;
+}
+
+/** True bila cahaya terlalu gelap/terang untuk dilatih. */
+export function isCahayaBuruk(rata) {
+  if (rata === null || rata === undefined || !Number.isFinite(rata)) return false;
+  return rata < CAHAYA_MIN || rata > CAHAYA_MAKS;
+}
+
+/** Jarak Euclidean sederhana untuk tolak duplikat frame identik. */
+export function jarakEmbedding(a, b) {
+  if (!a || !b || a.length !== b.length || !a.length) return Infinity;
+  let total = 0;
+  const langkah = Math.max(1, Math.floor(a.length / 64));
+  let n = 0;
+  for (let i = 0; i < a.length; i += langkah) {
+    const d = Number(a[i]) - Number(b[i]);
+    total += d * d;
+    n++;
+  }
+  if (!n) return Infinity;
+  return Math.sqrt(total / n);
 }
 
 /**

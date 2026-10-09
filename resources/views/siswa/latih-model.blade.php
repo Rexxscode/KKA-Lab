@@ -24,7 +24,7 @@
             </div>
         </x-card>
 
-        <x-card title="Langkah 2 — Kumpulkan Contoh (min. 20 per label)" subtitle="Aktifkan kamera, arahkan ke benda, tekan +1 berulang (atau +10). Variasikan sudut & cahaya!">
+        <x-card title="Langkah 2 — Kumpulkan Contoh (min. 20 per label)" subtitle="Aktifkan kamera, pas-kan benda di tengah frame, tekan +1 berulang (atau +10). Variasikan sudut, jarak & cahaya — contoh identik/cahaya buruk otomatis ditolak!">
             <p class="text-xs font-bold" :class="modelSiap ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'" x-text="statusModel" role="status"></p>
             <div class="mt-3 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 aspect-video flex items-center justify-center relative" x-ref="wadahVideo">
                 <video x-ref="video" class="w-full h-full object-cover" playsinline muted></video>
@@ -44,6 +44,7 @@
                 <button type="button" @click="pindai()" :disabled="!bisaPindai()" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40" x-text="memindai ? 'Memindai...' : 'Pindai Objek'"></button>
             </div>
             <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" x-text="pesanPindai"></p>
+            <p class="mt-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400" x-text="pesanAmbil"></p>
             <div class="mt-3 space-y-2">
                 <template x-for="(label, i) in labels" :key="'c-'+label">
                     <div class="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 px-4 py-2">
@@ -56,7 +57,7 @@
             </div>
         </x-card>
 
-        <x-card title="Langkah 3 — Uji Beruntun (5× benar)" subtitle="Pilih label yang sedang di depan kamera, tekan Uji, ulangi sampai 5 benar beruntun.">
+        <x-card title="Langkah 3 — Uji Beruntun (5× benar, keyakinan ≥60%)" subtitle="Kumpulkan min. 10 contoh bervariasi per label dulu. Pilih label di depan kamera, tekan Uji — hasil <60% dihitung Tidak yakin & mereset beruntun.">
             <div class="flex flex-col sm:flex-row gap-2">
                 <select x-model.number="ujiLabel" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-sm">
                     <template x-for="(label, i) in labels" :key="'u-'+label">
@@ -69,7 +70,7 @@
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Beruntun benar: <b x-text="streak"></b>/5</p>
         </x-card>
 
-        <x-card title="Mode Lanjutan — Training Beneran (beta)" subtitle="Latih head neural network dari contohmu (gradient descent, 10 epoch). Butuh minimal 5 contoh per label. HP kentang: tutup aplikasi lain dulu.">
+        <x-card title="Mode Lanjutan — Training Beneran (beta)" subtitle="Latih head neural network dari contohmu (gradient descent, 10 epoch, split 80/20 train/val + dropout). Butuh minimal 10 contoh per label. HP kentang: tutup aplikasi lain dulu.">
             <div class="flex flex-wrap gap-2">
                 <button type="button" @click="latihLanjutan()" :disabled="!bisaLatihLanjutan()" class="kka-btn-primary !py-2 text-sm disabled:opacity-40" x-text="melatih ? 'Melatih...' : 'Latih Lanjutan'"></button>
                 <button type="button" @click="hentikanLatih()" :disabled="!melatih" class="kka-btn-secondary !py-2 text-sm disabled:opacity-40">Hentikan</button>
@@ -117,7 +118,7 @@
             namaModel: '', mengirim: false, memindai: false,
             melatih: false, headSiap: false, pakaiHead: false,
             epochInfo: { jalan: 0, total: 0 }, pesanLatih: '',
-            daftarBox: [], boxPilih: null, pesanPindai: 'Klik Pindai Objek, lalu klik salah satu kotak untuk melatih benda itu. Bila tak terdeteksi, contoh diambil dari tengah frame.',
+            daftarBox: [], boxPilih: null, pesanPindai: 'Klik Pindai Objek, lalu klik salah satu kotak untuk melatih benda itu. Bila tak terdeteksi, contoh diambil dari tengah frame (60%).', pesanAmbil: '',
             pelatih: null, kunciDraf: 'kka-draf-{{ auth()->id() }}',
             async boot() {
                 const lib = window.KkaTrainer;
@@ -188,18 +189,32 @@
             },
             async ambil(i, n) {
                 const box = this.boxPilih !== null ? this.daftarBox[this.boxPilih] : null;
+                let ok = 0, tolakCahaya = 0, tolakDuplikat = 0;
                 for (let k = 0; k < n; k++) {
                     try {
+                        let hasil;
                         if (box) {
-                            if (!this.pelatih.tambahContohCrop(this.$refs.video, box.bbox, i)) break;
+                            hasil = this.pelatih.tambahContohCrop(this.$refs.video, box.bbox, i);
                         } else {
-                            this.pelatih.tambahContoh(this.$refs.video, i);
+                            hasil = this.pelatih.tambahContohTengah(this.$refs.video, i, 0.6);
                         }
+                        if (hasil === true || hasil === 'ok') { ok++; }
+                        else if (hasil === 'cahaya-gelap') { tolakCahaya++; }
+                        else if (hasil === 'cahaya-terang') { tolakCahaya++; }
+                        else if (hasil === 'duplikat') { tolakDuplikat++; }
+                        else { break; }
                     } catch (e) { this.statusModel = 'Gagal mengambil contoh. Coba lagi.'; break; }
-                    if (k % 5 === 4) await new Promise((r) => setTimeout(r, 120));
+                    if (k % 5 === 4) await new Promise((r) => setTimeout(r, 180));
                 }
                 this.segarkanJumlah();
                 this.streak = 0;
+                this.headSiap = false;
+                this.pakaiHead = false;
+                const pesan = [];
+                if (ok) pesan.push(ok + ' contoh masuk');
+                if (tolakDuplikat) pesan.push(tolakDuplikat + ' ditolak (terlalu mirip — variasikan sudut/jarak)');
+                if (tolakCahaya) pesan.push(tolakCahaya + ' ditolak (cahaya buruk — perbaiki pencahayaan)');
+                this.pesanAmbil = pesan.length ? this.labels[i] + ': ' + pesan.join(', ') + '.' : '';
                 this.simpanDraf(false);
             },
             bisaPindai() { return this.modelSiap && this.cameraOn && !this.memindai; },
@@ -226,36 +241,53 @@
                 this.memindai = false;
             },
             ambilTengah(i, n) {
-                const v = this.$refs.video;
-                if (!v.videoWidth) return;
-                const s = Math.min(v.videoWidth, v.videoHeight) * 0.6;
-                const bbox = [v.videoWidth / 2 - s / 2, v.videoHeight / 2 - s / 2, s, s];
+                let ok = 0, tolak = 0;
                 for (let k = 0; k < n; k++) {
-                    try { if (!this.pelatih.tambahContohCrop(v, bbox, i)) break; }
+                    try {
+                        const hasil = this.pelatih.tambahContohTengah(this.$refs.video, i, 0.6);
+                        if (hasil === true || hasil === 'ok') ok++;
+                        else tolak++;
+                    }
                     catch (e) { break; }
                 }
                 this.segarkanJumlah();
                 this.streak = 0;
+                this.headSiap = false;
+                this.pakaiHead = false;
+                this.pesanAmbil = this.labels[i] + ': ' + ok + ' contoh tengah masuk' + (tolak ? ', ' + tolak + ' ditolak (cahaya/duplikat).' : '.');
                 this.simpanDraf(false);
             },
             async uji() {
                 if (!this.bisaLatih()) { this.hasilUji = 'Aktifkan kamera dan pastikan minimal 2 label.'; return; }
+                const lib = window.KkaTrainer;
+                const jumlahNama = {};
+                this.labels.forEach((nama, i) => { jumlahNama[nama] = this.jumlah[i] || 0; });
+                const cekUji = lib.layakUji ? lib.layakUji(jumlahNama) : { ok: true };
+                if (!cekUji.ok) { this.hasilUji = cekUji.galat; return; }
                 const nama = this.labels[this.ujiLabel];
                 if ((this.jumlah[this.ujiLabel] || 0) === 0 && !this.pakaiHead) { this.hasilUji = 'Label "' + nama + '" belum punya contoh.'; return; }
                 try {
-                    let benar = false, info = '';
+                    let benar = false, info = '', tidakYakin = false;
                     if (this.pakaiHead && this.headSiap) {
-                        const hasil = await this.pelatih.ujiHead(this.$refs.video);
+                        const hasil = await this.pelatih.ujiHead(this.$refs.video, { minConfidence: 0.6 });
                         if (!hasil) { this.hasilUji = 'Model lanjutan belum siap.'; return; }
-                        benar = Number(hasil.label) === this.ujiLabel;
-                        info = ' (model lanjutan, ' + Math.round((hasil.confidence || 0) * 100) + '%)';
+                        tidakYakin = !!hasil.tidakYakin;
+                        benar = !tidakYakin && Number(hasil.label) === this.ujiLabel;
+                        info = ' (model lanjutan, ' + Math.round((hasil.confidence || 0) * 100) + '%' + (tidakYakin ? ' — Tidak yakin' : '') + ')';
+                        if (tidakYakin && hasil.alasan) info += ' ' + hasil.alasan;
                     } else {
-                        const hasil = await this.pelatih.uji(this.$refs.video);
-                        if (!hasil) { this.hasilUji = 'Belum ada data latih.'; return; }
-                        benar = Number(hasil.label) === this.ujiLabel;
-                        info = ' (terdeteksi "' + (this.labels[Number(hasil.label)] || '?') + '")';
+                        const hasil = await this.pelatih.uji(this.$refs.video, { minConfidence: 0.6 });
+                        if (!hasil) { this.hasilUji = 'Belum ada data latih (butuh 2 label).'; return; }
+                        if (hasil.butuhData) { this.hasilUji = hasil.alasan; return; }
+                        tidakYakin = !!hasil.tidakYakin;
+                        benar = !tidakYakin && Number(hasil.label) === this.ujiLabel;
+                        info = ' (terdeteksi "' + (this.labels[Number(hasil.label)] || '?') + '", ' + Math.round((hasil.confidence || 0) * 100) + '%' + (tidakYakin ? ' — Tidak yakin' : '') + ')';
+                        if (tidakYakin && hasil.alasan) info += ' ' + hasil.alasan;
                     }
-                    if (benar) {
+                    if (tidakYakin) {
+                        this.streak = 0;
+                        this.hasilUji = 'Tidak yakin — tambah contoh ' + nama + ' yang bervariasi!' + info;
+                    } else if (benar) {
                         this.streak++;
                         this.hasilUji = 'Benar! "' + nama + '" dikenali. (' + this.streak + '/5)' + info;
                     } else {
@@ -276,7 +308,7 @@
                 this.melatih = true;
                 this.headSiap = false;
                 this.epochInfo = { jalan: 0, total: 10 };
-                this.pesanLatih = 'Menyiapkan data...';
+                this.pesanLatih = 'Menyiapkan data (split 80/20 train/val)...';
                 try {
                     const hasil = await this.pelatih.latihLanjutan({
                         epochs: 10, batchSize: 5,
@@ -284,14 +316,16 @@
                             this.epochInfo = { jalan: epoch + 1, total: 10 };
                             const loss = logs.loss !== undefined ? Number(logs.loss).toFixed(3) : '?';
                             const acc = logs.acc !== undefined ? Math.round(Number(logs.acc) * 100) : (logs.accuracy !== undefined ? Math.round(Number(logs.accuracy) * 100) : '?');
-                            this.pesanLatih = 'Epoch ' + (epoch + 1) + '/10 — loss ' + loss + ', akurasi ' + acc + '%';
+                            const val = logs.val_acc !== undefined ? Math.round(Number(logs.val_acc) * 100) : (logs.val_accuracy !== undefined ? Math.round(Number(logs.val_accuracy) * 100) : null);
+                            this.pesanLatih = 'Epoch ' + (epoch + 1) + '/10 — loss ' + loss + ', train ' + acc + '%' + (val !== null ? ', val ' + val + '%' : '');
                         },
                     });
                     this.headSiap = true;
-                    const acc = hasil.acc !== null && hasil.acc !== undefined ? Math.round(Number(hasil.acc) * 100) + '%' : '?';
-                    this.pesanLatih = 'Selesai! Akurasi latih ' + acc + '. Aktifkan "Uji pakai model lanjutan" untuk mencoba.';
+                    const train = hasil.acc !== null && hasil.acc !== undefined ? Math.round(Number(hasil.acc) * 100) + '%' : '?';
+                    const val = hasil.valAcc !== null && hasil.valAcc !== undefined ? Math.round(Number(hasil.valAcc) * 100) + '%' : '?';
+                    this.pesanLatih = 'Selesai! Train ' + train + ', validasi ' + val + ' (' + (hasil.valCount || 0) + ' data val). ' + (hasil.valAcc !== null && Number(hasil.valAcc) < 0.7 ? 'Val rendah — tambah contoh bervariasi sebelum kirim. ' : '') + 'Aktifkan "Uji pakai model lanjutan" untuk mencoba.';
                 } catch (e) {
-                    this.pesanLatih = 'Gagal melatih: ' + (String((e && e.message) || e).includes('contoh-kurang') ? 'contoh tiap label minimal 5.' : 'coba kurangi contoh atau muat ulang halaman.');
+                    this.pesanLatih = 'Gagal melatih: ' + (String((e && e.message) || e).includes('contoh-kurang') ? 'contoh tiap label minimal 10 yang bervariasi.' : 'coba kurangi contoh atau muat ulang halaman.');
                 }
                 this.melatih = false;
             },
