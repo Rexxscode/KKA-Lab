@@ -105,7 +105,6 @@ class QuizController extends Controller
             // Modul default ikut ter-fork otomatis: tulisan guru hanya
             // berlaku untuk kelas-kelasnya sendiri.
             abort_unless($module->isDefault() || $module->teacher_id === $user->id, 403);
-            $this->pastikanSalinan($module, $user);
             $pemilik = $user->id;
         }
 
@@ -118,25 +117,40 @@ class QuizController extends Controller
             'correct_letter' => 'required|in:A,B,C,D,E',
         ]);
 
-        // Batas bank: default maks 40 (admin), bank guru maks 30.
+        // Batas bank: default maks 30 (admin), bank guru maks 30.
         $batas = $user->isAdmin() ? \App\Services\StudentModuleService::BANK_DEFAULT_TARGET : \App\Services\StudentModuleService::BANK_GURU_MAX;
-        $isi = $module->quizzes()->where('teacher_id', $pemilik)->count();
-        if ($isi >= $batas) {
-            return back()->withInput()->with('toast', ['type' => 'error', 'message' => 'Bank soal sudah penuh (' . $isi . '/' . $batas . '). Hapus soal lama bila ingin mengganti!']);
+
+        // Fork + hitung + tulis dalam 1 transaksi agar gagal di tengah
+        // tak menyisakan fork setengah (yang memblokir siswa permanen).
+        $hasil = DB::transaction(function () use ($module, $user, $pemilik, $data, $batas) {
+            if (! $user->isAdmin()) {
+                $this->pastikanSalinan($module, $user);
+            }
+            $isi = $module->quizzes()->where('teacher_id', $pemilik)->count();
+            if ($isi >= $batas) {
+                return ['penuh' => true, 'isi' => $isi];
+            }
+
+            $baris = $data;
+            $baris['correct_index'] = ord($baris['correct_letter']) - 65;
+            unset($baris['correct_letter']);
+            $baris['points'] = 20;
+            $baris['teacher_id'] = $pemilik;
+            $module->quizzes()->create($baris);
+
+            return ['penuh' => false, 'isi' => $isi];
+        });
+
+        if ($hasil['penuh']) {
+            return back()->withInput()->with('toast', ['type' => 'error', 'message' => 'Bank soal sudah penuh (' . $hasil['isi'] . '/' . $batas . '). Hapus soal lama bila ingin mengganti!']);
         }
 
-        $data['correct_index'] = ord($data['correct_letter']) - 65;
-        unset($data['correct_letter']);
-        $data['points'] = 20;
-        $data['teacher_id'] = $pemilik;
-
-        $module->quizzes()->create($data);
-
-        return back()->with('toast', ['type' => 'success', 'message' => 'Soal berhasil ditambah ke ' . $module->title . '! (' . ($isi + 1) . '/' . $batas . ')']);
+        return back()->with('toast', ['type' => 'success', 'message' => 'Soal berhasil ditambah ke ' . $module->title . '! (' . ($hasil['isi'] + 1) . '/' . $batas . ')']);
     }
 
     /**
-     * Simpan BANYAK soal sekaligus (maks 20 per submit) dalam 1 transaction.
+     * Simpan BANYAK soal sekaligus (maks 30 per submit) dalam 1 transaction
+     * (termasuk fork otomatis), agar gagal di tengah tak menyisakan fork setengah.
      * Form bulk mengirim `soal[i][question]`, `soal[i][options][0..4]`,
      * `soal[i][correct_letter]`, `soal[i][explanation]` (opsional).
      */
@@ -149,7 +163,6 @@ class QuizController extends Controller
             $pemilik = null;
         } else {
             abort_unless($module->isDefault() || $module->teacher_id === $user->id, 403);
-            $this->pastikanSalinan($module, $user);
             $pemilik = $user->id;
         }
 
@@ -164,7 +177,7 @@ class QuizController extends Controller
             'soal.max' => 'Maksimal 30 soal per sekali simpan. Bagi menjadi beberapa batch bila lebih.',
         ]);
 
-        // Batas bank: default maks 40 (admin), bank guru maks 30.
+        // Batas bank: default maks 30 (admin), bank guru maks 30.
         $batas = $user->isAdmin() ? \App\Services\StudentModuleService::BANK_DEFAULT_TARGET : \App\Services\StudentModuleService::BANK_GURU_MAX;
         $isi = $module->quizzes()->where('teacher_id', $pemilik)->count();
         $valid = collect($data['soal'])->filter(fn ($b) => trim((string) ($b['question'] ?? '')) !== '')->count();
@@ -173,7 +186,18 @@ class QuizController extends Controller
         }
 
         $dibuat = 0;
-        DB::transaction(function () use ($module, $data, $pemilik, &$dibuat) {
+        DB::transaction(function () use ($module, $user, $data, $pemilik, $batas, &$dibuat) {
+            if (! $user->isAdmin()) {
+                $this->pastikanSalinan($module, $user);
+            }
+            // Hitung ulang setelah fork: fork menambah isi bank.
+            $isiKini = $module->quizzes()->where('teacher_id', $pemilik)->count();
+            $validKini = collect($data['soal'])->filter(fn ($b) => trim((string) ($b['question'] ?? '')) !== '')->count();
+            if ($isiKini + $validKini > $batas) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'soal' => 'Bank soal hanya muat ' . max(0, $batas - $isiKini) . ' soal lagi (' . $isiKini . '/' . $batas . ') setelah salinan otomatis. Kurangi jumlah blok!',
+                ]);
+            }
             foreach ($data['soal'] as $baris) {
                 // Lewati blok kosong (mis. guru tambah blok lalu tidak diisi).
                 if (trim((string) ($baris['question'] ?? '')) === '') {
@@ -202,26 +226,6 @@ class QuizController extends Controller
     {
         $user = $request->user();
 
-        // Guru mengedit soal default -> fork otomatis jadi miliknya.
-        if (! $user->isAdmin() && $quiz->isDefault()) {
-            $this->pastikanSalinan($quiz->module, $user);
-            $quiz = $this->padananMilik($quiz->module, $user, $quiz) ?? $quiz->module->quizzes()->create([
-                'teacher_id' => $user->id,
-                'origin_id' => $quiz->id,
-                'question' => $quiz->question,
-                'options' => $quiz->options,
-                'correct_index' => $quiz->correct_index,
-                'explanation' => $quiz->explanation,
-                'points' => $quiz->points,
-            ]);
-        }
-
-        abort_unless(
-            $user->isAdmin() ? $quiz->isDefault() : $quiz->teacher_id === $user->id,
-            403,
-            'Soal default hanya bisa diubah admin.'
-        );
-
         $options = $this->bersihkanOpsi($request);
 
         $data = $request->validate([
@@ -234,7 +238,31 @@ class QuizController extends Controller
         $data['correct_index'] = ord($data['correct_letter']) - 65;
         unset($data['correct_letter']);
 
-        $quiz->update($data);
+        // Guru mengedit soal default -> fork otomatis jadi miliknya.
+        // Seluruhnya dalam 1 transaksi agar tak ada fork yatim.
+        DB::transaction(function () use ($user, $quiz, $data) {
+            $target = $quiz;
+            if (! $user->isAdmin() && $quiz->isDefault()) {
+                $this->pastikanSalinan($quiz->module, $user);
+                $target = $this->padananMilik($quiz->module, $user, $quiz) ?? $quiz->module->quizzes()->create([
+                    'teacher_id' => $user->id,
+                    'origin_id' => $quiz->id,
+                    'question' => $quiz->question,
+                    'options' => $quiz->options,
+                    'correct_index' => $quiz->correct_index,
+                    'explanation' => $quiz->explanation,
+                    'points' => $quiz->points,
+                ]);
+            }
+
+            abort_unless(
+                $user->isAdmin() ? $target->isDefault() : $target->teacher_id === $user->id,
+                403,
+                'Soal default hanya bisa diubah admin.'
+            );
+
+            $target->update($data);
+        });
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Soal berhasil diperbarui!']);
     }
@@ -243,24 +271,41 @@ class QuizController extends Controller
     {
         $user = $request->user();
 
-        // Guru menghapus soal default -> fork otomatis lalu hapus
-        // padanannya, sehingga hanya hilang dari kelasnya sendiri.
-        if (! $user->isAdmin() && $quiz->isDefault()) {
-            $this->pastikanSalinan($quiz->module, $user);
-            if ($padanan = $this->padananMilik($quiz->module, $user, $quiz)) {
-                $padanan->delete();
+        DB::transaction(function () use ($user, $quiz) {
+            // Guru menghapus soal default -> fork otomatis lalu hapus
+            // padanannya, sehingga hanya hilang dari kelasnya sendiri.
+            if (! $user->isAdmin() && $quiz->isDefault()) {
+                $this->pastikanSalinan($quiz->module, $user);
+                if ($padanan = $this->padananMilik($quiz->module, $user, $quiz)) {
+                    $padanan->delete();
+                }
+
+                return;
             }
 
+            abort_unless(
+                $user->isAdmin() ? $quiz->isDefault() : $quiz->teacher_id === $user->id,
+                403,
+                'Soal default hanya bisa dihapus admin.'
+            );
+
+            // Peringatan dini: hapus hingga di bawah minimum memblokir latihan sekelas.
+            if (! $user->isAdmin()) {
+                $sisa = $quiz->module->quizzes()->where('teacher_id', $user->id)->where('id', '<>', $quiz->id)->count();
+                if ($sisa < \App\Services\StudentModuleService::BANK_GURU_MIN) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'quiz' => 'Jangan hapus: sisa bank tinggal ' . $sisa . ' soal, minimal ' . \App\Services\StudentModuleService::BANK_GURU_MIN . ' agar latihan siswa tidak terkunci!',
+                    ]);
+                }
+            }
+
+            $quiz->delete();
+        });
+
+        // Guru menghapus soal default -> pesannya beda (default admin aman).
+        if (! $user->isAdmin() && $quiz->isDefault()) {
             return back()->with('toast', ['type' => 'success', 'message' => 'Soal dihapus dari bank soal kelasmu. Soal default admin tetap aman.']);
         }
-
-        abort_unless(
-            $user->isAdmin() ? $quiz->isDefault() : $quiz->teacher_id === $user->id,
-            403,
-            'Soal default hanya bisa dihapus admin.'
-        );
-
-        $quiz->delete();
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Soal dihapus.']);
     }

@@ -59,7 +59,7 @@ KobotAI Lab adalah aplikasi web interaktif tempat siswa **melihat AI bekerja lan
 | **Kuis 15 Soal + Pembahasan** | Stepper 1 soal per layar, indikator progres, skor & XP otomatis, ulasan benar/salah + pembahasan | Evaluasi adil, jawaban dipertahankan |
 | **Soal & Modul per Guru** | Guru salin/fork soal default jadi versinya (otomatis), buat modul sendiri, atur urutan per kelas | Default admin aman, tiap guru merdeka |
 | **Kelas + Kode 6-Digit** | Guru buat kelas, siswa gabung pakai kode, progres terpantau + ekspor CSV | Tanpa input manual berulang |
-| **Sertifikat Otomatis** | Terbit saat 4 modul default lulus (≥80), cetak PDF via browser | Penghargaan instan |
+| **Sertifikat Otomatis** | Terbit saat 6 modul default lulus (≥80) + lulus ujian akhir (≥80), cetak PDF via browser | Penghargaan instan |
 
 ### Fitur Tambahan
 
@@ -144,7 +144,9 @@ Uji JS       : npm run test:js  (logika label/ambang tanpa webcam)
   "require": {
     "php": "^8.3",
     "laravel/framework": "^13.0",
-    "laravel/breeze": "^2.4"
+    "laravel/breeze": "^2.4",
+    "laravel/ai": "^1.0",
+    "laravel/tinker": "^3.0"
   }
 }
 ```
@@ -156,13 +158,17 @@ Uji JS       : npm run test:js  (logika label/ambang tanpa webcam)
 ### Database Schema
 
 ```
-users (id, name, email, password, role: admin/guru/siswa)
-classrooms (id, teacher_id, name, code[6-digit unik])
+users (id, name, email, password, role: admin/guru/siswa, status: aktif/pending/ditolak)
+classrooms (id, teacher_id, name, code[6-digit unik], status: buka/arsip)
 classroom_user (classroom_id, student_id)          <- keanggotaan
 classroom_module (classroom_id, module_id, position) <- urutan per kelas
-modules (id, teacher_id NULL=default, title, slug, order, xp_reward)
-quizzes (id, teacher_id NULL=default, module_id, question, options[A-E], correct_index, explanation)
-student_progress (student_id, module_id, is_completed, quiz_score, xp_earned, hands_on_count, reading_done)
+modules (id, teacher_id NULL=default, title, slug, order, xp_reward, materi)
+quizzes (id, teacher_id NULL=default, origin_id NULL=fork, module_id, question, options[A-E], correct_index, explanation)
+student_progress (student_id, module_id)[unik] (is_completed, status, quiz_score, best_score, xp_earned, hands_on_*, reading_done, training_xp_awarded, tracking started_at/last_accessed_at/completed_at)
+quiz_attempts + final_exam_attempts (riwayat nilai per percobaan)
+certificates (user_id[unik], code[unik KBT-*], issued_at) <- 6 modul + ujian akhir
+feedbacks (classroom, student, module)[unik] <- catatan guru
+ai_chats (riwayat Tutor AI, kuota 30/hari) + student_models/global_models (moderasi karya ML siswa)
 badges + badge_user (koleksi per siswa)
 ```
 
@@ -171,19 +177,21 @@ badges + badge_user (koleksi per siswa)
 ```
 ITX/
 ├── app/Http/Controllers/
-│   ├── Admin/ (Dashboard, User)
+│   ├── Admin/ (Dashboard, User, Preview)
 │   ├── Auth/ (Breeze: login, register, password...)
-│   ├── Student/ (Dashboard, Bahan, Kuis, Progress, Certificate, ClassroomJoin)
-│   └── Teacher/ (Classroom, Module, Quiz, Export)
-├── app/Services/ (GeminiService, StudentModuleService)
-├── database/migrations/ + seeders/ (60 soal default + 4 modul)
+│   ├── Student/ (Dashboard, Bahan, Kuis, Progress, Certificate, ClassroomJoin, UjianAkhir, Latih, Raport)
+│   └── Teacher/ (Classroom, Module, Quiz, Export, ModelModerasi, StudentReport)
+├── app/Ai/Agents/ (TutorAgent) + app/Ai/Tools/ (profil & progres siswa)
+├── app/Services/ (GeminiService, StudentModuleService, CertificateService, StudentProgressTracker)
+├── database/migrations/ + seeders/ (90 soal default + 6 modul)
 ├── resources/views/
-│   ├── layouts/ (sidebar, guest) + components/
-│   ├── siswa/ (dashboard, bahan-*, kuis-*, sertifikat)
-│   ├── guru/ (dashboard, kelas-*, modul-*, quiz-*)
-│   └── admin/ + auth/ + profile/
-├── routes/web.php
-└── tests/Feature + Unit
+│   ├── layouts/ (guest) + components/ (sidebar-layout, exam-questions, ai-log-list, ...)
+│   ├── siswa/ (dashboard, bahan-*, kuis-*, ujian-*, latih-model, raporku, sertifikat)
+│   ├── guru/ (dashboard, kelas-*, modul-*, quiz-*, model-moderasi, ai-logs)
+│   └── admin/ (dashboard, pratinjau-index, ai-logs) + auth/ + profile/
+├── resources/js/ai/ (object-detector, trainer + utils teruji)
+├── routes/web.php + auth.php
+└── tests/Feature + Unit (PHP) + tests/js (Node)
 ```
 
 ---
@@ -203,9 +211,10 @@ ITX/
 
 ```bash
 git clone https://github.com/Rexxscode/ITX.git
-cd ITX/ITX
-git checkout sofianBranch
+cd ITX
 ```
+
+> Branch utama: `main`. Jangan checkout cabang lama bila tidak diminta.
 
 #### 2️⃣ Install Dependencies
 
@@ -217,9 +226,11 @@ npm install
 #### 3️⃣ Setup Environment
 
 ```bash
-cp .env.example .env
+copy .env.example .env
 php artisan key:generate
 ```
+
+> Di Linux/Mac ganti `copy` dengan `cp`.
 
 Isi di `.env`:
 
@@ -231,8 +242,10 @@ DB_DATABASE=kka_lab
 DB_USERNAME=root
 DB_PASSWORD=
 
+# Buat STANDARD key (diawali AIza) di https://aistudio.google.com/app/apikey.
+# Key Auth baru (diawali AQ.) DITOLAK gateway — wajib pakai Standard key.
 GEMINI_API_KEY=[isi_key_dari_aistudio]
-GEMINI_MODEL=gemini-3.5-flash
+GEMINI_MODEL=gemini-3.8-flash
 ```
 
 Chatbot memakai Laravel AI SDK (`laravel/ai`, agen `App\Ai\Agents\TutorAgent`, provider `gemini`). Riwayat chat tetap di tabel `ai_chats`; tabel `agent_conversations` bawaan SDK dicadangkan untuk memori percakapan persisten nanti.
@@ -254,6 +267,18 @@ npm run dev
 
 Buka `http://127.0.0.1:8000`. Akun demo (password `password`): `admin@kkalab.sch.id`, `guru@kkalab.sch.id`, `siswa@kkalab.sch.id`.
 
+> Catatan `public/hot`: selama file ini ada, Blade memuat JS dari Vite dev-server (`npm run dev`). Bila dev-server mati (mis. Laragon tetap menyala), matikan dev atau jalankan `npm run build` agar Alpine/JS kembali jalan.
+
+### Checklist Produksi
+
+- `APP_ENV=production`, `APP_DEBUG=false` (jangan bocorkan stack trace/SQL/env).
+- `APP_URL=https://domain-sekolah` (otomatis mengaktifkan cookie aman).
+- `DB_PASSWORD` kuat (jangan root kosong), backup rutin database `kka_lab`.
+- Isi `MAIL_*` SMTP asli bila verifikasi email diwajibkan; putuskan `verified` middleware vs lepas interface `MustVerifyEmail`.
+- `GEMINI_API_KEY` Standard key via vault/env server (jangan commit `.env`).
+- `php artisan storage:link` (avatar/tanda tangan), `npm run build`, `php artisan migrate --force`.
+- Recovery admin: `SUPER_ADMIN_EMAIL` (default `admin@kkalab.sch.id`) + `php artisan db:seed` mengembalikan akun super-admin.
+
 ---
 
 ## 🚀 Penggunaan
@@ -262,9 +287,9 @@ Buka `http://127.0.0.1:8000`. Akun demo (password `password`): `admin@kkalab.sch
 
 1. **Daftar/Masuk**, lalu **Gabung Kelas** dengan kode 6-digit dari guru.
 2. **Bahan Belajar** — baca materi sampai bawah, tekan konfirmasi.
-3. **Kuis** — kerjakan 15 soal berurutan (skor ≥80 lulus, otomatis ke dasbor).
-4. **Modul 2** — latih AI dengan webcam (2 benda → Latih → Uji), 2x Uji meyakinkan = +20 XP.
-5. **Sertifikat** — otomatis terbuka setelah 4 modul default lulus.
+3. **Kuis** — kerjakan 15 soal berurutan per modul (skor ≥80 lulus, otomatis ke dasbor).
+4. **Modul 2 + Latih Model** — deteksi objek COCO-SSD real-time via webcam (bounding box + label Indonesia + ambang 30–90%); halaman Latih Model untuk melatih pengenal benda sendiri (min. 20 contoh/label, uji 5× beruntun) lalu kirim ke guru untuk tayang global.
+5. **Ujian Akhir + Sertifikat** — ujian 40 soal terbuka setelah 6 modul lulus; sertifikat otomatis terbit setelah 6 modul (≥80) + ujian akhir lulus (≥80).
 
 ### Untuk Guru
 
@@ -284,9 +309,12 @@ Buka `http://127.0.0.1:8000`. Akun demo (password `password`): `admin@kkalab.sch
 
 ```bash
 php artisan test
+npm run test:js
 ```
 
-25 tes lolos (auth, peran, profil, contoh). Verifikasi browser (Playwright + Chrome headless + kamera palsu) dipakai untuk alur kritis: kamera, kuis, bank soal, dan matriks akses peran.
+112 tes PHP lolos (auth, peran, profil, kuis, ujian akhir, bank soal guru, moderasi model, pratinjau admin, hardening) + 30 tes JS lolos (logika deteksi objek & trainer tanpa webcam). Uji JS memakai `node --test tests/js/*.test.js` (logika murni, bukan browser).
+
+> Catatan: alur kamera/kuis/browser kritis saat ini terverifikasi via tes logika + pengujian manual — belum ada e2e browser otomatis (Playwright).
 
 ---
 

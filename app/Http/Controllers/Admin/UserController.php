@@ -20,8 +20,13 @@ class UserController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|in:guru,admin,siswa',
+            'role' => 'required|in:guru,admin',
         ]);
+
+        // Hanya super-admin yang boleh membuat admin baru. Admin biasa hanya guru.
+        // Siswa TIDAK boleh dibuat dari sini (pendaftaran publik khusus siswa).
+        abort_if($data['role'] === 'admin' && ! $request->user()->isSuperAdmin(), 403, 'Hanya super-admin yang boleh membuat akun admin.');
+        abort_if($data['role'] !== 'guru' && $data['role'] !== 'admin', 422, 'Peran tidak diizinkan.');
 
         $baru = new User([
             'name' => $data['name'],
@@ -29,9 +34,10 @@ class UserController extends Controller
             'password' => Hash::make($data['password']),
         ]);
         $baru->role = $data['role'];
-        // Guru yang dibuat admin langsung aktif, tanpa approval/pending/NPK.
+        // Guru/admin yang dibuat admin langsung aktif, tanpa approval/pending/NPK.
         $baru->status = 'aktif';
         $baru->save();
+        Log::info('admin.buat_akun', ['actor' => $request->user()->id, 'email' => $baru->email, 'role' => $baru->role]);
 
         return back()->with('toast', ['type' => 'success', 'message' => "Akun {$data['role']} {$data['email']} berhasil dibuat dan langsung aktif!"]);
     }
@@ -60,6 +66,11 @@ class UserController extends Controller
     {
         abort_if($user->id === $request->user()->id, 403, 'Tidak bisa menghapus akun sendiri.');
         abort_if($user->isAdmin(), 403, 'Akun admin tidak bisa dihapus dari sini.');
+        // Anti-lockout: jangan sampai admin terakhir habis via jalur lain.
+        // (Hapus admin sudah ditolak di atas, cek ini defense-in-depth bila policy berubah.)
+        if (User::where('role', 'admin')->count() <= 1 && $user->isAdmin()) {
+            abort(403, 'Admin terakhir tidak bisa dihapus. Minta super-admin memindahkan peran dulu.');
+        }
 
         $email = $user->email;
         if ($user->bukti_npk_path) {

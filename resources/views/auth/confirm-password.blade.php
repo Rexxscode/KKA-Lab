@@ -18,7 +18,7 @@
         </div>
 
         <div class="flex justify-end mt-4">
-            <x-primary-button>
+            <x-primary-button class="w-full sm:w-auto justify-center">
                 {{ __('Konfirmasi') }}
             </x-primary-button>
         </div>

@@ -7,7 +7,8 @@
     <x-card title="Buat Kelas Baru" subtitle="Kode unik 6-digit dibuat otomatis.">
         <form method="POST" action="{{ route('guru.kelas.store') }}" class="flex flex-col sm:flex-row gap-2">
             @csrf
-            <input name="name" required maxlength="100" placeholder="cth: XI RPL 3 — KKA" class="flex-1 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
+            <label for="nama-kelas" class="sr-only">Nama kelas baru</label>
+            <input id="nama-kelas" name="name" required maxlength="100" placeholder="cth: XI RPL 3 — KKA" class="flex-1 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
             <x-button type="submit">Buat Kelas</x-button>
         </form>
     </x-card>

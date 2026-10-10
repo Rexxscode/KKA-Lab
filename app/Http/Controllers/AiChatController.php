@@ -60,9 +60,11 @@ class AiChatController extends Controller
         } catch (AiGagalException $e) {
             // Gagal bukan jawaban: hapus reservasi agar tak tersimpan
             // sebagai riwayat dan tak memakan kuota harian.
+            // Sertakan kode mesin (AI_KEY_INVALID, AI_MODEL_404, ...) agar
+            // frontend bisa menampilkan bantuan yang tepat.
             $catatan->delete();
 
-            return response()->json(['reply' => $e->getMessage()]);
+            return response()->json(['reply' => $e->getMessage(), 'code' => $e->aiCode]);
         }
 
         $catatan->update(['reply' => $reply]);

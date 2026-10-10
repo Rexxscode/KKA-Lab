@@ -31,14 +31,14 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 mt-4">
             @if (Route::has('password.request'))
                 <a class="underline text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
                     {{ __('Lupa kata sandi?') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
+            <x-primary-button class="w-full sm:w-auto sm:ms-3 justify-center">
                 {{ __('Masuk') }}
             </x-primary-button>
         </div>

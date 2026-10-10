@@ -45,12 +45,12 @@
             Akun guru dibuat oleh <b>Administrator KobotAI Lab</b>. Silakan hubungi administrator sekolah untuk mendapatkan akun.
         </p>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 mt-4">
             <a class="underline text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
                 {{ __('Sudah punya akun?') }}
             </a>
 
-            <x-primary-button class="ms-4">
+            <x-primary-button class="w-full sm:w-auto sm:ms-4 justify-center">
                 {{ __('Daftar') }}
             </x-primary-button>
         </div>

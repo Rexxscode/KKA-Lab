@@ -15,7 +15,7 @@ $icons = [
 ];
 @endphp
 
-<a href="{{ $href }}" {{ $attributes->merge(['class' => 'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition ' . ($active ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400')]) }}>
-    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">{!! $icons[$icon] ?? $icons['home'] !!}</svg>
+<a href="{{ $href }}" {{ $attributes->merge(['class' => 'flex items-center gap-2.5 px-3 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold transition ' . ($active ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400')]) }}>
+    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">{!! $icons[$icon] ?? $icons['home'] !!}</svg>
     <span class="truncate">{{ $slot }}</span>
 </a>

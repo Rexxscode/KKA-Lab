@@ -31,7 +31,7 @@
             open: false, loading: false, draft: '',
             module: @js($module),
             messages: [{ role: 'model', text: 'Halo! Aku Tutor AI KobotAI Lab. Mau tanya apa soal AI hari ini?' }],
-            async send() {
+            async send(retry = true) {
                 const text = this.draft.trim();
                 if (!text || this.loading) return;
                 this.messages.push({ role: 'user', text });
@@ -51,10 +51,32 @@
                             history: this.messages.slice(-9, -1).map(m => ({ role: m.role, text: m.text })),
                         }),
                     });
-                    const data = await res.json();
-                    this.messages.push({ role: 'model', text: data.reply || 'Maaf, tidak ada jawaban.' });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        const pesan = data.message || (res.status === 429 ? 'Kuota AI habis / masih diproses. Tunggu sebentar ya!' : (res.status === 419 ? 'Sesi kedaluwarsa, muat ulang halaman lalu coba lagi!' : 'Maaf, tidak ada jawaban.'));
+                        // Retry sekali untuk galat sementara (429/5xx), bukan untuk 403/422.
+                        if (retry && (res.status === 429 || res.status >= 500)) {
+                            await new Promise(r => setTimeout(r, 1500));
+                            this.loading = false;
+                            this.draft = text;
+                            return this.send(false);
+                        }
+                        this.messages.push({ role: 'model', text: pesan });
+                    } else {
+                        let balasan = data.reply || 'Maaf, tidak ada jawaban.';
+                        if (data.code && data.code !== 'AI_GAGAL' && ['AI_KEY_INVALID', 'AI_MODEL_404', 'AI_BELUM_KONFIGURASI'].includes(data.code)) {
+                            balasan += ' (kode: ' + data.code + ' — laporkan ke gurumu ya!)';
+                        }
+                        this.messages.push({ role: 'model', text: balasan });
+                    }
                 } catch (e) {
-                    this.messages.push({ role: 'model', text: 'Ups, gagal menghubungi AI. Coba lagi ya!' });
+                    if (retry) {
+                        await new Promise(r => setTimeout(r, 1000));
+                        this.loading = false;
+                        this.draft = text;
+                        return this.send(false);
+                    }
+                    this.messages.push({ role: 'model', text: 'Ups, gagal menghubungi AI. Periksa internet lalu coba lagi ya!' });
                 }
                 this.loading = false;
                 this.$nextTick(() => this.$refs.box.scrollTop = this.$refs.box.scrollHeight);

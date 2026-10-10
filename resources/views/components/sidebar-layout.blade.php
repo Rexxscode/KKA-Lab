@@ -20,16 +20,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="antialiased" style="background:var(--color-page)" x-data="{ SidebarTerbuka: false }">
+<body class="antialiased" style="background:var(--color-page)" x-data="{ SidebarTerbuka: false }" @keydown.escape.window="SidebarTerbuka = false">
 <a href="#konten-utama" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-orange-500 focus:text-white focus:font-bold">Lewati ke konten utama</a>
-<div class="min-h-screen lg:flex">
+<div class="min-h-screen lg:flex" x-effect="document.body.classList.toggle('overflow-hidden', SidebarTerbuka && window.innerWidth < 1024)">
 
     <!-- Overlay HP -->
-    <div x-show="SidebarTerbuka" @click="SidebarTerbuka = false" class="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" style="display: none"></div>
+    <div x-show="SidebarTerbuka" x-cloak x-transition.opacity @click="SidebarTerbuka = false" class="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" style="display: none"></div>
 
     <!-- SIDEBAR -->
-    <aside :class="SidebarTerbuka ? 'translate-x-0' : '-translate-x-full'"
-           class="fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0">
+    <aside id="sidebar-utama" :class="SidebarTerbuka ? 'translate-x-0' : '-translate-x-full'" :inert="!SidebarTerbuka && window.innerWidth < 1024"
+           class="fixed inset-y-0 left-0 z-50 w-64 max-w-[85vw] shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-5 h-16 border-b border-slate-100 dark:border-slate-800">
                 <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-9 h-9 rounded-xl shrink-0" width="36" height="36" />
             <span>
@@ -44,7 +44,7 @@
             </span>
         </div>
 
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        <nav class="flex-1 overflow-y-auto overscroll-contain px-3 py-4 space-y-5">
             @if(auth()->user()->isSiswa())
                 <div>
                     <p class="px-3 mb-1.5 text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 dark:text-slate-400">UTAMA</p>
@@ -90,7 +90,7 @@
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
                         <x-side-link :href="route('admin.ai.index')" :active="request()->routeIs('admin.ai.*')" icon="chat">Log AI</x-side-link>
                         <x-side-link :href="route('admin.tanda-tangan')" :active="request()->routeIs('admin.tanda-tangan')" icon="pencil">Tanda Tangan</x-side-link>
-                        <x-side-link :href="route('siswa.dashboard')" :active="request()->routeIs('siswa.*')" icon="award">Pratinjau Siswa</x-side-link>
+                        <x-side-link :href="route('admin.pratinjau.index')" :active="request()->routeIs('admin.pratinjau.*')" icon="award">Pratinjau Siswa</x-side-link>
                     </div>
                 </div>
             @endif
@@ -127,8 +127,8 @@
 
     <!-- KONTEN -->
     <div class="flex-1 min-w-0 flex flex-col min-h-screen">
-        <header class="lg:hidden sticky top-0 z-30 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 px-4">
-            <button @click="SidebarTerbuka = true" aria-label="Buka menu navigasi" class="p-2 -ml-1 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+        <header class="lg:hidden sticky top-0 z-30 min-h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 px-4 pt-[env(safe-area-inset-top)]">
+            <button @click="SidebarTerbuka = true" :aria-expanded="SidebarTerbuka.toString()" aria-controls="sidebar-utama" aria-label="Buka menu navigasi" class="p-2 -ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <span class="font-extrabold text-slate-900 dark:text-white">KobotAI <span class="text-orange-500">Lab</span></span>
