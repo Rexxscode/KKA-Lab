@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Ai\Agents\TutorAgent;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Messages\AssistantMessage;
 use Laravel\Ai\Messages\UserMessage;
@@ -35,6 +36,19 @@ class GeminiService
             throw new AiGagalException('Asisten AI belum dikonfigurasi. Minta gurumu mengisi GEMINI_API_KEY di file .env ya! (ambil gratis di AI Studio)', 'AI_BELUM_KONFIGURASI');
         }
 
+        // Cache jawaban pertanyaan identik (default 60 menit) agar
+        // pertanyaan sama berulang tak menghabiskan kuota Google.
+        // Kunci cache tak pernah menyimpan API key.
+        $menitCache = max(0, (int) env('AI_CACHE_MENIT', 60));
+        $kunciCache = null;
+        if ($menitCache > 0) {
+            $kunciCache = 'ai:jwb:'.md5(mb_strtolower(trim($message)).'|'.($moduleContext ?? '').'|'.$model);
+            $tersimpan = Cache::get($kunciCache);
+            if (is_string($tersimpan) && $tersimpan !== '') {
+                return $tersimpan;
+            }
+        }
+
         $messages = [];
         foreach (array_slice($history, -8) as $h) {
             $text = mb_substr($h['text'] ?? '', 0, 2000);
@@ -56,7 +70,12 @@ class GeminiService
                 throw new AiGagalException('Maaf, aku tidak mendapat jawaban. Coba tanya dengan kalimat lain ya!', 'AI_KOSONG');
             }
 
-            return $this->bersihkanMarkdown($text);
+            $bersih = $this->bersihkanMarkdown($text);
+            if ($kunciCache) {
+                Cache::put($kunciCache, $bersih, now()->addMinutes($menitCache));
+            }
+
+            return $bersih;
         } catch (AiGagalException $e) {
             throw $e;
         } catch (\Throwable $e) {

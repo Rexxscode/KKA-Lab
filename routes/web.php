@@ -53,7 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->middleware('throttle:10,1')->name('profile.update');
     Route::post('/profile/tanda-tangan', [ProfileController::class, 'tandaTangan'])->middleware('throttle:10,1')->name('profile.ttd');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->middleware('throttle:10,1')->name('profile.destroy');
-    Route::post('/ai/chat', [AiChatController::class, 'chat'])->middleware('throttle:30,1')->name('ai.chat');
+    Route::post('/ai/chat', [AiChatController::class, 'chat'])->middleware('throttle:15,1')->name('ai.chat');
 });
 
 Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')->group(function () {

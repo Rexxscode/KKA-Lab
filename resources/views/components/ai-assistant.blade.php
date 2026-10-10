@@ -53,9 +53,16 @@
                     });
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok) {
-                        const pesan = data.message || (res.status === 429 ? 'Kuota AI habis / masih diproses. Tunggu sebentar ya!' : (res.status === 419 ? 'Sesi kedaluwarsa, muat ulang halaman lalu coba lagi!' : 'Maaf, tidak ada jawaban.'));
-                        // Retry sekali untuk galat sementara (429/5xx), bukan untuk 403/422.
-                        if (retry && (res.status === 429 || res.status >= 500)) {
+                        let pesan = data.message;
+                        if (!pesan) {
+                            if (res.status === 429) pesan = 'Kuota AI habis / terlalu cepat. Tunggu sebentar ya!';
+                            else if (res.status === 503) pesan = 'Asisten AI lagi dimatikan sementara. Coba lagi nanti ya!';
+                            else if (res.status === 419) pesan = 'Sesi kedaluwarsa, muat ulang halaman lalu coba lagi!';
+                            else pesan = 'Maaf, tidak ada jawaban.';
+                        }
+                        // Retry sekali HANYA untuk galat server 5xx (bukan 429/403/422/503)
+                        // agar tak melipatgandakan beban pas limit Google habis.
+                        if (retry && res.status >= 500 && res.status !== 503) {
                             await new Promise(r => setTimeout(r, 1500));
                             this.loading = false;
                             this.draft = text;
