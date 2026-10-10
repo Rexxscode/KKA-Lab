@@ -3,19 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>KobotAI Lab — Laboratorium Koding & Kecerdasan Artifisial</title>
-    <meta name="description" content="KobotAI Lab: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK. 6 modul interaktif, deteksi objek webcam, kuis, XP, badge, dan sertifikat — 100% di browser." />
-    <meta name="keywords" content="KobotAI Lab, koding, kecerdasan artifisial, AI untuk sekolah, belajar AI, SMA, SMK, TensorFlow.js, kuis AI, sertifikat" />
-    <meta name="author" content="KobotAI Lab" />
+    <title>KKALAB — Laboratorium Koding & Kecerdasan Artifisial</title>
+    <meta name="description" content="KKALAB: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK. 6 modul interaktif, deteksi objek webcam, kuis, XP, badge, dan sertifikat — 100% di browser." />
+    <meta name="keywords" content="KKALAB, koding, kecerdasan artifisial, AI untuk sekolah, belajar AI, SMA, SMK, TensorFlow.js, kuis AI, sertifikat" />
+    <meta name="author" content="KKALAB" />
     <meta name="theme-color" content="#f97316" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="KobotAI Lab" />
-    <meta property="og:title" content="KobotAI Lab — Laboratorium Koding & Kecerdasan Artifisial" />
+    <meta property="og:site_name" content="KKALAB" />
+    <meta property="og:title" content="KKALAB — Laboratorium Koding & Kecerdasan Artifisial" />
     <meta property="og:description" content="Belajar AI & koding hands-on di browser: 6 modul interaktif, deteksi objek webcam, kuis, XP, dan sertifikat otomatis." />
     <meta property="og:image" content="{{ asset('logo.png') }}" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="KobotAI Lab — Laboratorium Koding & Kecerdasan Artifisial" />
+    <meta name="twitter:title" content="KKALAB — Laboratorium Koding & Kecerdasan Artifisial" />
     <meta name="twitter:description" content="Belajar AI & koding hands-on di browser untuk SMA/SMK." />
     <meta name="twitter:image" content="{{ asset('logo.png') }}" />
     <link rel="icon" type="image/png" href="{{ asset('logo.png') }}" />
@@ -41,9 +41,9 @@
          class="kka-nav-animasi sticky top-0 z-40 transition-all duration-300"
          :class="sudahScroll ? 'bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm py-3' : 'bg-transparent border-b border-transparent py-5'">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <a href="{{ route('home') }}" class="kka-nav-logo flex items-center gap-2" aria-label="KobotAI Lab - Beranda">
-                <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-10 h-10 rounded-2xl" width="40" height="40" />
-                <span><span class="block font-extrabold text-slate-900 dark:text-white dark:text-white leading-none">KobotAI <span class="text-orange-500">Lab</span></span><span class="block text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Koding & Kecerdasan Artifisial</span></span>
+            <a href="{{ route('home') }}" class="kka-nav-logo flex items-center gap-2" aria-label="KKALAB - Beranda">
+                <img src="{{ asset('logo.png') }}" alt="Logo KKALAB" class="w-10 h-10 rounded-2xl" width="40" height="40" />
+                <span><span class="block font-extrabold text-slate-900 dark:text-white dark:text-white leading-none">KKALAB</span><span class="block text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Koding & Kecerdasan Artifisial</span></span>
             </a>
             <div class="flex items-center gap-2">
                 <x-theme-toggle />
@@ -192,7 +192,7 @@
 
     <section class="py-8">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white text-center">Kontak Kami</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 text-center mt-1">Punya pertanyaan, saran, atau ingin bekerja sama? Hubungi tim KobotAI Lab.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 text-center mt-1">Punya pertanyaan, saran, atau ingin bekerja sama? Hubungi tim KKALAB.</p>
         <div class="mt-5 grid sm:grid-cols-3 gap-4">
             <x-card title="Email" subtitle="halo@kkalab.sch.id"><p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5"><x-icon name="mail" class="w-4 h-4 text-orange-500" />Kami balas dalam 1–2 hari kerja.</p></x-card>
             <x-card title="Lokasi" subtitle="Indonesia"><p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5"><x-icon name="pin" class="w-4 h-4 text-orange-500" />Untuk SMA/SMK di seluruh Indonesia.</p></x-card>
@@ -205,7 +205,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         <div>
             <div class="flex items-center gap-2">
-                <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-9 h-9 rounded-xl" width="36" height="36" />
+                <img src="{{ asset('logo.png') }}" alt="Logo KKALAB" class="w-9 h-9 rounded-xl" width="36" height="36" />
                 <p class="font-extrabold text-slate-900 dark:text-white">KKA <span class="text-orange-500">Lab</span></p>
             </div>
             <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">Laboratorium Koding & Kecerdasan Artifisial untuk pembelajaran AI di sekolah.</p>
@@ -238,7 +238,7 @@
         </div>
     </div>
     <div class="border-t border-slate-100 dark:border-slate-800">
-        <p class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-500 dark:text-slate-400">KobotAI Lab • Untuk pembelajaran AI di sekolah</p>
+        <p class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-500 dark:text-slate-400">KKALAB • Untuk pembelajaran AI di sekolah</p>
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js" defer></script>

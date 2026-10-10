@@ -42,7 +42,7 @@
             Pendaftaran siswa <b>langsung aktif</b>, tanpa menunggu persetujuan.
         </p>
         <p class="mt-3 text-xs text-slate-500 dark:text-slate-400 rounded-xl border border-orange-200 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 p-3">
-            Akun guru dibuat oleh <b>Administrator KobotAI Lab</b>. Silakan hubungi administrator sekolah untuk mendapatkan akun.
+            Akun guru dibuat oleh <b>Administrator KKALAB</b>. Silakan hubungi administrator sekolah untuk mendapatkan akun.
         </p>
 
         <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 mt-4">

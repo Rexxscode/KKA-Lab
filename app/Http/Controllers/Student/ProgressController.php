@@ -170,7 +170,7 @@ class ProgressController extends Controller
             }
         }
 
-        $pesanSertifikat = $sertifikatBaru ? ' Selamat! Kamu telah menyelesaikan seluruh modul KobotAI Lab dan mendapatkan sertifikat.' : '';
+        $pesanSertifikat = $sertifikatBaru ? ' Selamat! Kamu telah menyelesaikan seluruh modul KKALAB dan mendapatkan sertifikat.' : '';
 
         if ($passed && $module->badge) {
             $request->user()->badges()->syncWithoutDetaching([$module->badge->id]);

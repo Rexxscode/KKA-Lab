@@ -1,6 +1,6 @@
 <div align="center">
 
-  # KobotAI Lab
+  # KKALAB
   ### Laboratorium Koding & Kecerdasan Artifisial — Belajar AI Hands-On di Browser
 
   [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/Rexxscode/ITX)
@@ -38,7 +38,7 @@ Kemendikdasmen memperkuat pembelajaran mendalam lewat Koding & Kecerdasan Artifi
 
 ### Solusi yang Ditawarkan
 
-KobotAI Lab adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung di browser** (deteksi objek real-time via webcam dengan TensorFlow.js COCO-SSD — gambar tidak pernah keluar dari perangkat), mengerjakan bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
+KKALAB adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung di browser** (deteksi objek real-time via webcam dengan TensorFlow.js COCO-SSD — gambar tidak pernah keluar dari perangkat), mengerjakan bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
 
 ### Tujuan Proyek
 

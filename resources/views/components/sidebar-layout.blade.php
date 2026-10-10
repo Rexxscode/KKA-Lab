@@ -6,10 +6,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="KobotAI Lab: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK." />
+    <meta name="description" content="KKALAB: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK." />
     <meta name="theme-color" content="#f97316" />
     <link rel="icon" type="image/png" href="{{ asset('logo.png') }}" />
-    <title>{{ $title ?? config('app.name', 'KobotAI Lab') }}</title>
+    <title>{{ $title ?? config('app.name', 'KKALAB') }}</title>
     <x-favicon-links />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,9 +31,9 @@
     <aside id="sidebar-utama" :class="SidebarTerbuka ? 'translate-x-0' : '-translate-x-full'" :inert="!SidebarTerbuka && window.innerWidth < 1024"
            class="fixed inset-y-0 left-0 z-50 w-64 max-w-[85vw] shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-5 h-16 border-b border-slate-100 dark:border-slate-800">
-                <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-9 h-9 rounded-xl shrink-0" width="36" height="36" />
+                <img src="{{ asset('logo.png') }}" alt="Logo KKALAB" class="w-9 h-9 rounded-xl shrink-0" width="36" height="36" />
             <span>
-                <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KobotAI <span class="text-orange-500">Lab</span></span>
+                <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KKALAB</span>
                 <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
             </span>
         </a>
@@ -131,7 +131,7 @@
             <button @click="SidebarTerbuka = true" :aria-expanded="SidebarTerbuka.toString()" aria-controls="sidebar-utama" aria-label="Buka menu navigasi" class="p-2 -ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
-            <span class="font-extrabold text-slate-900 dark:text-white">KobotAI <span class="text-orange-500">Lab</span></span>
+            <span class="font-extrabold text-slate-900 dark:text-white">KKALAB</span>
             <span class="ml-auto"><x-theme-toggle /></span>
         </header>
 

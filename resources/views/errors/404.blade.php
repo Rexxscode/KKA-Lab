@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>404 — Tidak Ketemu | KobotAI Lab</title>
+    <title>404 — Tidak Ketemu | KKALAB</title>
     <link rel="icon" type="image/png" href="{{ asset('logo.png') }}" />
     <x-favicon-links />
     <link rel="preconnect" href="https://fonts.googleapis.com">

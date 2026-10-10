@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="max-w-3xl" x-data="kkaBelajar({{ count($tampil) }})">
-        <x-card title="Ujian Akhir KobotAI Lab" subtitle="Fokus ya — lulus ujian ini syarat terbitnya sertifikat!">
+        <x-card title="Ujian Akhir KKALAB" subtitle="Fokus ya — lulus ujian ini syarat terbitnya sertifikat!">
             @if(session('ujian_result'))
                 @php
                     $qr = session('ujian_result');

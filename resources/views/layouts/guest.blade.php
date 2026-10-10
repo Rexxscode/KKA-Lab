@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'KobotAI Lab') }}</title>
-        <meta name="description" content="Masuk ke KobotAI Lab: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK." />
+        <title>{{ config('app.name', 'KKALAB') }}</title>
+        <meta name="description" content="Masuk ke KKALAB: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK." />
         <link rel="icon" type="image/png" href="{{ asset('logo.png') }}" />
         <x-favicon-links />
 
@@ -28,9 +28,9 @@
         <div class="min-h-screen min-h-dvh flex flex-col justify-center items-center px-4 sm:px-0 py-10 sm:py-12">
             <div class="flex items-center gap-3">
                 <a href="/" class="flex items-center gap-2.5">
-                    <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-11 h-11 rounded-2xl" width="44" height="44" />
+                    <img src="{{ asset('logo.png') }}" alt="Logo KKALAB" class="w-11 h-11 rounded-2xl" width="44" height="44" />
                     <span class="text-left">
-                        <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KobotAI <span class="text-orange-500">Lab</span></span>
+                        <span class="block font-extrabold text-slate-900 dark:text-white leading-none">KKALAB</span>
                         <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Koding & Kecerdasan Artifisial</span>
                     </span>
                 </a>

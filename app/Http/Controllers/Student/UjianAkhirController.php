@@ -167,7 +167,7 @@ class UjianAkhirController extends Controller
             session()->forget([$kunciPaket, $kunciMulai]);
             $pesan = "Luar biasa! Kamu lulus ujian akhir dengan skor {$score}.";
             $pesan .= $certificate
-                ? ' Selamat! Kamu telah menyelesaikan seluruh modul KobotAI Lab dan mendapatkan sertifikat.'
+                ? ' Selamat! Kamu telah menyelesaikan seluruh modul KKALAB dan mendapatkan sertifikat.'
                 : ' Sertifikatmu segera terbit di halaman sertifikat.';
 
             return redirect()->route('siswa.dashboard')->with('toast', ['type' => 'success', 'message' => $pesan]);
