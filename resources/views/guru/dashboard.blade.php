@@ -5,23 +5,23 @@
                 <h2 class="font-extrabold text-xl text-slate-900 dark:text-white">Dashboard Guru</h2>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Ringkasan data mengajar — kelola kelas lewat halaman Kelas Saya.</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 <a href="{{ route('guru.kelas.index') }}" class="kka-btn-primary !py-2 text-sm">Kelas Saya</a>
                 <a href="{{ route('guru.quiz.index') }}" class="kka-btn-secondary !py-2 text-sm">Bank Soal</a>
             </div>
         </div>
     </x-slot>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         @if(auth()->user()->status === 'pending')
-            <div class="col-span-2 lg:col-span-4 rounded-2xl border border-orange-300 bg-orange-50 dark:bg-orange-500/10 p-4 text-sm font-semibold text-orange-800 flex items-start gap-2">
+            <div class="col-span-1 sm:col-span-2 lg:col-span-4 rounded-2xl border border-orange-300 bg-orange-50 dark:bg-orange-500/10 p-4 text-sm font-semibold text-orange-800 flex items-start gap-2">
                 <x-icon name="clock" class="w-4 h-4 shrink-0 mt-0.5" /><span>Akun gurumu sedang menunggu verifikasi NPK oleh admin. Kamu bisa melihat-lihat dasbor, tetapi tombol Kelas Saya, Bank Soal, dan Modul Saya terkunci untuk sementara.</span>
             </div>
         @endif
-        <x-card title="Total Kelas" subtitle="kelas dibuat"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $totalKelas }}</p></x-card>
-        <x-card title="Total Siswa" subtitle="tergabung di kelas"><p class="kka-stat text-orange-600 dark:text-orange-400">{{ $totalSiswa }}</p></x-card>
-        <x-card title="Siswa Tuntas" subtitle="lulus semua modul"><p class="kka-stat text-emerald-600 dark:text-emerald-400">{{ $siswaTuntas }}</p></x-card>
-        <x-card title="Bank Soal" subtitle="{{ $totalModul }} modul"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $totalSoal }} <span class="text-base font-bold text-slate-500 dark:text-slate-400">soal</span></p></x-card>
+        <x-card title="Total Kelas" subtitle="kelas dibuat"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $totalKelas }}</p></x-card>
+        <x-card title="Total Siswa" subtitle="tergabung di kelas"><p class="kka-stat text-2xl sm:text-3xl text-orange-600 dark:text-orange-400">{{ $totalSiswa }}</p></x-card>
+        <x-card title="Siswa Tuntas" subtitle="lulus semua modul"><p class="kka-stat text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400">{{ $siswaTuntas }}</p></x-card>
+        <x-card title="Bank Soal" subtitle="{{ $totalModul }} modul"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $totalSoal }} <span class="text-base font-bold text-slate-500 dark:text-slate-400">soal</span></p></x-card>
     </div>
 
     <x-card title="Perlu Perhatian" subtitle="Siswa belum mulai & skor tertinggal per kelas — bantu mereka dulu." class="mt-4">

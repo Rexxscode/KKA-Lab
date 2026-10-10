@@ -25,7 +25,7 @@
     </head>
     <body class="font-sans text-slate-900 dark:text-slate-100 antialiased" style="background:var(--color-page)">
         <x-toast />
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
+        <div class="min-h-screen min-h-dvh flex flex-col justify-center items-center px-4 sm:px-0 py-10 sm:py-12">
             <div class="flex items-center gap-3">
                 <a href="/" class="flex items-center gap-2.5">
                     <img src="{{ asset('logo.png') }}" alt="Logo KobotAI Lab" class="w-11 h-11 rounded-2xl" width="44" height="44" />
@@ -37,7 +37,7 @@
                 <x-theme-toggle />
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden sm:rounded-2xl">
+            <div class="w-full max-w-md mx-auto mt-6 px-6 py-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden rounded-2xl">
                 {{ $slot }}
             </div>
         </div>

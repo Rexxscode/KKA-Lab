@@ -55,7 +55,7 @@ class TutorAgent implements Agent, HasTools
 
     public function model(): string
     {
-        return (string) config('services.gemini.model', 'gemini-3.5-flash');
+        return (string) config('services.gemini.model', 'gemini-3.8-flash');
     }
 
     public function timeout(): int

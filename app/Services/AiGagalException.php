@@ -9,4 +9,8 @@ namespace App\Services;
  */
 class AiGagalException extends \RuntimeException
 {
+    public function __construct(string $message = '', public readonly string $aiCode = 'AI_GAGAL')
+    {
+        parent::__construct($message);
+    }
 }

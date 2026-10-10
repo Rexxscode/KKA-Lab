@@ -13,6 +13,8 @@ class CertificateController extends Controller
     public function index(Request $request, CertificateService $sertifikat)
     {
         $user = $request->user();
+        // Admin yang membuka langsung (bookmark lama) tidak boleh menerbitkan untuk dirinya sendiri.
+        $isPreviewAdmin = $user->isAdmin();
         // Sertifikat HANYA dari 6 modul default (teacher_id NULL). Modul custom guru diabaikan.
         $modules = $sertifikat->modulDefault();
         $progress = $user->progress()->get()->keyBy('module_id');
@@ -22,8 +24,9 @@ class CertificateController extends Controller
         $lulus = $sertifikat->countLulus($user);
 
         // Penerbitan idempoten dalam transaction (1 user = 1 sertifikat, anti-duplikat).
+        // Admin pratinjau: read-only, jangan terbitkan.
         $certificate = null;
-        if ($eligible) {
+        if ($eligible && ! $isPreviewAdmin) {
             try {
                 $certificate = $sertifikat->issueIfEligible($user);
             } catch (\Throwable $e) {

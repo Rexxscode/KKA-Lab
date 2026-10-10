@@ -4,6 +4,13 @@
         <p class="text-sm text-slate-500 dark:text-slate-400">{{ $module->description }} • +{{ $module->xp_reward }} XP • Lulus jika kuis ≥80</p>
     </x-slot>
 
+    @if(auth()->user()->isAdmin())
+        <div class="mb-4 rounded-2xl border border-orange-200 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 px-4 py-3 flex flex-wrap items-center gap-2 text-sm" role="status">
+            <span class="font-bold text-orange-800 dark:text-orange-300 min-w-0 flex-1 basis-48">Mode pratinjau admin — progres tidak disimpan. Kembali ke Pratinjau Siswa untuk melihat data siswa.</span>
+            <a href="{{ route('admin.pratinjau.index') }}" class="kka-btn-primary !py-1.5 text-xs shrink-0">Buka Pratinjau →</a>
+        </div>
+    @endif
+
     <div class="space-y-4 sm:space-y-6" x-data="{ sampaiAkhir: false }">
         <x-card title="Tahap 1 — Bahan Ajar (wajib dibaca dulu)" subtitle="Scroll sampai akhir bacaan untuk membuka kunci kuis.">
             <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/50 p-5 max-h-[46vh] overflow-y-auto" @scroll="if ($el.scrollTop + $el.clientHeight >= $el.scrollHeight - 24) sampaiAkhir = true">
@@ -344,9 +351,16 @@
                             message: 'Aku baru memakai Modul 2 deteksi objek: kamera menemukan ' + temuan + '. Jelaskan singkat cara kerja object detection pretrained dan 1 tips agar hasilnya lebih akurat.',
                         }),
                     });
-                    const data = await res.json();
-                    this.penjelasan = data.reply || 'Tidak ada jawaban.';
-                } catch (e) { this.penjelasan = 'Gagal menghubungi Tutor AI. Coba lagi ya!'; }
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        this.penjelasan = data.message || (res.status === 429 ? 'Kuota AI habis. Tunggu sebentar ya!' : 'Gagal menghubungi Tutor AI. Coba lagi ya!');
+                    } else {
+                        this.penjelasan = data.reply || 'Tidak ada jawaban.';
+                        if (data.code && ['AI_KEY_INVALID', 'AI_MODEL_404', 'AI_BELUM_KONFIGURASI'].includes(data.code)) {
+                            this.penjelasan += ' (kode: ' + data.code + ')';
+                        }
+                    }
+                } catch (e) { this.penjelasan = 'Gagal menghubungi Tutor AI. Periksa internet lalu coba lagi ya!'; }
                 this.jelasSibuk = false;
             },
         }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PreviewController as AdminPreviewController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AiLogController;
@@ -49,9 +50,9 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::post('/profile/tanda-tangan', [ProfileController::class, 'tandaTangan'])->name('profile.ttd');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile', [ProfileController::class, 'update'])->middleware('throttle:10,1')->name('profile.update');
+    Route::post('/profile/tanda-tangan', [ProfileController::class, 'tandaTangan'])->middleware('throttle:10,1')->name('profile.ttd');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->middleware('throttle:10,1')->name('profile.destroy');
     Route::post('/ai/chat', [AiChatController::class, 'chat'])->middleware('throttle:30,1')->name('ai.chat');
 });
 
@@ -62,7 +63,7 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::delete('/keluar-kelas', [ClassroomJoinController::class, 'destroy'])->middleware('throttle:10,1')->name('leave');
     Route::get('/bahan', [BahanController::class, 'index'])->name('bahan.index');
     Route::get('/bahan/{slug}', [BahanController::class, 'show'])->name('bahan.show');
-    Route::post('/bahan/{slug}/selesai', [BahanController::class, 'markRead'])->name('bahan.read');
+    Route::post('/bahan/{slug}/selesai', [BahanController::class, 'markRead'])->middleware('throttle:10,1')->name('bahan.read');
     Route::get('/kuis', [KuisController::class, 'index'])->name('kuis.index');
     Route::get('/latih-model', [LatihController::class, 'index'])->name('latih.index');
     Route::post('/latih-model/publish', [LatihController::class, 'publish'])->middleware('throttle:10,1')->name('latih.publish');
@@ -87,48 +88,50 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
     // Fitur guru dikunci sampai status aktif (kecuali admin).
     Route::middleware('guru.aktif')->group(function () {
         Route::get('/kelas', [GuruClassroomController::class, 'index'])->name('kelas.index');
-        Route::post('/kelas', [GuruClassroomController::class, 'store'])->name('kelas.store');
+        Route::post('/kelas', [GuruClassroomController::class, 'store'])->middleware('throttle:10,1')->name('kelas.store');
         Route::get('/kelas/{classroom}', [GuruClassroomController::class, 'show'])->name('kelas.show');
         // Lihat modul di kelas (read-only): admin bisa melihat modul guru
         // hanya lewat kelas, tanpa bisa mengubah.
         Route::get('/kelas/{classroom}/modul/{module}', [GuruClassroomController::class, 'modulShow'])->name('kelas.modul.show');
-        Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->name('kelas.export');
-        Route::patch('/kelas/{classroom}/kode-baru', [GuruClassroomController::class, 'kodeBaru'])->name('kelas.kode');
-        Route::patch('/kelas/{classroom}/arsip', [GuruClassroomController::class, 'arsip'])->name('kelas.arsip');
-        Route::delete('/kelas/{classroom}/siswa/{user}', [GuruClassroomController::class, 'kick'])->name('kelas.siswa.kick');
-        Route::delete('/kelas/{classroom}/siswa/{user}/progres', [GuruClassroomController::class, 'resetProgres'])->name('kelas.siswa.reset');
+        Route::get('/kelas/{classroom}/export-csv', [ExportController::class, 'csv'])->middleware('throttle:5,1')->name('kelas.export');
+        Route::patch('/kelas/{classroom}/kode-baru', [GuruClassroomController::class, 'kodeBaru'])->middleware('throttle:10,1')->name('kelas.kode');
+        Route::patch('/kelas/{classroom}/arsip', [GuruClassroomController::class, 'arsip'])->middleware('throttle:10,1')->name('kelas.arsip');
+        Route::delete('/kelas/{classroom}/siswa/{user}', [GuruClassroomController::class, 'kick'])->middleware('throttle:10,1')->name('kelas.siswa.kick');
+        Route::delete('/kelas/{classroom}/siswa/{user}/progres', [GuruClassroomController::class, 'resetProgres'])->middleware('throttle:10,1')->name('kelas.siswa.reset');
         Route::get('/kelas/{classroom}/siswa/{siswa}', [StudentReportController::class, 'show'])->name('kelas.siswa.show');
-        Route::post('/kelas/{classroom}/siswa/{siswa}/umpan-balik', [StudentReportController::class, 'feedback'])->name('kelas.siswa.feedback');
+        Route::post('/kelas/{classroom}/siswa/{siswa}/umpan-balik', [StudentReportController::class, 'feedback'])->middleware('throttle:10,1')->name('kelas.siswa.feedback');
         Route::get('/quiz', [QuizController::class, 'index'])->name('quiz.index');
         Route::get('/quiz/modul/{module}', [QuizController::class, 'module'])->name('quiz.module');
-        Route::post('/quiz/modul/{module}', [QuizController::class, 'store'])->name('quiz.module.store');
-        Route::post('/quiz/modul/{module}/bulk', [QuizController::class, 'storeBulk'])->name('quiz.module.bulk');
+        Route::post('/quiz/modul/{module}', [QuizController::class, 'store'])->middleware('throttle:10,1')->name('quiz.module.store');
+        Route::post('/quiz/modul/{module}/bulk', [QuizController::class, 'storeBulk'])->middleware('throttle:10,1')->name('quiz.module.bulk');
         Route::get('/modul', [GuruModuleController::class, 'index'])->name('modul.index');
-        Route::post('/modul', [GuruModuleController::class, 'store'])->name('modul.store');
-        Route::patch('/modul/{module}', [GuruModuleController::class, 'update'])->name('modul.update');
-        Route::delete('/modul/{module}', [GuruModuleController::class, 'destroy'])->name('modul.destroy');
-        Route::post('/modul/{module}/duplikat', [GuruModuleController::class, 'duplikat'])->name('modul.duplikat');
-        Route::post('/kelas/{classroom}/modul', [GuruModuleController::class, 'tempel'])->name('kelas.modul.tempel');
-        Route::delete('/kelas/{classroom}/modul/{module}', [GuruModuleController::class, 'lepas'])->name('kelas.modul.lepas');
-        Route::patch('/kelas/{classroom}/modul/{module}/naik', [GuruModuleController::class, 'naik'])->name('kelas.modul.naik');
-        Route::patch('/kelas/{classroom}/modul/{module}/turun', [GuruModuleController::class, 'turun'])->name('kelas.modul.turun');
-        Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->name('quiz.update');
-        Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->name('quiz.destroy');
+        Route::post('/modul', [GuruModuleController::class, 'store'])->middleware('throttle:10,1')->name('modul.store');
+        Route::patch('/modul/{module}', [GuruModuleController::class, 'update'])->middleware('throttle:10,1')->name('modul.update');
+        Route::delete('/modul/{module}', [GuruModuleController::class, 'destroy'])->middleware('throttle:10,1')->name('modul.destroy');
+        Route::post('/modul/{module}/duplikat', [GuruModuleController::class, 'duplikat'])->middleware('throttle:10,1')->name('modul.duplikat');
+        Route::post('/kelas/{classroom}/modul', [GuruModuleController::class, 'tempel'])->middleware('throttle:10,1')->name('kelas.modul.tempel');
+        Route::delete('/kelas/{classroom}/modul/{module}', [GuruModuleController::class, 'lepas'])->middleware('throttle:10,1')->name('kelas.modul.lepas');
+        Route::patch('/kelas/{classroom}/modul/{module}/naik', [GuruModuleController::class, 'naik'])->middleware('throttle:10,1')->name('kelas.modul.naik');
+        Route::patch('/kelas/{classroom}/modul/{module}/turun', [GuruModuleController::class, 'turun'])->middleware('throttle:10,1')->name('kelas.modul.turun');
+        Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->middleware('throttle:10,1')->name('quiz.update');
+        Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->middleware('throttle:10,1')->name('quiz.destroy');
         Route::get('/ai-logs', [AiLogController::class, 'guru'])->name('ai.index');
         Route::get('/model-siswa', [ModelModerasiController::class, 'index'])->name('model.index');
-        Route::post('/model-siswa/{model}/setujui', [ModelModerasiController::class, 'setujui'])->name('model.setujui');
-        Route::post('/model-siswa/{model}/tolak', [ModelModerasiController::class, 'tolak'])->name('model.tolak');
-        Route::get('/model-siswa/{model}/unduh', [ModelModerasiController::class, 'unduh'])->name('model.unduh');
+        Route::post('/model-siswa/{model}/setujui', [ModelModerasiController::class, 'setujui'])->middleware('throttle:10,1')->name('model.setujui');
+        Route::post('/model-siswa/{model}/tolak', [ModelModerasiController::class, 'tolak'])->middleware('throttle:10,1')->name('model.tolak');
+        Route::get('/model-siswa/{model}/unduh', [ModelModerasiController::class, 'unduh'])->middleware('throttle:10,1')->name('model.unduh');
     });
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-    Route::patch('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset');
-    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-    Route::post('/pengajuan/{user}/setujui', [AdminUserController::class, 'setujui'])->name('pengajuan.setujui');
-    Route::post('/pengajuan/{user}/tolak', [AdminUserController::class, 'tolak'])->name('pengajuan.tolak');
+    Route::get('/pratinjau/siswa', [AdminPreviewController::class, 'index'])->name('pratinjau.index');
+    Route::get('/pratinjau/siswa/{siswa}', [AdminPreviewController::class, 'show'])->name('pratinjau.show');
+    Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
+    Route::patch('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->middleware('throttle:10,1')->name('users.reset');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->middleware('throttle:10,1')->name('users.destroy');
+    Route::post('/pengajuan/{user}/setujui', [AdminUserController::class, 'setujui'])->middleware('throttle:10,1')->name('pengajuan.setujui');
+    Route::post('/pengajuan/{user}/tolak', [AdminUserController::class, 'tolak'])->middleware('throttle:10,1')->name('pengajuan.tolak');
     Route::get('/bukti/{user}', [AdminUserController::class, 'unduhBukti'])->middleware('throttle:10,1')->name('bukti.unduh');
     Route::get('/tanda-tangan', [AdminUserController::class, 'tandaTangan'])->name('tanda-tangan');
     Route::get('/ai-logs', [AiLogController::class, 'admin'])->name('ai.index');

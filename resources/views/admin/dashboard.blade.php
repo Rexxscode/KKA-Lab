@@ -10,21 +10,21 @@
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <x-card title="Admin" subtitle="akun"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $stats['admin'] }}</p></x-card>
-            <x-card title="Guru" subtitle="akun"><p class="text-3xl font-extrabold text-orange-500">{{ $stats['guru'] }}</p></x-card>
-            <x-card title="Siswa" subtitle="akun"><p class="text-3xl font-extrabold text-emerald-500">{{ $stats['siswa'] }}</p></x-card>
-            <x-card title="Kelas" subtitle="dibuat guru"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $stats['kelas'] }}</p></x-card>
-            <x-card title="Modul" subtitle="KKA"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $stats['modul'] }}</p></x-card>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <x-card title="Admin" subtitle="akun"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $stats['admin'] }}</p></x-card>
+            <x-card title="Guru" subtitle="akun"><p class="text-2xl sm:text-3xl font-extrabold text-orange-500">{{ $stats['guru'] }}</p></x-card>
+            <x-card title="Siswa" subtitle="akun"><p class="text-2xl sm:text-3xl font-extrabold text-emerald-500">{{ $stats['siswa'] }}</p></x-card>
+            <x-card title="Kelas" subtitle="dibuat guru"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $stats['kelas'] }}</p></x-card>
+            <x-card title="Modul" subtitle="KKA"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $stats['modul'] }}</p></x-card>
         </div>
 
         @if(isset($global))
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <x-card title="Modul selesai" subtitle="semua siswa"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['modul_selesai'] }}</p></x-card>
-            <x-card title="Rata progres" subtitle="dari 6 default"><p class="text-3xl font-extrabold text-orange-500">{{ $global['rata_progress'] }}%</p></x-card>
-            <x-card title="Rata nilai" subtitle="kuis"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['rata_nilai'] }}</p></x-card>
-            <x-card title="Sertifikat" subtitle="diterbitkan"><p class="text-3xl font-extrabold text-emerald-500">{{ $global['sertifikat'] }}</p></x-card>
-            <x-card title="Aktif 7 hari" subtitle="siswa belajar"><p class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['siswa_aktif'] }}</p></x-card>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <x-card title="Modul selesai" subtitle="semua siswa"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['modul_selesai'] }}</p></x-card>
+            <x-card title="Rata progres" subtitle="dari 6 default"><p class="text-2xl sm:text-3xl font-extrabold text-orange-500">{{ $global['rata_progress'] }}%</p></x-card>
+            <x-card title="Rata nilai" subtitle="kuis"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['rata_nilai'] }}</p></x-card>
+            <x-card title="Sertifikat" subtitle="diterbitkan"><p class="text-2xl sm:text-3xl font-extrabold text-emerald-500">{{ $global['sertifikat'] }}</p></x-card>
+            <x-card title="Aktif 7 hari" subtitle="siswa belajar"><p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ $global['siswa_aktif'] }}</p></x-card>
         </div>
         @endif
 
@@ -54,15 +54,16 @@
             @endforelse
         </x-card>
 
-        <x-card title="Buat Akun Guru / Admin" subtitle="Guru baru HANYA via form ini (langsung aktif, tanpa NPK/pending). Kata sandi minimal 8 karakter.">
+        <x-card title="Buat Akun Guru{{ auth()->user()->isSuperAdmin() ? ' / Admin' : '' }}" subtitle="Guru baru HANYA via form ini (langsung aktif, tanpa NPK/pending). Kata sandi minimal 8 karakter.{{ auth()->user()->isSuperAdmin() ? ' Kamu super-admin: boleh membuat admin baru bila perlu.' : '' }}">
             <form method="POST" action="{{ route('admin.users.store') }}" class="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
                 @csrf
-                <input name="name" required maxlength="100" placeholder="Nama guru" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
-                <input name="email" type="email" required placeholder="Email guru" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
-                <select name="role" required class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500">
+                <input name="name" required maxlength="100" placeholder="Nama guru" aria-label="Nama guru" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
+                <input name="email" type="email" required placeholder="Email guru" aria-label="Email guru" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
+                <select name="role" required aria-label="Peran akun baru" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500">
                     <option value="guru">Guru</option>
-                    <option value="admin">Admin</option>
-                    <option value="siswa">Siswa (khusus)</option>
+                    @if(auth()->user()->isSuperAdmin())
+                        <option value="admin">Admin (khusus super-admin)</option>
+                    @endif
                 </select>
                 <x-password-input name="password" required placeholder="Kata sandi" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
                 <x-password-input name="password_confirmation" required placeholder="Ulangi kata sandi" class="rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:border-orange-500 focus:ring-orange-500" />
@@ -105,12 +106,12 @@
                                 <td class="py-3">
                                     <div class="flex justify-end gap-2">
                                         <details class="relative">
-                                            <summary class="kka-btn-secondary !py-1.5 !px-3 text-xs cursor-pointer list-none">Reset PW</summary>
-                                            <form method="POST" action="{{ route('admin.users.reset', $u) }}" class="absolute right-0 mt-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg flex gap-1 z-10">
+                                            <summary class="kka-btn-secondary !py-1.5 !px-3 text-xs cursor-pointer list-none">Reset Kata Sandi</summary>
+                                            <form method="POST" action="{{ route('admin.users.reset', $u) }}" class="absolute right-0 mt-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg grid grid-cols-[1fr_1fr_auto] gap-2 z-10 min-w-[300px]">
                                                 @csrf @method('PATCH')
                                                 <x-password-input name="password" required placeholder="Baru" class="w-28 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-xs" />
                                                 <x-password-input name="password_confirmation" required placeholder="Ulangi" class="w-28 rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 text-xs" />
-                                                <button class="kka-btn-primary !py-1.5 !px-3 text-xs">OK</button>
+                                                <button class="kka-btn-primary !py-1.5 !px-3 text-xs min-h-[44px]">OK</button>
                                             </form>
                                         </details>
                                         @if($u->id !== auth()->id())

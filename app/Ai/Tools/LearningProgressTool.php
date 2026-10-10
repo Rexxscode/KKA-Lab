@@ -40,17 +40,19 @@ class LearningProgressTool implements Tool
         $baris[] = 'Badge: '.($badge ?: 'belum ada').'.';
 
         $progres = $user->progress()->with('module')->get()->keyBy('module_id');
+        // 1 query agregat untuk nilai terbaik semua modul (hindari N+1).
+        $terbaik = QuizAttempt::where('student_id', $user->id)
+            ->selectRaw('module_id, MAX(score) as skor')
+            ->groupBy('module_id')
+            ->pluck('skor', 'module_id');
         foreach (Module::orderBy('order')->get() as $modul) {
             $p = $progres->get($modul->id);
             $status = ($p && $p->is_completed) ? 'selesai' : 'belum selesai';
             $detail = 'Modul "'.$modul->title.'": '.$status;
             if ($p && $p->quiz_score !== null) {
-                $terbaik = QuizAttempt::where('student_id', $user->id)
-                    ->where('module_id', $modul->id)
-                    ->max('score');
                 $detail .= ', nilai kuis terakhir '.$p->quiz_score;
-                if ($terbaik !== null) {
-                    $detail .= ' (terbaik '.$terbaik.')';
+                if (isset($terbaik[$modul->id])) {
+                    $detail .= ' (terbaik '.$terbaik[$modul->id].')';
                 }
             }
             $baris[] = $detail.'.';

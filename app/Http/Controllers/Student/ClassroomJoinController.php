@@ -11,6 +11,7 @@ class ClassroomJoinController extends Controller
 {
     public function store(Request $request)
     {
+        abort_if($request->user()->isAdmin(), 403, 'Mode pratinjau admin: tidak bisa gabung kelas. Gunakan Pratinjau Siswa untuk melihat data.');
         // Normalisasi: buang spasi (mis. "482 913") agar tidak gagal validasi diam-diam.
         $request->merge(['code' => preg_replace('/\s+/', '', (string) $request->input('code', ''))]);
 
@@ -38,6 +39,7 @@ class ClassroomJoinController extends Controller
      */
     public function destroy(Request $request, StudentModuleService $modul)
     {
+        abort_if($request->user()->isAdmin(), 403, 'Mode pratinjau admin: tidak bisa keluar kelas.');
         $kelas = $modul->kelasAktif($request->user());
 
         if (! $kelas) {

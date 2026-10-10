@@ -10,6 +10,7 @@ use App\Models\StudentModel;
 use App\Models\StudentProgress;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -60,40 +61,71 @@ class ModelModerasiController extends Controller
             return back()->with('toast', ['type' => 'error', 'message' => 'Akurasi uji guru minimal 70%. Uji 5x beruntun dulu, tolak bila tidak yakin.']);
         }
 
-        $model->update(['status' => StudentModel::STATUS_APPROVED, 'accuracy' => $data['accuracy'] ?? null, 'note' => null]);
+        // Tolak approve ganda: hanya antrean pending yang bisa disetujui.
+        if ($model->status !== StudentModel::STATUS_PENDING) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Model ini sudah dimoderasi (' . $model->status . '). Muat ulang halaman!']);
+        }
 
-        // Promote ke model global aktif (nonaktifkan yang lama).
-        GlobalModel::where('is_active', true)->update(['is_active' => false]);
-        $slug = Str::slug($model->name);
-        $versi = (int) (GlobalModel::where('slug', 'like', $slug . '%')->max('version') ?? 0) + 1;
-        GlobalModel::create([
-            'name' => $model->name,
-            'slug' => $versi > 1 ? $slug . '-v' . $versi : $slug,
-            'version' => $versi,
-            'backbone' => $model->backbone,
-            'labels' => $model->labels,
-            'dataset' => $model->dataset,
-            'weights' => $model->weights,
-            'student_model_id' => $model->id,
-            'approved_by' => $request->user()->id,
-            'is_active' => true,
-            'accuracy' => $data['accuracy'] ?? null,
-        ]);
-
-        // Bonus XP sekali untuk pembuat (modul latih-ai-mu).
-        $modul = Module::where('slug', 'latih-ai-mu')->first();
-        if ($modul) {
-            $progress = StudentProgress::firstOrCreate(
-                ['student_id' => $model->student_id, 'module_id' => $modul->id],
-                ['quiz_score' => 0, 'xp_earned' => 0, 'is_completed' => false]
-            );
-            if (! $progress->training_xp_awarded) {
-                $progress->update([
-                    'xp_earned' => $progress->xp_earned + self::LATIH_XP_BONUS,
-                    'training_xp_awarded' => true,
-                ]);
+        // Bobot opsional saat publish — tapi bila ada, strukturnya wajib
+        // valid sebelum tayang global (anti bobot korup/racun).
+        if ($model->weights !== null) {
+            $bobot = is_array($model->weights) ? $model->weights : null;
+            $tensors = $bobot['tensors'] ?? null;
+            $valid = is_array($tensors) && count($tensors) >= 1 && count($tensors) <= 10;
+            if ($valid) {
+                foreach ($tensors as $t) {
+                    if (! is_array($t) || ! isset($t['shape'], $t['dtype'], $t['data'])
+                        || ! is_array($t['shape']) || $t['dtype'] !== 'float32' || ! is_string($t['data'])) {
+                        $valid = false;
+                        break;
+                    }
+                }
+            }
+            if (! $valid) {
+                return back()->with('toast', ['type' => 'error', 'message' => 'Ditolak otomatis: struktur bobot rusak. Minta siswa melatih ulang sampai tuntas lalu kirim ulang.']);
             }
         }
+
+        DB::transaction(function () use ($request, $model, $data) {
+            // Kunci baris antrean agar 2 approval paralel tak lolos ganda.
+            $terkunci = StudentModel::whereKey($model->id)->lockForUpdate()->first();
+            abort_unless($terkunci->status === StudentModel::STATUS_PENDING, 409, 'Model sudah dimoderasi guru lain.');
+
+            $terkunci->update(['status' => StudentModel::STATUS_APPROVED, 'accuracy' => $data['accuracy'] ?? null, 'note' => null]);
+
+            // Promote ke model global aktif (nonaktifkan yang lama) — atomik.
+            GlobalModel::where('is_active', true)->update(['is_active' => false]);
+            $slug = Str::slug($model->name);
+            $versi = (int) (GlobalModel::where('slug', 'like', $slug . '%')->lockForUpdate()->max('version') ?? 0) + 1;
+            GlobalModel::create([
+                'name' => $model->name,
+                'slug' => $versi > 1 ? $slug . '-v' . $versi : $slug,
+                'version' => $versi,
+                'backbone' => $model->backbone,
+                'labels' => $model->labels,
+                'dataset' => $model->dataset,
+                'weights' => $model->weights,
+                'student_model_id' => $model->id,
+                'approved_by' => $request->user()->id,
+                'is_active' => true,
+                'accuracy' => $data['accuracy'] ?? null,
+            ]);
+
+            // Bonus XP sekali untuk pembuat (modul latih-ai-mu).
+            $modul = Module::where('slug', 'latih-ai-mu')->first();
+            if ($modul) {
+                $progress = StudentProgress::firstOrCreate(
+                    ['student_id' => $model->student_id, 'module_id' => $modul->id],
+                    ['quiz_score' => 0, 'xp_earned' => 0, 'is_completed' => false]
+                );
+                if (! $progress->training_xp_awarded) {
+                    $progress->update([
+                        'xp_earned' => $progress->xp_earned + self::LATIH_XP_BONUS,
+                        'training_xp_awarded' => true,
+                    ]);
+                }
+            }
+        });
 
         Log::info('guru.model_setujui', ['actor' => $request->user()->id, 'model' => $model->id]);
 

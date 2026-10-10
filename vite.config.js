@@ -10,4 +10,15 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        // Inti TensorFlow (~MB) dipakai object-detector + trainer:
+        // satukan dalam 1 chunk agar tidak diduplikat di 2 bundle.
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    tf: ['@tensorflow/tfjs'],
+                },
+            },
+        },
+    },
 });
