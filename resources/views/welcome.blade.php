@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>KKALAB — Laboratorium Koding & Kecerdasan Artifisial</title>
-    <meta name="description" content="KKALAB: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK. 6 modul interaktif, deteksi objek webcam, kuis, XP, badge, dan sertifikat — 100% di browser." />
+    <meta name="description" content="KKALAB: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK. 6 modul interaktif, demo kamera, kuis, XP, badge, dan sertifikat — 100% di browser." />
     <meta name="keywords" content="KKALAB, koding, kecerdasan artifisial, AI untuk sekolah, belajar AI, SMA, SMK, TensorFlow.js, kuis AI, sertifikat" />
     <meta name="author" content="KKALAB" />
     <meta name="theme-color" content="#f97316" />
@@ -12,7 +12,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="KKALAB" />
     <meta property="og:title" content="KKALAB — Laboratorium Koding & Kecerdasan Artifisial" />
-    <meta property="og:description" content="Belajar AI & koding hands-on di browser: 6 modul interaktif, deteksi objek webcam, kuis, XP, dan sertifikat otomatis." />
+    <meta property="og:description" content="Belajar AI & koding hands-on di browser: 6 modul interaktif, demo kamera, kuis, XP, dan sertifikat otomatis." />
     <meta property="og:image" content="{{ asset('logo.png') }}" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="KKALAB — Laboratorium Koding & Kecerdasan Artifisial" />
@@ -61,7 +61,7 @@
         <div>
             <span class="kka-badge">Untuk SMA/SMK • Kurikulum KKA • 100% Praktik di Browser</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white dark:text-white leading-tight">Belajar AI & Koding <span class="text-orange-500">hands-on</span> di browser.</h1>
-            <p class="mt-4 text-slate-600 dark:text-slate-300">6 modul interaktif: konsep AI → latih model webcam → bias data → etika & hoaks → Python dasar → data & logika AI. Privasi terjaga: gambar tidak dikirim ke server. Kuis minimal <b>80</b> untuk lulus, kumpulkan XP & badge, cetak sertifikat otomatis.</p>
+            <p class="mt-4 text-slate-600 dark:text-slate-300">6 modul interaktif: konsep AI → deteksi objek & cara kerja model → bias data → etika & hoaks → Python dasar → data & logika AI. Kuis minimal <b>80</b> untuk lulus, kumpulkan XP & badge, cetak sertifikat otomatis.</p>
             <div class="mt-6 flex flex-wrap gap-3">
                 @auth
                     <x-button href="{{ route('dashboard') }}">Ke Dashboard</x-button>
@@ -91,13 +91,13 @@
                 <button class="kka-btn-primary !py-2 text-sm" @click="toggleKamera()" x-text="cameraOn ? 'Matikan Kamera' : 'Aktifkan Kamera'"></button>
                 <button class="kka-btn-secondary !py-2 text-sm" @click="uji()" x-text="sibuk ? 'Menganalisis...' : 'Uji'"></button>
             </div>
-            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Butuh internet sekali untuk memuat model + izin kamera. Versi deteksi objek ada di Modul 2 setelah daftar.</p>
+            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Butuh internet untuk memuat model + izin kamera. Daftar untuk akses 6 modul + kuis + sertifikat.</p>
         </x-card>
     </section>
 
     <section class="py-8">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ $modules->count() ?: 6 }} Modul KKA</h2>
-        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Dari konsep → praktik kamera → data kritis → etika → Python untuk AI.</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Dari konsep → data kritis → etika → Python untuk AI.</p>
         <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
             @forelse($modules as $m)
                 <x-card :title="$m->title" :subtitle="$m->description">
@@ -113,7 +113,7 @@
                         <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
                     </div>
                 </x-card>
-                <x-card title="Modul 2: Latih AI-mu" subtitle="Deteksi objek real-time via webcam (COCO-SSD pretrained) + bounding box.">
+                <x-card title="Modul 2: Latih AI-mu" subtitle="Konsep model AI & deteksi objek + kuis.">
                     <div class="mt-auto pt-4 flex items-center justify-between gap-2">
                         <span class="kka-badge shrink-0">+200 XP</span>
                         <a href="{{ route('login') }}" class="text-sm font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap py-1">Mulai →</a>
@@ -176,7 +176,7 @@
                 <div class="max-w-xl">
                     <p class="text-xs font-bold tracking-widest text-emerald-400">6 MODUL • 90 SOAL • 950 XP</p>
                     <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold">Selesaikan 6 modul, bawa pulang sertifikat.</h2>
-                    <p class="mt-2 text-sm sm:text-base text-slate-300">Mulai dari konsep AI, latih model pakai webcam, sampai nulis Python asli di browser. Kuis lulus di skor 80.</p>
+                    <p class="mt-2 text-sm sm:text-base text-slate-300">Mulai dari konsep AI, data & etika, sampai nulis Python asli di browser. Kuis lulus di skor 80.</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     @auth

@@ -38,7 +38,7 @@ Kemendikdasmen memperkuat pembelajaran mendalam lewat Koding & Kecerdasan Artifi
 
 ### Solusi yang Ditawarkan
 
-KKALAB adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung di browser** (deteksi objek real-time via webcam dengan TensorFlow.js COCO-SSD — gambar tidak pernah keluar dari perangkat), mengerjakan bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
+KKALAB adalah aplikasi web interaktif tempat siswa belajar Koding & Kecerdasan Artifisial lewat bahan ajar berurutan + kuis 15 soal per modul, mengumpulkan XP & badge, dan mencetak sertifikat otomatis. Guru memantau progres lewat kode kelas 6-digit dan ekspor CSV.
 
 ### Tujuan Proyek
 
@@ -54,7 +54,7 @@ KKALAB adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung
 
 | Fitur | Deskripsi | Keunggulan |
 |----------|--------------|---------------|
-| **Deteksi Objek Real-Time** | Model pretrained COCO-SSD menemukan benda + bounding box + confidence, label Indonesia, slider ambang | 100% client-side: tanpa latih manual, tanpa upload, CPU-friendly |
+| **Demo Kamera (Landing)** | Klasifikasi benda via kamera di halaman utama (MobileNet, 100% di browser, tanpa login) | Tanpa upload, tanpa akun |
 | **Alur 2 Tahap Berurutan** | Bahan bacaan wajib selesai (terkunci scroll) sebelum kuis terbuka; modul N+1 terkunci sampai modul N lulus | Murni pemahaman, tidak bisa contek |
 | **Kuis 15 Soal + Pembahasan** | Stepper 1 soal per layar, indikator progres, skor & XP otomatis, ulasan benar/salah + pembahasan | Evaluasi adil, jawaban dipertahankan |
 | **Soal & Modul per Guru** | Guru salin/fork soal default jadi versinya (otomatis), buat modul sendiri, atur urutan per kelas | Default admin aman, tiap guru merdeka |
@@ -63,7 +63,7 @@ KKALAB adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung
 
 ### Fitur Tambahan
 
-- **Tutor AI Gemini** - Asisten teks + tombol "Jelaskan Hasilku" (jawaban teks polos tanpa markdown)
+- **Tutor AI Gemini** - Asisten teks (jawaban teks polos tanpa markdown, kuota 30/hari + cooldown)
 - **Coba AI di Landing Page** - Klasifikasi kamera instan tanpa login
 - **3 Peran** - Admin (kelola guru + lihat progres semua siswa), Guru, Siswa
 - **UI Indonesia Penuh** - Seluruh antarmuka + pesan validasi berbahasa Indonesia, sidebar responsif HP & desktop
@@ -96,7 +96,7 @@ KKALAB adalah aplikasi web interaktif tempat siswa **melihat AI bekerja langsung
 ```
 Framework    : Laravel Blade + Alpine.js
 UI Library   : Tailwind CSS
-AI Client    : TensorFlow.js + COCO-SSD pretrained (object detection, di-bundle via npm)
+AI Client    : TensorFlow.js + MobileNet via CDN (demo kamera landing, tanpa build npm)
 ```
 
 #### Backend
@@ -121,19 +121,16 @@ AI Assistant : Tutor chat + penjelasan hasil praktikum
 | **Laravel Blade + Alpine.js** | Full-stack ringan tanpa build frontend berat; cocok untuk tugas sekolah dan hosting sederhana |
 | **TensorFlow.js client-side** | Inferensi di browser = privasi (gambar tak keluar device), 0 latency, hemat kuota API |
 
-### Deteksi Objek Real-Time (Modul 2)
+### Demo Kamera (Landing Page)
 
 ```
-Model        : COCO-SSD lite_mobilenet_v2 (pretrained, tanpa training)
-Kode         : resources/js/ai/object-detector.js (+ detect-utils.js murni)
-Halaman      : resources/views/siswa/bahan-show.blade.php (widget Modul 2)
-Uji JS       : npm run test:js  (logika label/ambang tanpa webcam)
+Model        : MobileNet via CDN (klasifikasi instan, tanpa training)
+Kode         : inline di resources/views/welcome.blade.php
+Halaman      : / (kartu "Coba AI Langsung")
 ```
 
-- Bounding box + label bahasa Indonesia + confidence + jumlah objek, ambang 30–90% (default 50%).
-- Inference dibatasi ±5–10 FPS dan tidak tumpang tindih agar CPU kentang tetap responsif.
-- Izin kamera ditolak / kamera dipakai aplikasi lain / model gagal dimuat ditangani dengan pesan bahasa Indonesia; semua media track dihentikan saat kamera dimatikan.
-- Butuh internet sekali (±5 MB bobot model), butuh cahaya cukup; benda custom di luar 80 kelas COCO tidak dikenali.
+- Aktifkan kamera → klik Uji → AI menyebut benda yang terlihat (keyakinan ≥50%).
+- 100% di browser, tanpa upload gambar; butuh internet + izin kamera.
 | **MySQL (Laragon)** | Sudah tersedia di lingkungan sekolah + terlihat langsung di phpMyAdmin |
 | **Gemini (teks saja)** | Hanya untuk penjelasan edukatif, bukan klasifikasi — LLM generalis tidak cocok untuk visi real-time |
 
@@ -168,7 +165,7 @@ student_progress (student_id, module_id)[unik] (is_completed, status, quiz_score
 quiz_attempts + final_exam_attempts (riwayat nilai per percobaan)
 certificates (user_id[unik], code[unik KBT-*], issued_at) <- 6 modul + ujian akhir
 feedbacks (classroom, student, module)[unik] <- catatan guru
-ai_chats (riwayat Tutor AI, kuota 30/hari) + student_models/global_models (moderasi karya ML siswa)
+ai_chats (riwayat Tutor AI, kuota 30/hari + cooldown + budget global) + student_models/global_models (legacy, tabel dibiarkan, fitur latih sudah dihapus)
 badges + badge_user (koleksi per siswa)
 ```
 
@@ -179,17 +176,17 @@ ITX/
 ├── app/Http/Controllers/
 │   ├── Admin/ (Dashboard, User, Preview)
 │   ├── Auth/ (Breeze: login, register, password...)
-│   ├── Student/ (Dashboard, Bahan, Kuis, Progress, Certificate, ClassroomJoin, UjianAkhir, Latih, Raport)
-│   └── Teacher/ (Classroom, Module, Quiz, Export, ModelModerasi, StudentReport)
+│   ├── Student/ (Dashboard, Bahan, Kuis, Progress, Certificate, ClassroomJoin, UjianAkhir, Raport)
+│   └── Teacher/ (Classroom, Module, Quiz, Export, StudentReport)
 ├── app/Ai/Agents/ (TutorAgent) + app/Ai/Tools/ (profil & progres siswa)
 ├── app/Services/ (GeminiService, StudentModuleService, CertificateService, StudentProgressTracker)
 ├── database/migrations/ + seeders/ (90 soal default + 6 modul)
 ├── resources/views/
 │   ├── layouts/ (guest) + components/ (sidebar-layout, exam-questions, ai-log-list, ...)
-│   ├── siswa/ (dashboard, bahan-*, kuis-*, ujian-*, latih-model, raporku, sertifikat)
-│   ├── guru/ (dashboard, kelas-*, modul-*, quiz-*, model-moderasi, ai-logs)
+│   ├── siswa/ (dashboard, bahan-*, kuis-*, ujian-*, raporku, sertifikat)
+│   ├── guru/ (dashboard, kelas-*, modul-*, quiz-*, ai-logs)
 │   └── admin/ (dashboard, pratinjau-index, ai-logs) + auth/ + profile/
-├── resources/js/ai/ (object-detector, trainer + utils teruji)
+├── public/js/pyodide-worker.js (Python di browser untuk modul Python)
 ├── routes/web.php + auth.php
 └── tests/Feature + Unit (PHP) + tests/js (Node)
 ```
@@ -288,7 +285,7 @@ Buka `http://127.0.0.1:8000`. Akun demo (password `password`): `admin@kkalab.sch
 1. **Daftar/Masuk**, lalu **Gabung Kelas** dengan kode 6-digit dari guru.
 2. **Bahan Belajar** — baca materi sampai bawah, tekan konfirmasi.
 3. **Kuis** — kerjakan 15 soal berurutan per modul (skor ≥80 lulus, otomatis ke dasbor).
-4. **Modul 2 + Latih Model** — deteksi objek COCO-SSD real-time via webcam (bounding box + label Indonesia + ambang 30–90%); halaman Latih Model untuk melatih pengenal benda sendiri (min. 20 contoh/label, uji 5× beruntun) lalu kirim ke guru untuk tayang global.
+4. **Modul 2: Latih AI-mu** — materi konsep model AI, deteksi objek, dan cara kerja model pretrained + kuis (tanpa praktik webcam).
 5. **Ujian Akhir + Sertifikat** — ujian 40 soal terbuka setelah 6 modul lulus; sertifikat otomatis terbit setelah 6 modul (≥80) + ujian akhir lulus (≥80).
 
 ### Untuk Guru
@@ -309,10 +306,9 @@ Buka `http://127.0.0.1:8000`. Akun demo (password `password`): `admin@kkalab.sch
 
 ```bash
 php artisan test
-npm run test:js
 ```
 
-112 tes PHP lolos (auth, peran, profil, kuis, ujian akhir, bank soal guru, moderasi model, pratinjau admin, hardening) + 30 tes JS lolos (logika deteksi objek & trainer tanpa webcam). Uji JS memakai `node --test tests/js/*.test.js` (logika murni, bukan browser).
+Tes PHP (auth, peran, profil, kuis, ujian akhir, bank soal guru, Tutor AI + kuota, pratinjau admin, hardening).
 
 > Catatan: alur kamera/kuis/browser kritis saat ini terverifikasi via tes logika + pengujian manual — belum ada e2e browser otomatis (Playwright).
 

@@ -20,28 +20,6 @@ class HardeningTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
-    public function test_hands_on_modul_terkunci_ditolak(): void
-    {
-        $this->seedKka();
-        $siswa = User::factory()->create(['role' => 'siswa']);
-
-        $res = $this->actingAs($siswa)->postJson(route('siswa.modul.handson', 'latih-ai-mu'), ['confidence' => 90]);
-        $res->assertStatus(403);
-        $this->assertDatabaseMissing('student_progress', ['student_id' => $siswa->id]);
-    }
-
-    public function test_hands_on_anti_spam_jeda_10_detik(): void
-    {
-        $this->seedKka();
-        $siswa = User::factory()->create(['role' => 'siswa']);
-
-        $satu = $this->actingAs($siswa)->postJson(route('siswa.modul.handson', 'apa-itu-ai'), ['confidence' => 90]);
-        $satu->assertOk()->assertJson(['count' => 1]);
-
-        $dua = $this->actingAs($siswa)->postJson(route('siswa.modul.handson', 'apa-itu-ai'), ['confidence' => 90]);
-        $dua->assertStatus(429)->assertJson(['count' => 1]);
-    }
-
     public function test_ai_chat_menolak_module_asing(): void
     {
         $this->seedKka();
@@ -84,10 +62,6 @@ class HardeningTest extends TestCase
 
         $this->actingAs($admin)->post(route('siswa.bahan.read', 'apa-itu-ai'))
             ->assertRedirect(route('siswa.kuis.show', 'apa-itu-ai'));
-        $this->assertDatabaseMissing('student_progress', ['student_id' => $admin->id]);
-
-        $this->actingAs($admin)->postJson(route('siswa.modul.handson', 'apa-itu-ai'), ['confidence' => 90])
-            ->assertOk()->assertJson(['count' => 0]);
         $this->assertDatabaseMissing('student_progress', ['student_id' => $admin->id]);
     }
 

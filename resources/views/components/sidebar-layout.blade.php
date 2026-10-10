@@ -55,8 +55,6 @@
                     <div class="space-y-1">
                         <x-side-link :href="route('siswa.bahan.index')" :active="request()->routeIs('siswa.bahan.*')" icon="book">Bahan Belajar</x-side-link>
                         <x-side-link :href="route('siswa.kuis.index')" :active="request()->routeIs('siswa.kuis.*')" icon="quiz">Kuis</x-side-link>
-                        <x-side-link :href="route('siswa.latih.index')" :active="request()->routeIs('siswa.latih.*')" icon="spark">Latih Model</x-side-link>
-                        <x-side-link :href="route('siswa.model.global')" :active="request()->routeIs('siswa.model.*')" icon="globe">Model Global</x-side-link>
                         <x-side-link :href="route('siswa.raporku')" :active="request()->routeIs('siswa.raporku')" icon="award">Raporku</x-side-link>
                         <x-side-link :href="route('siswa.leaderboard')" :active="request()->routeIs('siswa.leaderboard')" icon="trophy">Peringkat</x-side-link>
                         <x-side-link :href="route('siswa.sertifikat')" :active="request()->routeIs('siswa.sertifikat')" icon="award">Sertifikat</x-side-link>
@@ -74,7 +72,6 @@
                         <x-side-link :href="route('guru.modul.index')" :active="request()->routeIs('guru.modul.*')" icon="book">Modul Saya</x-side-link>
                         <x-side-link :href="route('guru.quiz.index')" :active="request()->routeIs('guru.quiz.*')" icon="quiz">Bank Soal</x-side-link>
                         <x-side-link :href="route('guru.ai.index')" :active="request()->routeIs('guru.ai.*')" icon="chat">Log AI</x-side-link>
-                        <x-side-link :href="route('guru.model.index')" :active="request()->routeIs('guru.model.*')" icon="spark">Model Siswa</x-side-link>
                     </div>
                 </div>
             @else

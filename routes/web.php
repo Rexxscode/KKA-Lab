@@ -12,13 +12,11 @@ use App\Http\Controllers\Student\ClassroomJoinController;
 use App\Http\Controllers\Student\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Student\KuisController;
 use App\Http\Controllers\Student\UjianAkhirController;
-use App\Http\Controllers\Student\LatihController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\RaportController;
 use App\Http\Controllers\Teacher\ClassroomController as GuruClassroomController;
 use App\Http\Controllers\Teacher\ExportController;
 use App\Http\Controllers\Teacher\ModuleController as GuruModuleController;
-use App\Http\Controllers\Teacher\ModelModerasiController;
 use App\Http\Controllers\Teacher\QuizController;
 use App\Http\Controllers\Teacher\StudentReportController;
 use App\Http\Controllers\VerifyCertificateController;
@@ -65,12 +63,8 @@ Route::middleware(['auth', 'role:siswa,admin'])->prefix('siswa')->name('siswa.')
     Route::get('/bahan/{slug}', [BahanController::class, 'show'])->name('bahan.show');
     Route::post('/bahan/{slug}/selesai', [BahanController::class, 'markRead'])->middleware('throttle:10,1')->name('bahan.read');
     Route::get('/kuis', [KuisController::class, 'index'])->name('kuis.index');
-    Route::get('/latih-model', [LatihController::class, 'index'])->name('latih.index');
-    Route::post('/latih-model/publish', [LatihController::class, 'publish'])->middleware('throttle:10,1')->name('latih.publish');
-    Route::get('/model-global', [LatihController::class, 'global'])->name('model.global');
     Route::get('/kuis/{slug}', [KuisController::class, 'show'])->name('kuis.show');
     Route::post('/kuis/{slug}', [ProgressController::class, 'submitQuiz'])->middleware('throttle:10,1')->name('kuis.submit');
-    Route::post('/modul/{slug}/hands-on', [ProgressController::class, 'completeHandsOn'])->middleware('throttle:30,1')->name('modul.handson');
     Route::get('/raporku', [RaportController::class, 'index'])->name('raporku');
     Route::get('/raporku/cetak', [RaportController::class, 'cetak'])->name('raporku.cetak');
     Route::get('/ujian-akhir', [UjianAkhirController::class, 'index'])->name('ujian.index');
@@ -116,10 +110,6 @@ Route::middleware(['auth', 'role:guru,admin'])->prefix('guru')->name('guru.')->g
         Route::patch('/quiz/{quiz}', [QuizController::class, 'update'])->middleware('throttle:10,1')->name('quiz.update');
         Route::delete('/quiz/{quiz}', [QuizController::class, 'destroy'])->middleware('throttle:10,1')->name('quiz.destroy');
         Route::get('/ai-logs', [AiLogController::class, 'guru'])->name('ai.index');
-        Route::get('/model-siswa', [ModelModerasiController::class, 'index'])->name('model.index');
-        Route::post('/model-siswa/{model}/setujui', [ModelModerasiController::class, 'setujui'])->middleware('throttle:10,1')->name('model.setujui');
-        Route::post('/model-siswa/{model}/tolak', [ModelModerasiController::class, 'tolak'])->middleware('throttle:10,1')->name('model.tolak');
-        Route::get('/model-siswa/{model}/unduh', [ModelModerasiController::class, 'unduh'])->middleware('throttle:10,1')->name('model.unduh');
     });
 });
 

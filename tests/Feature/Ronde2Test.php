@@ -334,24 +334,6 @@ class Ronde2Test extends TestCase
         }
     }
 
-    public function test_halaman_latih_ikut_urutan_modul(): void
-    {
-        $this->seed(DatabaseSeeder::class);
-        $siswa = User::factory()->create(['role' => 'siswa']);
-
-        // Modul 1 belum lulus: halaman latih dikunci.
-        $this->actingAs($siswa)->get(route('siswa.latih.index'))->assertRedirect();
-
-        $m1 = Module::where('slug', 'apa-itu-ai')->firstOrFail();
-        StudentProgress::updateOrCreate(
-            ['student_id' => $siswa->id, 'module_id' => $m1->id],
-            ['quiz_score' => 90, 'xp_earned' => 100, 'is_completed' => true, 'reading_done' => true]
-        );
-
-        $this->actingAs($siswa)->get(route('siswa.latih.index'))
-            ->assertOk()->assertSee('Latih Modelmu Sendiri', false);
-    }
-
     public function test_password_lemah_ditolak_saat_register(): void
     {
         $this->post('/register', [
