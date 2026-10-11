@@ -296,6 +296,7 @@ Buka `http://127.0.0.1:8000`. Akun demo (password `password`): `admin@kkalab.sch
 
 1. **Dashboard** — buat akun guru, reset password, lihat progres belajar tiap siswa.
 2. **Kelola Modul/Soal Default** — hanya admin yang bisa mengubah bank default.
+3. **SOP lupa kata sandi (tanpa email)** — murid/guru lapor via WA → cari email di Semua Pengguna → Reset Kata Sandi (min. 8 karakter) → kasih password sementara → suruh ganti sendiri di Profil. Email reset otomatis baru jalan setelah SMTP diisi di `.env` prod.
 
 ---
 

@@ -70,4 +70,17 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_link_gagal_terkirim_tetap_pesan_generik_tanpa_500(): void
+    {
+        $user = User::factory()->create();
+
+        \Illuminate\Support\Facades\Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andThrow(new \RuntimeException('SMTP mati'));
+
+        $this->post('/forgot-password', ['email' => $user->email])
+            ->assertRedirect()
+            ->assertSessionHas('status', 'Jika email terdaftar, tautan reset sudah dikirim. Cek kotak masuk (termasuk spam) ya! Kalau tidak masuk-masuk, minta reset langsung ke guru/admin.');
+    }
 }

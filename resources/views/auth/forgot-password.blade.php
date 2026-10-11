@@ -3,6 +3,10 @@
         {{ __('Lupa kata sandi? Tenang saja. Beri tahu kami alamat emailmu, nanti kami kirimkan tautan untuk mengatur ulang kata sandimu.') }}
     </div>
 
+    <p class="mb-4 text-xs text-slate-500 dark:text-slate-400 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
+        Cara tercepat: minta <b>reset langsung ke guru/admin</b> (lewat WA), lalu ganti sendiri di Profil setelah bisa masuk.
+    </p>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 

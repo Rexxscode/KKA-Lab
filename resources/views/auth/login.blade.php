@@ -44,6 +44,8 @@
         </div>
     </form>
 
+    <p class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">Lupa kata sandi dan email tak masuk-masuk? Minta reset langsung ke guru/admin.</p>
+
     @if (Route::has('register'))
         <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-300">
             {{ __('Belum punya akun?') }}
