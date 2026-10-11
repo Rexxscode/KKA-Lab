@@ -63,5 +63,45 @@ class JoinKelasTest extends TestCase
         $this->actingAs($siswa)->post(route('siswa.join'), ['code' => $spasi])
             ->assertSessionHasNoErrors();
         $this->assertDatabaseHas('classroom_user', ['classroom_id' => $kelas->id, 'student_id' => $siswa->id]);
+
+        // Kode berhuruf ditolak validasi (kode asli selalu 6 digit angka).
+        $this->actingAs($siswa)->post(route('siswa.join'), ['code' => 'abc123'])
+            ->assertSessionHasErrors('code');
+    }
+
+    public function test_join_dobel_tidak_menduplikat(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $this->actingAs($guru)->post(route('guru.kelas.store'), ['name' => 'XI RPL 3']);
+        $kelas = Classroom::where('teacher_id', $guru->id)->firstOrFail();
+
+        $this->actingAs($siswa)->post(route('siswa.join'), ['code' => $kelas->code])
+            ->assertRedirect();
+        $this->actingAs($siswa)->post(route('siswa.join'), ['code' => $kelas->code])
+            ->assertRedirect();
+
+        $this->assertSame(1, $siswa->classrooms()->whereKey($kelas->id)->count());
+        $this->assertSame(1, \DB::table('classroom_user')->where('classroom_id', $kelas->id)->where('student_id', $siswa->id)->count());
+    }
+
+    public function test_pindah_kelas_mengganti_kelas_aktif(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        $siswa = User::factory()->create(['role' => 'siswa']);
+        $this->actingAs($guru)->post(route('guru.kelas.store'), ['name' => 'Kelas A']);
+        $a = Classroom::where('teacher_id', $guru->id)->orderBy('id')->firstOrFail();
+        $this->actingAs($guru)->post(route('guru.kelas.store'), ['name' => 'Kelas B']);
+        $b = Classroom::where('teacher_id', $guru->id)->orderByDesc('id')->firstOrFail();
+
+        $this->actingAs($siswa)->post(route('siswa.join'), ['code' => $a->code]);
+        $this->actingAs($siswa)->post(route('siswa.join'), ['code' => $b->code])
+            ->assertSessionHas('toast');
+
+        $aktif = app(StudentModuleService::class)->kelasAktif($siswa->fresh());
+        $this->assertNotNull($aktif);
+        $this->assertSame($b->id, $aktif->id);
     }
 }
