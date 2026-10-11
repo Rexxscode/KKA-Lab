@@ -1,5 +1,7 @@
 <div align="center">
 
+  <img src="public/logo.png" alt="Logo KKALAB" width="120" />
+
   # KKALAB
   ### Laboratorium Koding & Kecerdasan Artifisial — Belajar AI Hands-On di Browser
 
