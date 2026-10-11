@@ -318,9 +318,9 @@ Tes PHP (auth, peran, profil, kuis, ujian akhir, bank soal guru, Tutor AI + kuot
 
 | Nama | Peran | GitHub |
 |------|-------|--------|
-| **Sofian Bahtiar** | Frontend & Backend Developer | [@Sayayyan](https://github.com/Sayayyan) |
-| **Muhamad Adzka Lainufar** | ... | [@Rexxscode](https://github.com/Rexxscode) |
-| **Fauzan Aji Wibisono** | ... | [@morganaji17-gif](https://github.com/morganaji17-gif) |
+| **Sofian Bahtiar** | Fullstack Developer | [@Sayayyan](https://github.com/Sayayyan) |
+| **Muhamad Adzka Lainufar** | Fullstack Developer | [@Rexxscode](https://github.com/Rexxscode) |
+| **Fauzan Aji Wibisono** | Fullstack Developer | [@morganaji17-gif](https://github.com/morganaji17-gif) |
 
 ---
 
