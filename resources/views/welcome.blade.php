@@ -50,6 +50,7 @@
                 @auth
                     <a href="{{ route('dashboard') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Dashboard</a>
                 @else
+                    <a href="{{ route('register') }}" class="kka-btn-secondary !px-5 !py-2 text-sm hover:-translate-y-0.5">Daftar</a>
                     <a href="{{ route('login') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Masuk</a>
                 @endauth
             </div>
