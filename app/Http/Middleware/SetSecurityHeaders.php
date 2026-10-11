@@ -15,12 +15,12 @@ class SetSecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
-        // Host CDN yang memang dipakai aplikasi (model COCO-SSD/MobileNet,
-        // runtime Pyodide, Chart.js). Tanpa ini fetch bobot model diblokir
-        // browser dan fitur deteksi/Python mati total.
-        // tfhub.dev me-redirect unduhan model ke www.kaggle.com.
-        $cdn = 'https://cdn.jsdelivr.net https://storage.googleapis.com https://tfhub.dev https://www.kaggle.com';
+        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+        // Host CDN yang memang dipakai aplikasi (runtime Pyodide + Chart.js
+        // via jsdelivr). Tanpa ini worker Python/grafik rapor mati total.
+        // Kamera/deteksi sudah dihapus, jadi host bobot model TF
+        // (tfhub/kaggle/storage) tidak lagi diizinkan.
+        $cdn = 'https://cdn.jsdelivr.net';
 
         // Izin localhost (Vite HMR) hanya saat pengembangan lokal.
         $dev = app()->environment('local') || (bool) config('app.debug');

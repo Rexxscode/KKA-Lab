@@ -25,13 +25,39 @@ class Ronde2Test extends TestCase
         $this->assertSame('nosniff', $res->headers->get('X-Content-Type-Options'));
         $this->assertStringContainsString("default-src 'self'",
             $res->headers->get('Content-Security-Policy'));
-        // Host bobot model wajib diizinkan connect-src (kalau tidak,
-        // demo kamera landing + deteksi mati dengan "Failed to fetch").
+        // CDN yang dipakai (Pyodide + Chart.js) wajib diizinkan connect-src.
+        // Host bobot model TF sudah dibuang dari CSP (fitur kamera dihapus).
         $csp = $res->headers->get('Content-Security-Policy');
-        $this->assertStringContainsString('https://tfhub.dev', $csp);
-        $this->assertStringContainsString('https://www.kaggle.com', $csp);
-        $this->assertStringContainsString('https://storage.googleapis.com', $csp);
         $this->assertStringContainsString('https://cdn.jsdelivr.net', $csp);
+        $this->assertStringNotContainsString('https://tfhub.dev', $csp);
+        $this->assertStringNotContainsString('https://www.kaggle.com', $csp);
+        $this->assertStringNotContainsString('https://storage.googleapis.com', $csp);
+        $this->assertStringContainsString('camera=()', $res->headers->get('Permissions-Policy'));
+    }
+
+    public function test_landing_hanya_modul_default_dan_angka_sinkron(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $guru = User::factory()->create(['role' => 'guru', 'status' => 'aktif']);
+        Module::create([
+            'teacher_id' => $guru->id, 'title' => 'Modul Buatan Guru', 'slug' => 'modul-guru',
+            'order' => 99, 'description' => 'Tidak boleh tampil di landing.', 'xp_reward' => 999,
+        ]);
+
+        $res = $this->get('/');
+        $res->assertOk();
+        // Tepat 6 modul default, modul guru tidak bocor ke landing.
+        $res->assertSee('6 Modul KKA', false);
+        $res->assertSee('Cara Kerja Model AI', false);
+        $res->assertDontSee('Modul Buatan Guru', false);
+        $res->assertDontSee('Latih AI-mu', false);
+        // Angka sinkron dengan DB: pokok 950, maks 1010, 90 soal.
+        $res->assertSee('Hingga 1010', false);
+        $res->assertSee('>90<', false);
+        // Tak ada lagi UI kamera/deteksi di landing.
+        $res->assertDontSee('kkaLandingCam', false);
+        $res->assertDontSee('Aktifkan Kamera', false);
+        $res->assertDontSee('Coba AI Langsung', false);
     }
     public function test_lepas_modul_tak_terpasang_404(): void
     {

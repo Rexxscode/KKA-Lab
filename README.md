@@ -54,7 +54,6 @@ KKALAB adalah aplikasi web interaktif tempat siswa belajar Koding & Kecerdasan A
 
 | Fitur | Deskripsi | Keunggulan |
 |----------|--------------|---------------|
-| **Demo Kamera (Landing)** | Klasifikasi benda via kamera di halaman utama (MobileNet, 100% di browser, tanpa login) | Tanpa upload, tanpa akun |
 | **Alur 2 Tahap Berurutan** | Bahan bacaan wajib selesai (terkunci scroll) sebelum kuis terbuka; modul N+1 terkunci sampai modul N lulus | Murni pemahaman, tidak bisa contek |
 | **Kuis 15 Soal + Pembahasan** | Stepper 1 soal per layar, indikator progres, skor & XP otomatis, ulasan benar/salah + pembahasan | Evaluasi adil, jawaban dipertahankan |
 | **Soal & Modul per Guru** | Guru salin/fork soal default jadi versinya (otomatis), buat modul sendiri, atur urutan per kelas | Default admin aman, tiap guru merdeka |
@@ -64,7 +63,6 @@ KKALAB adalah aplikasi web interaktif tempat siswa belajar Koding & Kecerdasan A
 ### Fitur Tambahan
 
 - **Tutor AI Gemini** - Asisten teks (jawaban teks polos tanpa markdown, kuota 30/hari + cooldown)
-- **Coba AI di Landing Page** - Klasifikasi kamera instan tanpa login
 - **3 Peran** - Admin (kelola guru + lihat progres semua siswa), Guru, Siswa
 - **UI Indonesia Penuh** - Seluruh antarmuka + pesan validasi berbahasa Indonesia, sidebar responsif HP & desktop
 
@@ -74,7 +72,7 @@ KKALAB adalah aplikasi web interaktif tempat siswa belajar Koding & Kecerdasan A
 
 ### Struktur Halaman
 
-- `/` — Landing page (hero, demo kamera, misi, kontak, footer)
+- `/` — Landing page (hero, misi, kontak, footer)
 - `/siswa/dashboard` — XP, badge, progres, daftar modul
 - `/siswa/bahan` & `/siswa/bahan/{slug}` — Bahan belajar + praktik
 - `/siswa/kuis` & `/siswa/kuis/{slug}` — Kuis stepper 15 soal
@@ -96,7 +94,6 @@ KKALAB adalah aplikasi web interaktif tempat siswa belajar Koding & Kecerdasan A
 ```
 Framework    : Laravel Blade + Alpine.js
 UI Library   : Tailwind CSS
-AI Client    : TensorFlow.js + MobileNet via CDN (demo kamera landing, tanpa build npm)
 ```
 
 #### Backend
@@ -119,18 +116,18 @@ AI Assistant : Tutor chat + penjelasan hasil praktikum
 | Teknologi | Alasan Pemilihan |
 |-----------|------------------|
 | **Laravel Blade + Alpine.js** | Full-stack ringan tanpa build frontend berat; cocok untuk tugas sekolah dan hosting sederhana |
-| **TensorFlow.js client-side** | Inferensi di browser = privasi (gambar tak keluar device), 0 latency, hemat kuota API |
+| **Python di browser (Pyodide)** | Editor Python asli via WebAssembly + Web Worker anti-hang |
 
-### Demo Kamera (Landing Page)
+### Praktik di Browser (tanpa kamera)
 
 ```
-Model        : MobileNet via CDN (klasifikasi instan, tanpa training)
-Kode         : inline di resources/views/welcome.blade.php
-Halaman      : / (kartu "Coba AI Langsung")
+Python       : Pyodide (WASM) + Web Worker, timeout paksa 10 detik
+Simulasi     : Bias Data (slider Alpine.js, tanpa backend)
+Halaman      : resources/views/siswa/bahan-show.blade.php
 ```
 
-- Aktifkan kamera → klik Uji → AI menyebut benda yang terlihat (keyakinan ≥50%).
-- 100% di browser, tanpa upload gambar; butuh internet + izin kamera.
+- Editor Python asli: contoh siap jalan, output + pesan error Indonesia.
+- Kode dilarang (`import os/sys`, `open(`, socket) ditolak client-side.
 | **MySQL (Laragon)** | Sudah tersedia di lingkungan sekolah + terlihat langsung di phpMyAdmin |
 | **Gemini (teks saja)** | Hanya untuk penjelasan edukatif, bukan klasifikasi — LLM generalis tidak cocok untuk visi real-time |
 
@@ -310,7 +307,7 @@ php artisan test
 
 Tes PHP (auth, peran, profil, kuis, ujian akhir, bank soal guru, Tutor AI + kuota, pratinjau admin, hardening).
 
-> Catatan: alur kamera/kuis/browser kritis saat ini terverifikasi via tes logika + pengujian manual — belum ada e2e browser otomatis (Playwright).
+> Catatan: alur kuis/browser kritis saat ini terverifikasi via tes logika + pengujian manual — belum ada e2e browser otomatis (Playwright).
 
 ---
 

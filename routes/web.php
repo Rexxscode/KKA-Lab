@@ -21,17 +21,29 @@ use App\Http\Controllers\Teacher\QuizController;
 use App\Http\Controllers\Teacher\StudentReportController;
 use App\Http\Controllers\VerifyCertificateController;
 use App\Models\Module;
+use App\Models\Quiz;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     try {
-        $modules = Module::orderBy('order')->get();
+        // Landing hanya menampilkan 6 modul default (modul buatan guru
+        // tidak ikut tampil agar angkanya sinkron dengan aplikasi).
+        $modules = Module::whereNull('teacher_id')->orderBy('order')->get();
+        $xpPokok = (int) $modules->sum('xp_reward');
+        // Bonus skor kuis maks +10 per modul (round(100/10)).
+        $xpMaks = $xpPokok + $modules->count() * 10;
+        $jmlSoal = Quiz::whereNull('teacher_id')
+            ->whereIn('module_id', $modules->pluck('id'))
+            ->count();
     } catch (\Throwable $e) {
         report($e);
         $modules = collect();
+        $xpPokok = 950;
+        $xpMaks = 1010;
+        $jmlSoal = 90;
     }
 
-    return view('welcome', compact('modules'));
+    return view('welcome', compact('modules', 'xpPokok', 'xpMaks', 'jmlSoal'));
 })->name('home');
 
 Route::get('/dashboard', function () {

@@ -33,8 +33,8 @@ class DatabaseSeeder extends Seeder
         $modules = [
             ['title' => 'Modul 1: Apa itu AI?', 'slug' => 'apa-itu-ai', 'order' => 1, 'xp_reward' => 100,
              'description' => 'Konsep dasar AI, machine learning, dan contoh penerapan di kehidupan sehari-hari.'],
-            ['title' => 'Modul 2: Latih AI-mu', 'slug' => 'latih-ai-mu', 'order' => 2, 'xp_reward' => 200,
-             'description' => 'Deteksi objek real-time via webcam (COCO-SSD pretrained): bounding box, label Indonesia, dan confidence.'],
+            ['title' => 'Modul 2: Cara Kerja Model AI', 'slug' => 'latih-ai-mu', 'order' => 2, 'xp_reward' => 200,
+             'description' => 'Konsep model AI, cara kerja deteksi objek, dan bedanya model pretrained dengan melatih sendiri.'],
             ['title' => 'Modul 3: Bias Data', 'slug' => 'bias-data', 'order' => 3, 'xp_reward' => 150,
              'description' => 'Simulasi interaktif dataset tidak seimbang dan dampaknya pada keadilan model.'],
             ['title' => 'Modul 4: Etika & Hoaks AI', 'slug' => 'etika-hoaks-ai', 'order' => 4, 'xp_reward' => 150,
@@ -47,6 +47,20 @@ class DatabaseSeeder extends Seeder
 
         foreach ($modules as $m) {
             $module = Module::firstOrCreate(['slug' => $m['slug']], $m);
+            // Sinkronkan judul/deskripsi default yang masih bernilai lama
+            // (fitur latih dihapus). Custom admin/guru tidak disentuh.
+            $perbarui = [];
+            if ($m['slug'] === 'latih-ai-mu') {
+                if (in_array($module->title, ['Modul 2: Latih AI-mu'], true)) {
+                    $perbarui['title'] = $m['title'];
+                }
+                if (str_contains((string) $module->description, 'via webcam (COCO-SSD pretrained)')) {
+                    $perbarui['description'] = $m['description'];
+                }
+                if ($perbarui !== []) {
+                    $module->update($perbarui);
+                }
+            }
             Badge::firstOrCreate(
                 ['module_id' => $module->id],
                 ['name' => 'Badge ' . $module->title, 'icon_path' => null]
