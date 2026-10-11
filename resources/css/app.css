@@ -16,6 +16,16 @@ body {
     background-color: var(--color-page);
 }
 
+/* Scroll halus untuk link anchor (#) di landing page. */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Sembunyikan elemen x-cloak sebelum Alpine siap (menu mobile landing). */
+[x-cloak] {
+    display: none !important;
+}
+
 .kka-card {
     @apply bg-white border border-slate-200 rounded-2xl shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:shadow-none;
 }

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>KKALAB — Laboratorium Koding & Kecerdasan Artifisial</title>
-    <meta name="description" content="KKALAB: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK. 6 modul interaktif, demo kamera, kuis, XP, badge, dan sertifikat — 100% di browser." />
-    <meta name="keywords" content="KKALAB, koding, kecerdasan artifisial, AI untuk sekolah, belajar AI, SMA, SMK, TensorFlow.js, kuis AI, sertifikat" />
+    <meta name="description" content="KKALAB: lab belajar Koding & Kecerdasan Artifisial untuk SMA/SMK. 6 modul interaktif, kuis, XP, badge, dan sertifikat — 100% di browser." />
+    <meta name="keywords" content="KKALAB, koding, kecerdasan artifisial, AI untuk sekolah, belajar AI, SMA, SMK, kuis AI, sertifikat" />
     <meta name="author" content="KKALAB" />
     <meta name="theme-color" content="#f97316" />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="KKALAB" />
     <meta property="og:title" content="KKALAB — Laboratorium Koding & Kecerdasan Artifisial" />
-    <meta property="og:description" content="Belajar AI & koding hands-on di browser: 6 modul interaktif, demo kamera, kuis, XP, dan sertifikat otomatis." />
+    <meta property="og:description" content="Belajar AI & koding hands-on di browser: 6 modul interaktif, kuis, XP, dan sertifikat otomatis." />
     <meta property="og:image" content="{{ asset('logo.png') }}" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="KKALAB — Laboratorium Koding & Kecerdasan Artifisial" />
@@ -37,28 +37,75 @@
         .kka-nav-logo { transition: transform 200ms ease-out; }
         .kka-nav-logo:hover { transform: scale(1.04) rotate(-2deg); }
     </style>
-    <nav x-data="{ sudahScroll: false }" @scroll.window="sudahScroll = window.scrollY > 24"
+    <nav x-data="kkaNav()" @scroll.window="sudahScroll = window.scrollY > 24"
          class="kka-nav-animasi sticky top-0 z-40 transition-all duration-300"
          :class="sudahScroll ? 'bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm py-3' : 'bg-transparent border-b border-transparent py-5'">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <a href="{{ route('home') }}" class="kka-nav-logo flex items-center gap-2" aria-label="KKALAB - Beranda">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            <a href="#beranda" class="kka-nav-logo flex items-center gap-2 shrink-0" aria-label="KKALAB - Beranda">
                 <img src="{{ asset('logo.png') }}" alt="Logo KKALAB" class="w-10 h-10 rounded-2xl" width="40" height="40" />
-                <span><span class="block font-extrabold text-slate-900 dark:text-white dark:text-white leading-none">KKALAB</span><span class="block text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Koding & Kecerdasan Artifisial</span></span>
+                <span class="hidden min-[400px]:block"><span class="block font-extrabold text-slate-900 dark:text-white dark:text-white leading-none">KKALAB</span><span class="block text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400">Koding & Kecerdasan Artifisial</span></span>
             </a>
+            <div class="hidden lg:flex items-center gap-1" role="navigation" aria-label="Menu utama">
+                <a href="#beranda" @click="buka = false" :class="aktif === 'beranda' ? clsAktif : clsBiasa" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition"><x-icon name="spark" class="w-4 h-4" />Beranda</a>
+                <a href="#modul" @click="buka = false" :class="aktif === 'modul' ? clsAktif : clsBiasa" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition"><x-icon name="book" class="w-4 h-4" />Modul</a>
+                <a href="#fitur" @click="buka = false" :class="aktif === 'fitur' ? clsAktif : clsBiasa" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition"><x-icon name="bolt" class="w-4 h-4" />Fitur</a>
+                <a href="#cara-mulai" @click="buka = false" :class="aktif === 'cara-mulai' ? clsAktif : clsBiasa" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition"><x-icon name="play" class="w-4 h-4" />Cara Mulai</a>
+                <a href="#kontak" @click="buka = false" :class="aktif === 'kontak' ? clsAktif : clsBiasa" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition"><x-icon name="mail" class="w-4 h-4" />Kontak</a>
+            </div>
             <div class="flex items-center gap-2">
                 <x-theme-toggle />
                 @auth
                     <a href="{{ route('dashboard') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Dashboard</a>
                 @else
-                    <a href="{{ route('register') }}" class="kka-btn-secondary !px-5 !py-2 text-sm hover:-translate-y-0.5">Daftar</a>
-                    <a href="{{ route('login') }}" class="kka-btn-primary !px-5 !py-2 text-sm hover:-translate-y-0.5">Masuk</a>
+                    <a href="{{ route('register') }}" class="kka-btn-secondary !px-4 !py-2 text-sm hover:-translate-y-0.5 hidden sm:inline-flex">Daftar</a>
+                    <a href="{{ route('login') }}" class="kka-btn-primary !px-4 !py-2 text-sm hover:-translate-y-0.5">Masuk</a>
                 @endauth
+                <button type="button" @click="buka = !buka" :aria-expanded="buka.toString()" aria-controls="menu-landing" aria-label="Buka atau tutup menu navigasi" class="lg:hidden p-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    <svg x-show="!buka" class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <svg x-show="buka" class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24" style="display: none"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
         </div>
+        <div id="menu-landing" x-show="buka" x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             @click.outside="buka = false" @keydown.escape.window="buka = false"
+             class="lg:hidden mx-4 sm:mx-6 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg p-2 space-y-1" role="navigation" aria-label="Menu utama seluler">
+            <a href="#beranda" @click="buka = false" :class="aktif === 'beranda' ? clsAktif : clsBiasa" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition"><x-icon name="spark" class="w-5 h-5" />Beranda</a>
+            <a href="#modul" @click="buka = false" :class="aktif === 'modul' ? clsAktif : clsBiasa" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition"><x-icon name="book" class="w-5 h-5" />Modul</a>
+            <a href="#fitur" @click="buka = false" :class="aktif === 'fitur' ? clsAktif : clsBiasa" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition"><x-icon name="bolt" class="w-5 h-5" />Fitur</a>
+            <a href="#cara-mulai" @click="buka = false" :class="aktif === 'cara-mulai' ? clsAktif : clsBiasa" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition"><x-icon name="play" class="w-5 h-5" />Cara Mulai</a>
+            <a href="#kontak" @click="buka = false" :class="aktif === 'kontak' ? clsAktif : clsBiasa" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition"><x-icon name="mail" class="w-5 h-5" />Kontak</a>
+            @guest
+                <a href="{{ route('register') }}" class="sm:hidden flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold kka-btn-secondary">Daftar gratis</a>
+            @endguest
+        </div>
     </nav>
+    <script>
+    function kkaNav() {
+        return {
+            buka: false,
+            sudahScroll: window.scrollY > 24,
+            aktif: 'beranda',
+            clsAktif: 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
+            clsBiasa: 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800',
+            init() {
+                const peta = ['beranda', 'modul', 'fitur', 'cara-mulai', 'kontak'];
+                const lihat = new IntersectionObserver((masuk) => {
+                    masuk.forEach(m => { if (m.isIntersecting) this.aktif = m.target.id; });
+                }, { rootMargin: '-35% 0px -55% 0px' });
+                peta.forEach(id => { const el = document.getElementById(id); if (el) lihat.observe(el); });
+            }
+        }
+    }
+    </script>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    <section class="py-10">
+    <section id="beranda" class="py-10 scroll-mt-24">
         <div class="max-w-3xl">
             <span class="kka-badge">Untuk SMA/SMK • Kurikulum KKA • Praktik di Browser</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white dark:text-white leading-tight">Belajar AI & Koding <span class="text-orange-500">hands-on</span> di browser.</h1>
@@ -80,7 +127,7 @@
         </div>
     </section>
 
-    <section class="py-8">
+    <section id="modul" class="py-8 scroll-mt-24">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ $modules->count() ?: 6 }} Modul KKA</h2>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Dari konsep → data kritis → etika → Python untuk AI.</p>
         <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
@@ -132,7 +179,7 @@
         </div>
     </section>
 
-    <section class="py-8 grid lg:grid-cols-3 gap-4">
+    <section id="fitur" class="py-8 scroll-mt-24 grid lg:grid-cols-3 gap-4">
         <x-card title="Untuk Siswa" subtitle="Gabung kelas dengan 6 digit kode, kerjakan modul, kumpulkan badge.">
             <x-button href="{{ route('register') }}" class="w-full">Daftar sebagai Siswa</x-button>
         </x-card>
@@ -144,7 +191,7 @@
         </x-card>
     </section>
 
-    <section class="py-8">
+    <section id="cara-mulai" class="py-8 scroll-mt-24">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Cara mulai</h2>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Empat langkah, tanpa instal apa pun. Semua jalan di browser HP atau laptop.</p>
         <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -159,7 +206,7 @@
         <div class="rounded-3xl bg-slate-900 p-8 sm:p-10 text-white overflow-hidden">
             <div class="flex flex-wrap items-end justify-between gap-6">
                 <div class="max-w-xl">
-                    <p class="text-xs font-bold tracking-widest text-emerald-400">6 MODUL • 90 SOAL • 950 XP</p>
+                    <p class="text-xs font-bold tracking-widest text-emerald-400">{{ $modules->count() ?: 6 }} MODUL • {{ $jmlSoal ?? 90 }} SOAL • HINGGA {{ $xpMaks ?? 1010 }} XP</p>
                     <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold">Selesaikan 6 modul, bawa pulang sertifikat.</h2>
                     <p class="mt-2 text-sm sm:text-base text-slate-300">Mulai dari konsep AI, data & etika, sampai nulis Python asli di browser. Kuis lulus di skor 80.</p>
                 </div>
@@ -175,7 +222,7 @@
         </div>
     </section>
 
-    <section class="py-8">
+    <section id="kontak" class="py-8 scroll-mt-24">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white text-center">Kontak Kami</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 text-center mt-1">Punya pertanyaan, saran, atau ingin bekerja sama? Hubungi tim KKALAB.</p>
         <div class="mt-5 grid sm:grid-cols-3 gap-4">
