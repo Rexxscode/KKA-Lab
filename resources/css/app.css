@@ -103,6 +103,220 @@ summary:focus-visible,
     }
 }
 
+/* ==========================================================================
+   Sertifikat kelulusan — lembar A4 landscape bergaya KKA LAB.
+   Semua ukuran memakai container query unit (cqw) agar proporsional baik di
+   layar maupun saat dicetak (lebar lembar selalu jadi acuan).
+   ========================================================================== */
+.certificate-shell {
+    max-width: 1120px;
+    margin-inline: auto;
+}
+
+.cert-sheet {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    aspect-ratio: 297 / 210;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: #ffffff;
+    color: #3f3f3e;
+    box-shadow: 0 24px 60px -28px rgb(15 23 42 / 0.45);
+    container-type: inline-size;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.cert-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.cert-brand {
+    position: absolute;
+    top: 4.4%;
+    left: 4.2%;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.15cqw;
+    color: #ffffff;
+}
+
+.cert-brand img {
+    display: block;
+    flex: none;
+    width: 7.4cqw;
+    height: 7.4cqw;
+}
+
+.cert-brand-title {
+    margin: 0;
+    font-size: 3.1cqw;
+    font-weight: 700;
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+}
+
+.cert-brand-sub {
+    margin: 0.6cqw 0 0;
+    font-size: 0.92cqw;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.cert-heading {
+    position: absolute;
+    top: 6.2%;
+    right: 5.5%;
+    width: 40%;
+    text-align: center;
+    color: #ffffff;
+}
+
+.cert-heading h1 {
+    margin: 0;
+    font-size: 5.9cqw;
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+}
+
+.cert-heading p {
+    margin: 0.9cqw auto 0;
+    font-size: 1.22cqw;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.cert-body {
+    position: absolute;
+    top: 35.5%;
+    left: 50%;
+    width: 70%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.cert-given {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.4cqw;
+    margin: 0;
+    font-size: 1.55cqw;
+    font-weight: 700;
+    color: #55524e;
+}
+
+.cert-given::before,
+.cert-given::after {
+    content: "";
+    width: 8.5cqw;
+    height: 1px;
+    background: #b9b6b2;
+}
+
+.cert-name {
+    margin: 1.5cqw 0 0;
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-size: 4.6cqw;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+    color: #3f3f3e;
+    overflow-wrap: anywhere;
+}
+
+.cert-desc {
+    margin: 1.5cqw auto 0;
+    max-width: 60cqw;
+    font-size: 1.82cqw;
+    line-height: 1.5;
+    color: #57534e;
+}
+
+.cert-desc strong {
+    font-weight: 600;
+    color: #3f3f3e;
+}
+
+.cert-meta {
+    margin: 1.15cqw auto 0;
+    max-width: 62cqw;
+    font-size: 1.02cqw;
+    line-height: 1.55;
+    color: #8a8580;
+}
+
+.cert-meta strong {
+    color: #57534e;
+}
+
+.cert-meta a {
+    color: #c2410c;
+    text-decoration: underline;
+    overflow-wrap: anywhere;
+}
+
+.cert-signatures {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 7.5%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8%;
+}
+
+.cert-sign {
+    width: 30%;
+    text-align: center;
+}
+
+.cert-sign-role {
+    margin: 0 0 1.6cqw;
+    font-size: 1.32cqw;
+    font-weight: 600;
+    color: #4b4844;
+}
+
+.cert-sign.has-ttd .cert-sign-role {
+    margin-bottom: 4.1cqw;
+}
+
+.cert-sign-line {
+    position: relative;
+    border-top: 1px solid #6b6763;
+}
+
+.cert-sign-img {
+    position: absolute;
+    bottom: 0.45cqw;
+    left: 50%;
+    width: auto;
+    max-width: 9cqw;
+    height: 3.5cqw;
+    object-fit: contain;
+    transform: translateX(-50%);
+}
+
+.cert-sign-name {
+    margin: 0.6cqw 0 0;
+    font-size: 1.15cqw;
+    font-weight: 700;
+    color: #3f3f3e;
+}
+
 @media print {
     /* Cetakan selalu terang walau tema gelap aktif. */
     :root, .dark {
@@ -150,5 +364,24 @@ summary:focus-visible,
     }
     .print-area h1 {
         font-size: var(--font-size-display);
+    }
+}
+
+@media print {
+    /* Lembar sertifikat memenuhi satu halaman A4 landscape. */
+    .certificate-page {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .certificate-shell {
+        max-width: none !important;
+        margin: 0 !important;
+    }
+    .cert-sheet {
+        width: 297mm;
+        height: 210mm;
+        aspect-ratio: auto;
+        border-radius: 0;
+        box-shadow: none;
     }
 }
