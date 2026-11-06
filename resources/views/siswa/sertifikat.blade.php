@@ -19,7 +19,7 @@
     </x-slot>
 
     <div class="certificate-page py-8">
-        @if($eligible)
+        @if($eligible && $certificate)
             <div class="no-print flex flex-wrap items-center gap-2 mb-4">
                 <button onclick="window.print()" class="kka-btn-primary">Cetak / Simpan PDF</button>
                 <a href="{{ route('siswa.dashboard') }}" class="kka-btn-secondary">Kembali</a>
@@ -85,7 +85,7 @@
                         <p class="cert-given"><span>Diberikan kepada</span></p>
 
                         @php $panjangNama = mb_strlen(auth()->user()->name); @endphp
-                        <h2 class="cert-name" style="font-size: {{ $panjangNama > 26 ? '3.2cqw' : ($panjangNama > 20 ? '3.9cqw' : '4.6cqw') }}">{{ auth()->user()->name }}</h2>
+                        <h2 class="cert-name" @style(['font-size: ' . ($panjangNama > 26 ? '3.2cqw' : ($panjangNama > 20 ? '3.9cqw' : '4.6cqw'))])>{{ auth()->user()->name }}</h2>
 
                         <p class="cert-desc">
                             atas keberhasilan menyelesaikan <strong>{{ $modules->count() }} Modul Pembelajaran KKALAB</strong> dengan baik, serta atas dedikasi, ketekunan, dan komitmen yang telah ditunjukkan selama mengikuti seluruh rangkaian pembelajaran.
@@ -105,7 +105,7 @@
                             <p class="cert-sign-role">Tanda Tangan Instruktur</p>
                             <div class="cert-sign-line">
                                 @if($certificate->guru_sign_path)
-                                    <img src="{{ Storage::url($certificate->guru_sign_path) }}" alt="Tanda tangan instruktur" class="cert-sign-img" />
+                                    <img src="{{ Storage::disk('public')->url($certificate->guru_sign_path) }}" alt="Tanda tangan instruktur" class="cert-sign-img" />
                                 @endif
                             </div>
                             <p class="cert-sign-name">{{ $certificate->guru_nama ?? '—' }}</p>
@@ -115,7 +115,7 @@
                             <p class="cert-sign-role">Tanda Tangan Direktur</p>
                             <div class="cert-sign-line">
                                 @if($certificate->super_admin_sign_path)
-                                    <img src="{{ Storage::url($certificate->super_admin_sign_path) }}" alt="Tanda tangan direktur" class="cert-sign-img" />
+                                    <img src="{{ Storage::disk('public')->url($certificate->super_admin_sign_path) }}" alt="Tanda tangan direktur" class="cert-sign-img" />
                                 @endif
                             </div>
                             <p class="cert-sign-name">{{ $certificate->super_admin_nama ?? '—' }}</p>
@@ -123,6 +123,13 @@
                     </div>
                 </div>
             </div>
+        @elseif($eligible)
+            <div class="no-print flex flex-wrap items-center gap-2 mb-4">
+                <a href="{{ route('siswa.dashboard') }}" class="kka-btn-secondary">Kembali</a>
+            </div>
+            <x-card title="Sertifikat belum bisa diterbitkan" subtitle="Selamat, kamu telah memenuhi syarat! Terbit otomatis gagal sesaat — silakan muat ulang halaman ini, atau hubungi admin apabila tetap belum muncul." class="mb-4">
+                <p class="text-sm text-slate-500 dark:text-slate-400">Terbit otomatis jika {{ $modules->count() }} modul wajib lulus (skor ≥80) + lulus ujian akhir. Kamu sudah lulus semuanya — sertifikat akan muncul di halaman ini setelah diterbitkan.</p>
+            </x-card>
         @else
             <div class="grid lg:grid-cols-3 gap-4 items-start">
                 <x-card title="Belum memenuhi syarat" subtitle="Selesaikan semua modul wajib (skor ≥80), lalu lulus ujian akhir. Modul buatan guru bersifat bonus." class="lg:col-span-2">
@@ -146,7 +153,7 @@
                     <p class="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400">{{ $lulus }}<span class="text-4xl font-extrabold text-slate-400">/{{ $modules->count() }}</span></p>
                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">modul lulus dengan skor ≥80</p>
                     <div class="mt-3 h-2.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="{{ $modules->count() }}" aria-valuenow="{{ $lulus }}">
-                        <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $modules->count() ? round($lulus / $modules->count() * 100) : 0 }}%"></div>
+                        <div class="h-full bg-emerald-500 rounded-full transition-all" @style(['width: ' . ($modules->count() ? round($lulus / $modules->count() * 100) : 0) . '%'])></div>
                     </div>
                     <div class="mt-4 space-y-2 text-sm">
                         <div class="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-4 py-2.5">
